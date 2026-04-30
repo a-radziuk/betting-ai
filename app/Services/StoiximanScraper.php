@@ -10,8 +10,8 @@ use App\Models\Team;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Symfony\Component\Process\Process;
 
 class StoiximanScraper
 {
@@ -109,16 +109,27 @@ class StoiximanScraper
 
     private function fetchHtml(string $url): string
     {
-        $response = Http::withHeaders([
-            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-            'Accept-Language' => 'en-US,en;q=0.9',
-        ])->timeout(30)->get($url);
-
-        if (! $response->successful()) {
-            throw new RuntimeException("Failed to fetch URL: {$url} (HTTP {$response->status()})");
+        $scriptPath = base_path('scripts/stoiximan-fetch.mjs');
+        if (! file_exists($scriptPath)) {
+            throw new RuntimeException('Playwright fetch script not found: '.$scriptPath);
         }
 
-        return (string) $response->body();
+        $process = new Process(['node', $scriptPath, $url], base_path());
+        $process->setTimeout(150);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            throw new RuntimeException(
+                'Browser fetch failed for '.$url.': '.trim($process->getErrorOutput() ?: $process->getOutput())
+            );
+        }
+
+        $html = $process->getOutput();
+        if (trim($html) === '') {
+            throw new RuntimeException('Browser fetch returned empty HTML for '.$url);
+        }
+
+        return $html;
     }
 
     /**
@@ -126,7 +137,11 @@ class StoiximanScraper
      */
     private function extractEventUrls(string $html): Collection
     {
-        preg_match_all('#https://en\.stoiximan\.com\.cy/sport/[^"\']+/event/[^"\']+#i', $html, $matches);
+        preg_match_all(
+            '#https://en\.stoiximan\.com\.cy/(?:sport/[^"\']+/event/[^"\']+|match-odds/[^"\']+)#i',
+            $html,
+            $matches
+        );
 
         return collect($matches[0] ?? [])
             ->map(fn (string $url) => preg_replace('/\?.*$/', '', $url) ?? $url)
@@ -189,6 +204,10 @@ class StoiximanScraper
     private function extractExternalIdFromUrl(string $url): string
     {
         if (preg_match('/event\/(\d+)/', $url, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('/\/(\d+)\/?$/', $url, $matches)) {
             return $matches[1];
         }
 

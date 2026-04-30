@@ -23,7 +23,7 @@ class ScrapeStoiximanCommand extends Command
         } catch (Throwable $e) {
             $this->components->error('Scrape failed: '.$e->getMessage());
             $this->newLine();
-            $this->line('If Stoiximan blocks HTTP clients (Cloudflare), run this command from a browser-capable environment.');
+            $this->line('Ensure Playwright is installed: npm install -D playwright && npx playwright install chromium');
 
             return self::FAILURE;
         }
