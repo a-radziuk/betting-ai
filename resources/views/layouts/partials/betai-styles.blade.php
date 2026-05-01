@@ -208,6 +208,60 @@
         padding: 0.3rem 0.55rem;
     }
 
+    .bet-status {
+        display: inline-block;
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        padding: 0.3rem 0.55rem;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        background: rgba(12, 21, 36, 0.5);
+    }
+
+    .bet-status--pending {
+        border-color: rgba(159, 176, 211, 0.45);
+        color: #c7d7fa;
+        background: rgba(159, 176, 211, 0.1);
+    }
+
+    .bet-status--won {
+        border-color: rgba(76, 255, 157, 0.35);
+        color: var(--ok);
+        background: rgba(76, 255, 157, 0.08);
+    }
+
+    .bet-status--lost {
+        border-color: rgba(255, 120, 120, 0.4);
+        color: #ff9a9a;
+        background: rgba(255, 120, 120, 0.08);
+    }
+
+    .bet-status--void,
+    .bet-status--cancelled {
+        border-color: rgba(159, 176, 211, 0.35);
+        color: var(--muted);
+        background: rgba(17, 27, 46, 0.6);
+    }
+
+    .dashboard-pagination nav a,
+    .dashboard-pagination nav span.inline-flex {
+        background: var(--surface) !important;
+        color: var(--text) !important;
+        border-color: var(--border) !important;
+    }
+
+    .dashboard-pagination nav span[aria-disabled] span,
+    .dashboard-pagination nav span[aria-current] span {
+        background: rgba(93, 226, 255, 0.12) !important;
+        color: var(--text) !important;
+    }
+
+    .dashboard-pagination .text-gray-700 {
+        color: var(--muted) !important;
+    }
+
     .empty {
         padding: 1.5rem 1rem;
         color: var(--muted);

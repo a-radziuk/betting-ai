@@ -43,7 +43,20 @@ Route::get('/dashboard', function () {
         $user->load('wallet');
     }
 
-    return view('dashboard', ['wallet' => $user->wallet]);
+    $bets = $user->bets()
+        ->with([
+            'event.homeTeam',
+            'event.awayTeam',
+            'odd.selection.market',
+        ])
+        ->latest()
+        ->paginate(20)
+        ->withQueryString();
+
+    return view('dashboard', [
+        'wallet' => $user->wallet,
+        'bets' => $bets,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
