@@ -20,9 +20,11 @@ class StoiximanScraper
     /**
      * Scrape nearest events and persist everything.
      *
+     * @param  bool  $notSupportedMarket  When true, persist markets whose normalized type is not in
+     *                                    Market::SUPPORTED_TYPES. When false (default), those markets are skipped.
      * @return array{events:int,markets:int,selections:int,odds:int}
      */
-    public function scrapeNearestEvents(int $limit = 20): array
+    public function scrapeNearestEvents(int $limit = 20, bool $notSupportedMarket = false): array
     {
         $competitionHtml = $this->fetchHtml(self::COMPETITION_URL);
         $eventUrls = $this->extractEventUrls($competitionHtml)->take($limit)->values();
@@ -43,7 +45,7 @@ class StoiximanScraper
                 continue;
             }
 
-            DB::transaction(function () use ($parsed, &$stats): void {
+            DB::transaction(function () use ($parsed, &$stats, $notSupportedMarket): void {
                 $homeTeam = $this->findOrCreateTeam($parsed['home_team']);
                 $awayTeam = $this->findOrCreateTeam($parsed['away_team']);
                 $eventId = $this->toBigIntId('event', $parsed['external_id']);
@@ -64,12 +66,16 @@ class StoiximanScraper
                 foreach ($parsed['markets'] as $marketData) {
                     $marketId = $this->toBigIntId('market', $parsed['external_id'].'|'.$marketData['external_id']);
 
-                    $rawType = $this->replaceTeamNamesInMarketType(
+                    $rawType = $this->replaceTeamNamesInText(
                         $marketData['type'],
                         $parsed['home_team'],
                         $parsed['away_team']
                     );
                     $type = $this->normalizeMarketType($rawType);
+                    if (! $notSupportedMarket && ! in_array($type, Market::SUPPORTED_TYPES, true)) {
+                        continue;
+                    }
+
                     Market::query()->create([
                         'id' => $marketId,
                         'event_id' => $eventId,
@@ -89,7 +95,13 @@ class StoiximanScraper
                         Selection::query()->create([
                             'id' => $selectionId,
                             'market_id' => $marketId,
-                            'name' => $this->normalizeSelectionName($selectionData['name']),
+                            'name' => $this->normalizeSelectionName(
+                                $this->replaceTeamNamesInText(
+                                    $selectionData['name'],
+                                    $parsed['home_team'],
+                                    $parsed['away_team']
+                                )
+                            ),
                             'participant_id' => null,
                             'handicap' => $selectionData['handicap'],
                             'created_at' => now(),
@@ -476,9 +488,12 @@ class StoiximanScraper
         return [$name.' Home', $name.' Away'];
     }
 
-    private function replaceTeamNamesInMarketType(string $type, string $homeTeam, string $awayTeam): string
+    /**
+     * Replace home/away club names in arbitrary text (market titles, selection labels).
+     */
+    private function replaceTeamNamesInText(string $text, string $homeTeam, string $awayTeam): string
     {
-        $result = $type;
+        $result = $text;
         $replacements = [
             [$homeTeam, 'HOME'],
             [$awayTeam, 'AWAY'],
