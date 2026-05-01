@@ -89,6 +89,26 @@
             font-size: 0.9rem;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .header-link {
+            color: #d6e4ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.38rem 0.7rem;
+            transition: 0.15s ease;
+        }
+
+        .header-link:hover {
+            background: rgba(93, 226, 255, 0.09);
+        }
+
         .hero {
             padding: 2rem 0 1.2rem;
         }
@@ -182,7 +202,13 @@
                 <span class="logo-badge">B</span>
                 <span class="logo-text">BetAI</span>
             </a>
-            <span class="header-tag">AI-Powered Football Betting Insights</span>
+            <div class="header-right">
+                <span class="header-tag">AI-Powered Football Betting Insights</span>
+                @guest
+                    <a class="header-link" href="{{ route('login') }}">Login</a>
+                    <a class="header-link" href="{{ route('register') }}">Register</a>
+                @endguest
+            </div>
         </div>
     </header>
 

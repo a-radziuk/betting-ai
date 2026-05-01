@@ -26,10 +26,31 @@
         }
         .container { width: min(1100px, calc(100% - 2rem)); margin: 0 auto; }
         .topbar { padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
+        .topbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
         .back {
             color: var(--accent);
             text-decoration: none;
             font-size: 0.92rem;
+        }
+        .auth-links {
+            display: flex;
+            gap: 0.65rem;
+        }
+        .auth-link {
+            color: #d6e4ff;
+            text-decoration: none;
+            font-size: 0.86rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.35rem 0.65rem;
+        }
+        .auth-link:hover {
+            background: rgba(93, 226, 255, 0.09);
         }
         .hero { padding: 1.2rem 0 1.6rem; }
         .hero h1 { margin: 0; font-size: clamp(1.5rem, 2.8vw, 2.1rem); }
@@ -83,8 +104,14 @@
 </head>
 <body>
     <div class="topbar">
-        <div class="container">
+        <div class="container topbar-inner">
             <a class="back" href="{{ url('/') }}">← Back to events</a>
+            @guest
+                <div class="auth-links">
+                    <a class="auth-link" href="{{ route('login') }}">Login</a>
+                    <a class="auth-link" href="{{ route('register') }}">Register</a>
+                </div>
+            @endguest
         </div>
     </div>
 
