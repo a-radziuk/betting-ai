@@ -64,7 +64,12 @@ class StoiximanScraper
                 foreach ($parsed['markets'] as $marketData) {
                     $marketId = $this->toBigIntId('market', $parsed['external_id'].'|'.$marketData['external_id']);
 
-                    $type = $this->normalizeMarketType($marketData['type']);
+                    $rawType = $this->replaceTeamNamesInMarketType(
+                        $marketData['type'],
+                        $parsed['home_team'],
+                        $parsed['away_team']
+                    );
+                    $type = $this->normalizeMarketType($rawType);
                     Market::query()->create([
                         'id' => $marketId,
                         'event_id' => $eventId,
@@ -471,6 +476,32 @@ class StoiximanScraper
         return [$name.' Home', $name.' Away'];
     }
 
+    private function replaceTeamNamesInMarketType(string $type, string $homeTeam, string $awayTeam): string
+    {
+        $result = $type;
+        $replacements = [
+            [$homeTeam, 'HOME'],
+            [$awayTeam, 'AWAY'],
+        ];
+
+        usort(
+            $replacements,
+            fn (array $a, array $b): int => strlen($b[0]) <=> strlen($a[0])
+        );
+
+        foreach ($replacements as [$teamName, $alias]) {
+            $teamName = trim($teamName);
+            if ($teamName === '') {
+                continue;
+            }
+
+            $pattern = '/\b'.preg_quote($teamName, '/').'\b/i';
+            $result = preg_replace($pattern, $alias, $result) ?? $result;
+        }
+
+        return $result;
+    }
+
     private function normalizeMarketType(string $type): string
     {
         $upper = strtoupper(trim($type));
@@ -489,6 +520,15 @@ class StoiximanScraper
             '1X2' => Market::TYPE_MATCH_RESULT,
             'OVER/UNDER' => Market::TYPE_OVER_UNDER,
             'OVER UNDER' => Market::TYPE_OVER_UNDER,
+            'OVER/UNDER TOTAL GOALS' => Market::TYPE_OVER_UNDER_TOTAL_GOALS,
+            'OVER UNDER TOTAL GOALS' => Market::TYPE_OVER_UNDER_TOTAL_GOALS,
+            'OVER/UNDER TOTAL GOALS (EXTRA)' => Market::TYPE_OVER_UNDER_TOTAL_GOALS_EXTRA,
+            'OVER UNDER TOTAL GOALS EXTRA' => Market::TYPE_OVER_UNDER_TOTAL_GOALS_EXTRA,
+            'HOME OVER UNDER TOTAL GOALS' => Market::TYPE_HOME_OVER_UNDER_TOTAL_GOALS,
+            'HOME OVER/UNDER TOTAL GOALS' => Market::TYPE_HOME_OVER_UNDER_TOTAL_GOALS,
+            'AWAY OVER UNDER TOTAL GOALS' => Market::TYPE_AWAY_OVER_UNDER_TOTAL_GOALS,
+            'AWAY OVER/UNDER TOTAL GOALS' => Market::TYPE_AWAY_OVER_UNDER_TOTAL_GOALS,
+            'DRAW NO BET' => Market::TYPE_DRAW_NO_BET,
             'BOTH TEAMS TO SCORE' => Market::TYPE_BTTS,
             'BTTS' => Market::TYPE_BTTS,
             'HANDICAP' => Market::TYPE_HANDICAP,

@@ -35,9 +35,12 @@ class Market extends Model
     public const TYPE_HANDICAP = 'HANDICAP';
     public const TYPE_CORRECT_SCORE = 'CORRECT_SCORE';
     public const TYPE_GOALSCORER = 'GOALSCORER';
-
     public const TYPE_DOUBLE_CHANCE = 'DOUBLE_CHANCE';
-
+    public const TYPE_OVER_UNDER_TOTAL_GOALS = 'OVER_UNDER_TOTAL_GOALS';
+    public const TYPE_OVER_UNDER_TOTAL_GOALS_EXTRA = 'OVER_UNDER_TOTAL_GOALS_EXTRA';
+    public const TYPE_HOME_OVER_UNDER_TOTAL_GOALS = 'HOME_OVER_UNDER_TOTAL_GOALS';
+    public const TYPE_AWAY_OVER_UNDER_TOTAL_GOALS = 'AWAY_OVER_UNDER_TOTAL_GOALS';
+    public const TYPE_DRAW_NO_BET = 'DRAW_NO_BET';
     public const PERIOD_FULL_TIME = 'FT';
     public const PERIOD_HALF_TIME = 'HT';
 
@@ -52,6 +55,11 @@ class Market extends Model
         self::TYPE_HANDICAP,
         self::TYPE_CORRECT_SCORE,
         self::TYPE_DOUBLE_CHANCE,
+        self::TYPE_OVER_UNDER_TOTAL_GOALS,
+        self::TYPE_OVER_UNDER_TOTAL_GOALS_EXTRA,
+        self::TYPE_HOME_OVER_UNDER_TOTAL_GOALS,
+        self::TYPE_AWAY_OVER_UNDER_TOTAL_GOALS,
+        self::TYPE_DRAW_NO_BET,
     ];
 
     /**
