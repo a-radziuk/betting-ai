@@ -51,7 +51,7 @@ class Market extends Model
         self::TYPE_BTTS,
         self::TYPE_HANDICAP,
         self::TYPE_CORRECT_SCORE,
-        self::TYPE_DOUBLE_CHANCE
+        self::TYPE_DOUBLE_CHANCE,
     ];
 
     /**

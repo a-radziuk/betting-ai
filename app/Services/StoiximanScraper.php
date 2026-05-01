@@ -335,28 +335,8 @@ class StoiximanScraper
     {
         $markets = [];
 
-        if (isset($node['name'], $node['selections']) && is_array($node['selections'])) {
-            $marketSelections = [];
-            foreach ($node['selections'] as $selection) {
-                if (! is_array($selection)) {
-                    continue;
-                }
-
-                $odds = $selection['odds'] ?? $selection['price'] ?? null;
-                $name = $selection['name'] ?? null;
-                if (! is_numeric($odds) || ! is_string($name)) {
-                    continue;
-                }
-
-                $marketSelections[] = [
-                    'external_id' => (string) ($selection['id'] ?? md5($name.(string) $odds)),
-                    'name' => $name,
-                    'odds' => (float) $odds,
-                    'handicap' => isset($selection['handicap']) && is_numeric($selection['handicap'])
-                        ? (float) $selection['handicap']
-                        : null,
-                ];
-            }
+        if (isset($node['name']) && is_string($node['name'])) {
+            $marketSelections = $this->extractSelectionsFromMarketNode($node);
 
             if ($marketSelections !== []) {
                 $markets[] = [
@@ -376,6 +356,64 @@ class StoiximanScraper
         }
 
         return $markets;
+    }
+
+    /**
+     * @param array<mixed> $marketNode
+     * @return array<int,array{
+     *   external_id:string,
+     *   name:string,
+     *   odds:float,
+     *   handicap:float|null
+     * }>
+     */
+    private function extractSelectionsFromMarketNode(array $marketNode): array
+    {
+        $rawSelections = [];
+
+        if (isset($marketNode['selections']) && is_array($marketNode['selections'])) {
+            $rawSelections = array_merge($rawSelections, $marketNode['selections']);
+        }
+
+        // Some Stoiximan markets (e.g. "Handicap Match Result") keep selections in tableLayout rows.
+        $rows = $marketNode['tableLayout']['rows'] ?? null;
+        if (is_array($rows)) {
+            foreach ($rows as $row) {
+                if (! is_array($row) || ! isset($row['groupSelections']) || ! is_array($row['groupSelections'])) {
+                    continue;
+                }
+                foreach ($row['groupSelections'] as $groupSelection) {
+                    if (! is_array($groupSelection) || ! isset($groupSelection['selections']) || ! is_array($groupSelection['selections'])) {
+                        continue;
+                    }
+                    $rawSelections = array_merge($rawSelections, $groupSelection['selections']);
+                }
+            }
+        }
+
+        $marketSelections = [];
+        foreach ($rawSelections as $selection) {
+            if (! is_array($selection)) {
+                continue;
+            }
+
+            $odds = $selection['odds'] ?? $selection['price'] ?? null;
+            $name = $selection['name'] ?? null;
+            if (! is_numeric($odds) || ! is_string($name)) {
+                continue;
+            }
+
+            $marketSelections[] = [
+                'external_id' => (string) ($selection['id'] ?? md5($name.(string) $odds)),
+                'name' => $name,
+                'odds' => (float) $odds,
+                'handicap' => isset($selection['handicap']) && is_numeric($selection['handicap'])
+                    ? (float) $selection['handicap']
+                    : null,
+            ];
+        }
+
+        return $marketSelections;
     }
 
     /**
@@ -436,6 +474,16 @@ class StoiximanScraper
     private function normalizeMarketType(string $type): string
     {
         $upper = strtoupper(trim($type));
+        $normalized = preg_replace('/[^A-Z0-9]+/', ' ', $upper);
+        $normalized = trim((string) $normalized);
+        $tokens = preg_split('/\s+/', $normalized) ?: [];
+        $hasHandicap = in_array('HANDICAP', $tokens, true);
+        $hasMatch = in_array('MATCH', $tokens, true);
+        $hasResult = in_array('RESULT', $tokens, true) || in_array('RESULTS', $tokens, true);
+        if ($hasHandicap && ($hasMatch && $hasResult)) {
+            return Market::TYPE_HANDICAP;
+        }
+
         $map = [
             'MATCH RESULT' => Market::TYPE_MATCH_RESULT,
             '1X2' => Market::TYPE_MATCH_RESULT,
@@ -444,12 +492,17 @@ class StoiximanScraper
             'BOTH TEAMS TO SCORE' => Market::TYPE_BTTS,
             'BTTS' => Market::TYPE_BTTS,
             'HANDICAP' => Market::TYPE_HANDICAP,
+            'HANDICAP MATCH RESULT' => Market::TYPE_HANDICAP,
+            'HANDICAP MATCH RESULTS' => Market::TYPE_HANDICAP,
+            'MATCH RESULT HANDICAP' => Market::TYPE_HANDICAP,
+            'MATCH RESULTS HANDICAP' => Market::TYPE_HANDICAP,
+            '3 WAY HANDICAP' => Market::TYPE_HANDICAP,
             'CORRECT SCORE' => Market::TYPE_CORRECT_SCORE,
             'GOALSCORER' => Market::TYPE_GOALSCORER,
             'DOUBLE CHANCE' => Market::TYPE_DOUBLE_CHANCE,
         ];
 
-        return $map[$upper] ?? $upper;
+        return $map[$upper] ?? $map[$normalized] ?? $normalized;
     }
 
     private function normalizeSelectionName(string $name): string
