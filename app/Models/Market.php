@@ -15,7 +15,15 @@ class Market extends Model
         'period',
         'line',
         'status',
+        'is_supported_market',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_supported_market' => 'boolean',
+        ];
+    }
 
     public $incrementing = false;
 
@@ -34,6 +42,14 @@ class Market extends Model
     public const STATUS_OPEN = 'open';
     public const STATUS_SUSPENDED = 'suspended';
     public const STATUS_SETTLED = 'settled';
+
+    public const SUPPORTED_TYPES = [
+        self::TYPE_MATCH_RESULT,
+        self::TYPE_OVER_UNDER,
+        self::TYPE_BTTS,
+        self::TYPE_HANDICAP,
+        self::TYPE_CORRECT_SCORE
+    ];
 
     /**
      * @return array<string, array<int, string>>

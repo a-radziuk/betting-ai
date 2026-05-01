@@ -64,13 +64,15 @@ class StoiximanScraper
                 foreach ($parsed['markets'] as $marketData) {
                     $marketId = $this->toBigIntId('market', $parsed['external_id'].'|'.$marketData['external_id']);
 
+                    $type = $this->normalizeMarketType($marketData['type']);
                     Market::query()->create([
                         'id' => $marketId,
                         'event_id' => $eventId,
-                        'type' => $this->normalizeMarketType($marketData['type']),
+                        'type' => $type,
                         'period' => $marketData['period'] ?? Market::PERIOD_FULL_TIME,
                         'line' => $marketData['line'],
                         'status' => Market::STATUS_OPEN,
+                        'is_supported_market' => in_array($type, Market::SUPPORTED_TYPES),
                     ]);
                     $stats['markets']++;
 

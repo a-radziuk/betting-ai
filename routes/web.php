@@ -26,7 +26,11 @@ Route::get('/events/{event}', function (Event $event) {
     $event->load([
         'homeTeam',
         'awayTeam',
-        'markets.selections.odds' => fn ($query) => $query->orderByDesc('created_at'),
+        'markets' => fn ($query) => $query
+            ->where('is_supported_market', true)
+            ->with([
+                'selections.odds' => fn ($oddsQuery) => $oddsQuery->orderByDesc('created_at'),
+            ]),
     ]);
 
     return view('event', compact('event'));
