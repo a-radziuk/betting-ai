@@ -33,7 +33,17 @@ Route::get('/events/{event}', function (Event $event) {
 })->name('events.show');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = auth()->user();
+    $user->loadMissing('wallet');
+    if (! $user->wallet) {
+        $user->wallet()->create([
+            'balance' => 0,
+            'currency' => 'EUR',
+        ]);
+        $user->load('wallet');
+    }
+
+    return view('dashboard', ['wallet' => $user->wallet]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
