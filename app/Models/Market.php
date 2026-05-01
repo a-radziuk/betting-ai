@@ -36,6 +36,8 @@ class Market extends Model
     public const TYPE_CORRECT_SCORE = 'CORRECT_SCORE';
     public const TYPE_GOALSCORER = 'GOALSCORER';
 
+    public const TYPE_DOUBLE_CHANCE = 'DOUBLE_CHANCE';
+
     public const PERIOD_FULL_TIME = 'FT';
     public const PERIOD_HALF_TIME = 'HT';
 
@@ -48,7 +50,8 @@ class Market extends Model
         self::TYPE_OVER_UNDER,
         self::TYPE_BTTS,
         self::TYPE_HANDICAP,
-        self::TYPE_CORRECT_SCORE
+        self::TYPE_CORRECT_SCORE,
+        self::TYPE_DOUBLE_CHANCE
     ];
 
     /**

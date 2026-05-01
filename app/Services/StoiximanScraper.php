@@ -446,6 +446,7 @@ class StoiximanScraper
             'HANDICAP' => Market::TYPE_HANDICAP,
             'CORRECT SCORE' => Market::TYPE_CORRECT_SCORE,
             'GOALSCORER' => Market::TYPE_GOALSCORER,
+            'DOUBLE CHANCE' => Market::TYPE_DOUBLE_CHANCE,
         ];
 
         return $map[$upper] ?? $upper;
