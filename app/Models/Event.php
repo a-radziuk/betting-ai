@@ -14,10 +14,13 @@ class Event extends Model
         'away_team_id',
         'start_time',
         'status',
+        'score',
+        'additional_data',
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
+        'additional_data' => 'array',
     ];
 
     public $incrementing = false;
@@ -26,6 +29,8 @@ class Event extends Model
 
     public const STATUS_SCHEDULED = 'scheduled';
     public const STATUS_LIVE = 'live';
+
+    public const STATUS_PROCESSING = 'processing';
     public const STATUS_FINISHED = 'finished';
 
     /**
@@ -34,6 +39,14 @@ class Event extends Model
     public function markets(): HasMany
     {
         return $this->hasMany(Market::class);
+    }
+
+    /**
+     * @return HasMany<UserBet, $this>
+     */
+    public function userBets(): HasMany
+    {
+        return $this->hasMany(UserBet::class, 'event_id', 'id');
     }
 
     /**
