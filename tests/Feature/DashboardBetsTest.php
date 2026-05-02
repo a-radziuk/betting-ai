@@ -88,4 +88,64 @@ class DashboardBetsTest extends TestCase
         $response->assertSee('Your bets', false);
         $response->assertSeeInOrder(['44.44', '33.33']);
     }
+
+    public function test_dashboard_shows_score_when_event_not_scheduled(): void
+    {
+        $user = User::factory()->create();
+        UserWallet::query()->where('user_id', $user->id)->update(['balance' => 1000]);
+
+        $home = Team::query()->create(['name' => 'ShowSc', 'short_name' => 'S1', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'OppSc', 'short_name' => 'S2', 'league' => 'T']);
+
+        $event = Event::query()->create([
+            'id' => 7002,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_FINISHED,
+            'score' => '2:1',
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 7102,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_MATCH_RESULT,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+        ]);
+
+        $selection = Selection::query()->create([
+            'id' => 7202,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_HOME,
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+
+        $odd = Odd::query()->create([
+            'id' => 7302,
+            'selection_id' => $selection->id,
+            'odds' => 2,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        UserBet::query()->create([
+            'user_id' => $user->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2,
+            'potential_return' => 20,
+            'status' => UserBet::STATUS_PENDING,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('2:1', false);
+    }
 }

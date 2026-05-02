@@ -54,6 +54,11 @@
                                             <a href="{{ route('events.show', $bet->event) }}" class="text-[#5de2ff] hover:underline">
                                                 {{ $bet->event->homeTeam->name }} — {{ $bet->event->awayTeam->name }}
                                             </a>
+                                            @if ($bet->event->status !== \App\Models\Event::STATUS_SCHEDULED)
+                                                <div class="text-xs text-[#9fb0d3] mt-1 tabular-nums">
+                                                    {{ filled($bet->event->score) ? $bet->event->score : '—' }}
+                                                </div>
+                                            @endif
                                             <div class="text-xs text-[#9fb0d3] mt-1">
                                                 {{ optional($bet->event->start_time)->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—' }}
                                             </div>

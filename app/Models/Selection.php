@@ -14,8 +14,17 @@ class Selection extends Model
         'name',
         'participant_id',
         'handicap',
+        'handicap_home',
         'created_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'handicap' => 'decimal:2',
+            'handicap_home' => 'decimal:2',
+        ];
+    }
 
     public $incrementing = false;
 

@@ -87,12 +87,15 @@ class StoiximanScraper
                     ]);
                     $stats['markets']++;
 
+                    $selectionsToCreate = [];
+
                     foreach ($marketData['selections'] as $selectionData) {
                         $selectionId = $this->toBigIntId(
                             'selection',
-                            $parsed['external_id'].'|'.$marketData['external_id'].'|'.$selectionData['external_id']
+                            $parsed['external_id'] . '|' . $marketData['external_id'] . '|' . $selectionData['external_id']
                         );
-                        Selection::query()->create([
+
+                        $selectionsToCreate[] = [
                             'id' => $selectionId,
                             'market_id' => $marketId,
                             'name' => $this->normalizeSelectionName(
@@ -105,13 +108,25 @@ class StoiximanScraper
                             'participant_id' => null,
                             'handicap' => $selectionData['handicap'],
                             'created_at' => now(),
-                        ]);
+                            '_selection_data' => $selectionData,
+                        ];
+                    }
+
+                    if ($type === Market::TYPE_HANDICAP) {
+                        $this->normalizeHandicapForSelections($selectionsToCreate);
+                    }
+
+                    foreach($selectionsToCreate as $newSelection) {
+                        $selectionData = $newSelection['_selection_data'];
+                        unset($newSelection['_selection_data']);
+
+                        Selection::query()->create($newSelection);
                         $stats['selections']++;
 
                         $price = (float) $selectionData['odds'];
                         Odd::query()->create([
-                            'id' => $this->toBigIntId('odd', (string) $selectionId),
-                            'selection_id' => $selectionId,
+                            'id' => $this->toBigIntId('odd', (string) $newSelection['id']),
+                            'selection_id' => $newSelection['id'],
                             'odds' => $price,
                             'probability' => $price > 0 ? round(1 / $price, 4) : null,
                             'is_active' => true,
@@ -124,6 +139,18 @@ class StoiximanScraper
         }
 
         return $stats;
+    }
+
+    private function normalizeHandicapForSelections(array &$marketSelections): void
+    {
+        $home_handicap = null;
+        foreach($marketSelections as $i => &$marketSelection) {
+            if (!($i % 3)) {
+                $home_handicap = $marketSelection['handicap'];
+                continue;
+            }
+            $marketSelection['handicap'] = $home_handicap;
+        }
     }
 
     private function fetchHtml(string $url): string

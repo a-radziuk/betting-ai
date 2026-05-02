@@ -204,27 +204,26 @@ class EventResultService
     }
 
     /**
-     * @return 'win'|'lose'
+     * @return 'win'|'lose'|'refund'
      */
     private function outcomeHandicapThreeWay(int $h, int $a, Selection $selection): string
     {
-        $diff = $h - $a;
         $name = strtoupper(trim($selection->name));
         $handicap = $selection->handicap;
         if ($handicap === null || ! is_numeric($handicap)) {
-            return 'lose';
+            return 'refund';
         }
 
-        $L = (int) round(abs((float) $handicap));
+        $handicap = (int) $handicap;
 
         if (str_starts_with($name, 'HOME')) {
-            return $diff > $L ? 'win' : 'lose';
+            return $h + $handicap > $a ? 'win' : 'lose';
         }
         if (str_starts_with($name, 'DRAW')) {
-            return $diff === $L ? 'win' : 'lose';
+            return $h + $handicap === $a ? 'win' : 'lose';
         }
         if (str_starts_with($name, 'AWAY')) {
-            return $diff < $L ? 'win' : 'lose';
+            return $h + $handicap < $a ? 'win' : 'lose';
         }
 
         return 'lose';
