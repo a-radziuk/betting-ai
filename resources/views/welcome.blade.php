@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>BetAI | Upcoming Football Events</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
-</head>
+    </head>
 <body>
     @include('layouts.partials.betai-header')
 
@@ -20,7 +20,7 @@
         <section class="card">
             @if ($events->isEmpty())
                 <div class="empty">No upcoming events found. Seed more data and refresh.</div>
-            @else
+                    @else
                 <table>
                     <thead>
                         <tr>
@@ -47,8 +47,8 @@
                 </table>
             @endif
         </section>
-    </main>
+            </main>
 
     @include('layouts.partials.betai-footer')
-</body>
+    </body>
 </html>
