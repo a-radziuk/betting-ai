@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Event;
 use App\Models\Market;
 use App\Models\Odd;
 use App\Models\User;
@@ -14,9 +15,10 @@ class BetsRandomCommand extends Command
         {userId : User primary key}
         {--num-of-bets=20 : How many bets to place}
         {--sum=10 : Stake amount per bet}
-        {--market= : Restrict to this market type (e.g. HANDICAP). Omit for any supported type}';
+        {--market= : Restrict to this market type (e.g. HANDICAP). Omit for any supported type}
+        {--event= : Only place bets on odds for this event id}';
 
-    protected $description = 'Place random bets for a user using supported market odds (or one specific market type)';
+    protected $description = 'Place random bets for a user using supported market odds (optional event or market filter)';
 
     public function handle(PlaceBetService $placeBetService): int
     {
@@ -24,6 +26,22 @@ class BetsRandomCommand extends Command
         $numOfBets = max(1, (int) $this->option('num-of-bets'));
         $sum = $this->option('sum');
         $marketFilter = $this->option('market');
+        $eventOption = $this->option('event');
+        $eventId = null;
+        if ($eventOption !== null && $eventOption !== '') {
+            $eventId = (int) $eventOption;
+            $event = Event::query()->whereKey($eventId)->first();
+            if ($event === null) {
+                $this->components->error('Event not found.');
+
+                return self::FAILURE;
+            }
+            if ($event->status !== Event::STATUS_SCHEDULED) {
+                $this->components->error('Event must have status scheduled to place bets.');
+
+                return self::FAILURE;
+            }
+        }
 
         if (! User::query()->whereKey($userId)->exists()) {
             $this->components->error('User not found.');
@@ -45,17 +63,20 @@ class BetsRandomCommand extends Command
         }
 
         $oddIds = Odd::query()
-            ->whereHas('selection', function ($q) use ($types): void {
-                $q->whereHas('market', function ($m) use ($types): void {
+            ->whereHas('selection', function ($q) use ($types, $eventId): void {
+                $q->whereHas('market', function ($m) use ($types, $eventId): void {
                     $m->whereIn('type', $types)
                         ->whereHas('event');
+                    if ($eventId !== null) {
+                        $m->where('event_id', $eventId);
+                    }
                 });
             })
             ->pluck('id')
             ->all();
 
         if ($oddIds === []) {
-            $this->components->error('No odds found for the selected market filter.');
+            $this->components->error('No odds found for the selected filters.');
 
             return self::FAILURE;
         }

@@ -21,7 +21,7 @@ class BbcScrapeResultsCommand extends Command
     public function handle(BbcPremierLeagueScoresParser $parser, EventResultService $eventResultService): int
     {
         $yearMonth = now()->format('Y-m');
-        $url = "https://www.bbc.com/sport/football/premier-league/scores-fixtures/{$yearMonth}";
+        $url = "https://www.bbc.com/sport/football/premier-league/scores-fixtures/{$yearMonth}?filter=results";
 
         $this->components->info("Fetching {$url}");
 
