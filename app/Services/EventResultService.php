@@ -326,15 +326,32 @@ class EventResultService
     {
         $wallet = UserWallet::query()->where('user_id', $bet->user_id)->lockForUpdate()->first();
         if ($wallet !== null) {
+            $betReturn = bcsub(
+                number_format((float) $bet->potential_return, 2, '.', ''),
+                number_format((float) $bet->stake, 2, '.', ''),
+                2
+            );
             $newBalance = bcadd(
                 number_format((float) $wallet->balance, 2, '.', ''),
                 number_format((float) $bet->potential_return, 2, '.', ''),
                 2
             );
-            $wallet->update(['balance' => $newBalance]);
+            $newAmountInPlay = bcsub(
+                number_format((float) $wallet->amount_in_play, 2, '.', ''),
+                number_format((float) $bet->stake, 2, '.', ''),
+                2
+            );
+            $newTotalResult = bcadd(
+                number_format((float) $wallet->total_result, 2, '.', ''),
+                $betReturn,
+                2
+            );
+
+
+            $wallet->update(['balance' => $newBalance, 'amount_in_play' => $newAmountInPlay, 'total_result' => $newTotalResult]);
         }
 
-        $bet->update(['status' => UserBet::STATUS_WON]);
+        $bet->update(['status' => UserBet::STATUS_WON, 'real_return' => $betReturn, 'wallet_total_result' => $newTotalResult]);
     }
 
     private function refundBet(UserBet $bet): void
@@ -346,14 +363,37 @@ class EventResultService
                 number_format((float) $bet->stake, 2, '.', ''),
                 2
             );
-            $wallet->update(['balance' => $newBalance]);
+            $newAmountInPlay = bcsub(
+                number_format((float) $wallet->amount_in_play, 2, '.', ''),
+                number_format((float) $bet->stake, 2, '.', ''),
+                2
+            );
+            $wallet->update(['balance' => $newBalance, 'amount_in_play' => $newAmountInPlay]);
         }
 
-        $bet->update(['status' => UserBet::STATUS_VOID]);
+        $bet->update(['status' => UserBet::STATUS_VOID, 'wallet_total_result' => $wallet->total_result]);
     }
 
     private function loseBet(UserBet $bet): void
     {
-        $bet->update(['status' => UserBet::STATUS_LOST]);
+        $wallet = UserWallet::query()->where('user_id', $bet->user_id)->lockForUpdate()->first();
+        if ($wallet !== null) {
+            $newAmountInPlay = bcsub(
+                number_format((float) $wallet->amount_in_play, 2, '.', ''),
+                number_format((float) $bet->stake, 2, '.', ''),
+                2
+            );
+            $newTotalResult = bcsub(
+                number_format((float) $wallet->total_result, 2, '.', ''),
+                number_format((float) $bet->stake, 2, '.', ''),
+                2
+            );
+            $wallet->update(['amount_in_play' => $newAmountInPlay, 'total_result' => $newTotalResult]);
+        }
+        $bet->update([
+            'status' => UserBet::STATUS_LOST,
+            'wallet_total_result' => $newTotalResult,
+            'real_return' => -$bet->stake
+        ]);
     }
 }

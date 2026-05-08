@@ -11,6 +11,8 @@ class UserWallet extends Model
         'user_id',
         'balance',
         'start_balance',
+        'amount_in_play',
+        'total_result',
         'currency',
     ];
 
@@ -19,6 +21,8 @@ class UserWallet extends Model
         return [
             'balance' => 'decimal:2',
             'start_balance' => 'decimal:2',
+            'amount_in_play' => 'decimal:2',
+            'total_result' => 'decimal:2',
         ];
     }
 

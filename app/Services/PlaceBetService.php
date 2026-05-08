@@ -59,7 +59,12 @@ class PlaceBetService
                 $stake,
                 2
             );
-            $wallet->update(['balance' => $newBalance]);
+            $newAmountInPlay = bcadd(
+                number_format((float) $wallet->amount_in_play, 2, '.', ''),
+                $stake,
+                2
+            );
+            $wallet->update(['balance' => $newBalance, 'amount_in_play' => $newAmountInPlay]);
 
             $oddsAtBet = number_format((float) $odd->odds, 4, '.', '');
             $potentialReturn = bcmul($stake, $oddsAtBet, 4);

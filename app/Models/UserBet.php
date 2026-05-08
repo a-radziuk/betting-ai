@@ -24,6 +24,8 @@ class UserBet extends Model
         'stake',
         'odds_at_bet',
         'potential_return',
+        'real_return',
+        'wallet_total_result',
         'status',
     ];
 
@@ -33,6 +35,8 @@ class UserBet extends Model
             'stake' => 'decimal:2',
             'odds_at_bet' => 'decimal:4',
             'potential_return' => 'decimal:2',
+            'real_return' => 'decimal:2',
+            'wallet_total_result' => 'decimal:2',
         ];
     }
 
