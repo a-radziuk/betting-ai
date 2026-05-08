@@ -347,4 +347,92 @@
         padding: 1rem;
         color: var(--muted);
     }
+
+    /* Buttons + form controls (used by place-bet page) */
+    .btn {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        color: var(--text);
+        background: rgba(12, 21, 36, 0.65);
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.15s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        background: rgba(93, 226, 255, 0.08);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary {
+        border-color: rgba(93, 226, 255, 0.45);
+        background: linear-gradient(135deg, rgba(93, 226, 255, 0.22), rgba(138, 123, 255, 0.16));
+    }
+
+    .btn-secondary {
+        border-color: rgba(159, 176, 211, 0.35);
+        background: rgba(12, 21, 36, 0.45);
+        color: #d6e4ff;
+    }
+
+    .input-dark {
+        width: 100%;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(130, 162, 255, 0.25);
+        background: rgba(6, 11, 22, 0.75);
+        color: var(--text);
+        padding: 0.7rem 0.85rem;
+        outline: none;
+        font-size: 1rem;
+    }
+
+    .input-dark:focus {
+        border-color: rgba(93, 226, 255, 0.55);
+        box-shadow: 0 0 0 4px rgba(93, 226, 255, 0.12);
+    }
+
+    .bet-kpi {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.9rem;
+        background: rgba(12, 21, 36, 0.45);
+    }
+
+    .bet-kpi .label {
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+    .bet-kpi .value {
+        font-weight: 800;
+        color: #8bffcd;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.01em;
+    }
+
+    .flash {
+        border: 1px solid rgba(76, 255, 157, 0.35);
+        color: var(--ok);
+        background: rgba(76, 255, 157, 0.08);
+        border-radius: 0.9rem;
+        padding: 0.9rem 1rem;
+    }
 </style>

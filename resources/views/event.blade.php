@@ -33,6 +33,9 @@
         @if ($event->markets->isEmpty())
             <div class="event-empty">No markets available for this event yet.</div>
         @else
+            @php
+                $isPending = $event->status === \App\Models\Event::STATUS_SCHEDULED;
+            @endphp
             <section class="market-grid">
                 @foreach ($event->markets as $market)
                     <article class="market">
@@ -47,11 +50,24 @@
                         </div>
                         <div class="rows">
                             @forelse ($market->selections as $selection)
+                                @php
+                                    $odd = $selection->odds->first();
+                                    $canBet = $isPending && $odd && $odd->is_active;
+                                @endphp
                                 <div class="row">
-                                    <span class="name">{{ $selection->name }}</span>
-                                    <span class="odds">
-                                        {{ number_format(optional($selection->odds->first())->odds ?? 0, 2) }}
-                                    </span>
+                                    @if ($canBet)
+                                        <a class="name" href="{{ route('bets.place.show', ['odd' => $odd->id]) }}">
+                                            {{ $selection->name }}
+                                        </a>
+                                        <a class="odds" href="{{ route('bets.place.show', ['odd' => $odd->id]) }}">
+                                            {{ number_format((float) $odd->odds, 2) }}
+                                        </a>
+                                    @else
+                                        <span class="name">{{ $selection->name }}</span>
+                                        <span class="odds">
+                                            {{ number_format(optional($odd)->odds ?? 0, 2) }}
+                                        </span>
+                                    @endif
                                 </div>
                             @empty
                                 <div class="row">

@@ -51,7 +51,7 @@ var x="prefix\",\"data\":{\"eventGroups\":[{\"secondaryGroups\":[{\"events\":[{\
 HTML;
 
         Http::fake([
-            'https://www.bbc.com/sport/football/premier-league/scores-fixtures/'.$yearMonth => Http::response($html, 200),
+            'https://www.bbc.com/sport/football/premier-league/scores-fixtures/'.$yearMonth.'*' => Http::response($html, 200),
         ]);
 
         $exit = Artisan::call('bbc:scrape-results');

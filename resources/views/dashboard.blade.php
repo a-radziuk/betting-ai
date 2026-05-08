@@ -7,6 +7,14 @@
     </x-slot>
 
     <div class="pb-8 space-y-4">
+        @if (session('status'))
+            <section class="card card-pad">
+                <div class="flash">
+                    {{ session('status') }}
+                </div>
+            </section>
+        @endif
+
         <section class="card card-pad">
             <h3 class="text-sm font-semibold uppercase tracking-wider text-[#c7d7fa] m-0">{{ __('Wallet') }}</h3>
             <div class="mt-3 flex flex-wrap items-baseline gap-3">
