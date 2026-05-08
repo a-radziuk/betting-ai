@@ -348,6 +348,47 @@
         color: var(--muted);
     }
 
+    .user-results {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        padding: 0;
+        background: transparent;
+        border: 0;
+    }
+
+    @media (max-width: 44rem) {
+        .user-results {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .user-results-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: 0.95rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.9rem;
+        background: var(--surface);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .user-results-label {
+        color: var(--muted);
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .user-results-value {
+        color: var(--text);
+        font-weight: 900;
+        font-size: 1.25rem;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.01em;
+    }
+
     /* Buttons + form controls (used by place-bet page) */
     .btn {
         appearance: none;

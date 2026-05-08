@@ -10,6 +10,7 @@ class UserWallet extends Model
     protected $fillable = [
         'user_id',
         'balance',
+        'start_balance',
         'currency',
     ];
 
@@ -17,6 +18,7 @@ class UserWallet extends Model
     {
         return [
             'balance' => 'decimal:2',
+            'start_balance' => 'decimal:2',
         ];
     }
 

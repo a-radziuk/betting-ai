@@ -15,6 +15,9 @@
         <section class="hero">
             <h1>Nearest 20 Upcoming Events</h1>
             <p>Real-time lineup of the next football fixtures sorted by kickoff time.</p>
+            <p class="meta" style="margin-top: 0.9rem;">
+                <a class="header-link" href="{{ route('players.index') }}">Players</a>
+            </p>
         </section>
 
         <section class="card">

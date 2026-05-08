@@ -3,10 +3,13 @@
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
 use App\Models\Odd;
+use App\Models\User;
+use App\Models\UserBet;
 use App\Services\PlaceBetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -39,6 +42,49 @@ Route::get('/events/{event}', function (Event $event) {
 
     return view('event', compact('event'));
 })->name('events.show');
+
+Route::get('/players', function () {
+    $players = User::query()
+        ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
+        ->orderBy('users.id')
+        ->select([
+            'users.id',
+            'users.name',
+            DB::raw('COALESCE(user_wallets.balance, 0) as wallet_balance'),
+            DB::raw("COALESCE(user_wallets.currency, 'EUR') as wallet_currency"),
+        ])
+        ->paginate(20)
+        ->withQueryString();
+
+    return view('players', [
+        'players' => $players,
+    ]);
+})->name('players.index');
+
+Route::get('/players/{user}', function (User $user) {
+    $currentlyInPlay = (float) UserBet::query()
+        ->where('user_id', $user->id)
+        ->where('status', UserBet::STATUS_PENDING)
+        ->sum('stake');
+
+    $bets = UserBet::query()
+        ->where('user_id', $user->id)
+        ->where('status', '!=', UserBet::STATUS_PENDING)
+        ->with([
+            'event.homeTeam',
+            'event.awayTeam',
+            'odd.selection.market',
+        ])
+        ->orderBy('updated_at')
+        ->paginate(20)
+        ->withQueryString();
+
+    return view('player-stats', [
+        'player' => $user,
+        'bets' => $bets,
+        'currentlyInPlay' => $currentlyInPlay,
+    ]);
+})->name('players.show');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
