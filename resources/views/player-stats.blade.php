@@ -24,7 +24,7 @@
     </section>
 
     @php
-        $resultValue = (float) ($player->wallet->balance - $player->wallet->start_balance + $currentlyInPlay);
+        $resultValue = (float) ($player->wallet->total_result);
         $resultColor = $resultValue > 0.000001 ? '#4cff9d' : ($resultValue < -0.000001 ? '#ff9a9a' : '#9fb0d3');
     @endphp
 
@@ -35,7 +35,10 @@
         </span>
         <span class="user-results-item">
             <span class="user-results-label">Currently in play</span>
-            <span class="user-results-value">{{ number_format((float) $currentlyInPlay, 2) }}</span>
+            <span class="user-results-value">{{ number_format((float) $player->wallet->amount_in_play, 2) }}</span>
+            <a href="{{ route('players.current', ['user' => $player->id]) }}" class="subbar-back" style="margin-top: 6px;">
+                See bets
+            </a>
         </span>
         <span class="user-results-item">
             <span class="user-results-label">Result</span>

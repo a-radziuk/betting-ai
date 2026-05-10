@@ -14,7 +14,20 @@ class UserMakeRandomCommand extends Command
 
     public function handle(): int
     {
-        $email = 'user+'.Str::lower(Str::random(10)).'@example.com';
+        $email = null;
+        for ($i = 0; $i < 10; $i++) {
+            $first = Str::slug(fake()->firstName());
+            $last = Str::slug(fake()->lastName());
+            $num = random_int(10, 999);
+            $candidate = Str::lower("{$first}.{$last}{$num}@example.com");
+
+            if (! User::query()->where('email', $candidate)->exists()) {
+                $email = $candidate;
+                break;
+            }
+        }
+
+        $email ??= Str::lower(Str::random(12)).'@example.com';
 
         $user = User::query()->create([
             'name' => 'Random User',

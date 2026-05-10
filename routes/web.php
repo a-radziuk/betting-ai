@@ -5,6 +5,7 @@ use App\Models\Event;
 use App\Models\Odd;
 use App\Models\User;
 use App\Models\UserBet;
+use App\Models\UserSubscription;
 use App\Services\PlaceBetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -46,11 +47,18 @@ Route::get('/events/{event}', function (Event $event) {
 Route::get('/players', function () {
     $players = User::query()
         ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
-        ->orderBy('users.id')
+        ->whereExists(function ($q): void {
+            $q->selectRaw('1')
+                ->from('user_bets')
+                ->whereColumn('user_bets.user_id', 'users.id');
+        })
+        ->orderByDesc(DB::raw('COALESCE(user_wallets.total_result, 0)'))
         ->select([
             'users.id',
             'users.name',
             DB::raw('COALESCE(user_wallets.balance, 0) as wallet_balance'),
+            DB::raw('COALESCE(user_wallets.amount_in_play, 0) as wallet_amount_in_play'),
+            DB::raw('COALESCE(user_wallets.total_result, 0) as wallet_total_result'),
             DB::raw("COALESCE(user_wallets.currency, 'EUR') as wallet_currency"),
         ])
         ->paginate(20)
@@ -62,11 +70,6 @@ Route::get('/players', function () {
 })->name('players.index');
 
 Route::get('/players/{user}', function (User $user) {
-    $currentlyInPlay = (float) UserBet::query()
-        ->where('user_id', $user->id)
-        ->where('status', UserBet::STATUS_PENDING)
-        ->sum('stake');
-
     $bets = UserBet::query()
         ->where('user_id', $user->id)
         ->where('status', '!=', UserBet::STATUS_PENDING)
@@ -82,9 +85,44 @@ Route::get('/players/{user}', function (User $user) {
     return view('player-stats', [
         'player' => $user,
         'bets' => $bets,
-        'currentlyInPlay' => $currentlyInPlay,
     ]);
 })->name('players.show');
+
+Route::get('/players/{user}/current', function (User $user) {
+    $viewer = Auth::user();
+    if ($viewer === null) {
+        return redirect()->route('login');
+    }
+
+    if ($viewer->id !== $user->id) {
+        $isSubscribed = UserSubscription::query()
+            ->where('subscriber_user_id', $viewer->id)
+            ->where('player_user_id', $user->id)
+            ->exists();
+        if (! $isSubscribed) {
+            return redirect()->route('players.subscribe.show', ['user' => $user->id]);
+        }
+    }
+
+    $bets = UserBet::query()
+        ->where('user_id', $user->id)
+        ->where('user_bets.status', UserBet::STATUS_PENDING)
+        ->join('events', 'events.id', '=', 'user_bets.event_id')
+        ->orderBy('events.start_time')
+        ->select('user_bets.*')
+        ->with([
+            'event.homeTeam',
+            'event.awayTeam',
+            'odd.selection.market',
+        ])
+        ->paginate(20)
+        ->withQueryString();
+
+    return view('player-current-bets', [
+        'player' => $user,
+        'bets' => $bets,
+    ]);
+})->name('players.current');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
@@ -114,6 +152,47 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/players/{user}/subscribe', function (User $user) {
+        $viewer = Auth::user();
+        if ($viewer === null) {
+            abort(403);
+        }
+
+        if ($viewer->id === $user->id) {
+            abort(400, 'You cannot subscribe to yourself.');
+        }
+
+        $subscription = UserSubscription::query()
+            ->where('subscriber_user_id', $viewer->id)
+            ->where('player_user_id', $user->id)
+            ->first();
+
+        return view('player-subscribe', [
+            'player' => $user,
+            'subscription' => $subscription,
+        ]);
+    })->name('players.subscribe.show');
+
+    Route::post('/players/{user}/subscribe', function (Request $request, User $user) {
+        $viewer = Auth::user();
+        if ($viewer === null) {
+            abort(403);
+        }
+
+        if ($viewer->id === $user->id) {
+            abort(400, 'You cannot subscribe to yourself.');
+        }
+
+        $sub = UserSubscription::query()->firstOrCreate([
+            'subscriber_user_id' => $viewer->id,
+            'player_user_id' => $user->id,
+        ]);
+
+        return redirect()
+            ->route('players.subscribe.show', ['user' => $user->id])
+            ->with('status', 'Subscribed.');
+    })->name('players.subscribe.store');
+
     Route::get('/place-bet/{odd}', function (Odd $odd) {
         $odd->loadMissing('selection.market.event.homeTeam', 'selection.market.event.awayTeam');
 

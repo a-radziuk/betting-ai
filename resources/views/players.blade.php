@@ -33,6 +33,8 @@
                     <tr>
                         <th>Username</th>
                         <th class="text-right">Wallet balance</th>
+                        <th class="text-right">In play</th>
+                        <th class="text-right">Total result</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -42,6 +44,18 @@
                             <td class="text-right tabular-nums text-[#eaf0ff]">
                                 {{ number_format((float) $player->wallet_balance, 2) }}
                                 <span class="text-[#9fb0d3]">{{ $player->wallet_currency }}</span>
+                            </td>
+                            <td class="text-right tabular-nums text-[#eaf0ff]">
+                                {{ number_format((float) $player->wallet_amount_in_play, 2) }}
+                            </td>
+                            <td class="text-right tabular-nums">
+                                @php
+                                    $tr = (float) $player->wallet_total_result;
+                                    $color = $tr > 0.000001 ? '#4cff9d' : ($tr < -0.000001 ? '#ff9a9a' : '#9fb0d3');
+                                @endphp
+                                <span style="color: {{ $color }};">
+                                    {{ $tr > 0 ? '+' : '' }}{{ number_format($tr, 2) }}
+                                </span>
                             </td>
                         </tr>
                     @endforeach
