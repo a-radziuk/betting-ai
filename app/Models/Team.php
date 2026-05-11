@@ -15,6 +15,7 @@ class Team extends Model
         'short_name',
         'league',
         'country',
+        'guardian_name',
     ];
 
     /**
