@@ -16,7 +16,7 @@ class BbcScrapeResultsCommand extends Command
 
     protected $description = 'Scrape BBC Premier League results for the current month and settle matching unresolved events (tournament_id = 1, Team.external_name)';
 
-    private const TOURNAMENT_ID = 1;
+    private const COUNTRY = 'England';
 
     public function handle(BbcPremierLeagueScoresParser $parser, EventResultService $eventResultService): int
     {
@@ -59,23 +59,23 @@ class BbcScrapeResultsCommand extends Command
 
         foreach ($results as $row) {
             $homeTeam = Team::query()
-                ->where('tournament_id', self::TOURNAMENT_ID)
+                ->where('country', self::COUNTRY)
                 ->where('external_name', $row['homeName'])
                 ->first();
 
             if ($homeTeam === null) {
-                $this->warn('No team with tournament_id='.self::TOURNAMENT_ID." and external_name matching BBC home team \"{$row['homeName']}\".");
+                $this->warn('No team with country='.self::COUNTRY." and external_name matching BBC home team \"{$row['homeName']}\".");
 
                 continue;
             }
 
             $awayTeam = Team::query()
-                ->where('tournament_id', self::TOURNAMENT_ID)
+                ->where('country', self::COUNTRY)
                 ->where('external_name', $row['awayName'])
                 ->first();
 
             if ($awayTeam === null) {
-                $this->warn('No team with tournament_id='.self::TOURNAMENT_ID." and external_name matching BBC away team \"{$row['awayName']}\".");
+                $this->warn('No team with country='.self::COUNTRY." and external_name matching BBC away team \"{$row['awayName']}\".");
 
                 continue;
             }

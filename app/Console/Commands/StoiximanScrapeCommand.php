@@ -6,9 +6,9 @@ use App\Services\StoiximanScraper;
 use Illuminate\Console\Command;
 use Throwable;
 
-class ScrapeStoiximanCommand extends Command
+class StoiximanScrapeCommand extends Command
 {
-    protected $signature = 'scrape:stoiximan
+    protected $signature = 'stoiximan:scrape
         {--limit=20 : Number of event pages to attempt}
         {--not-supported-market : Also persist markets whose type is not in Market::SUPPORTED_TYPES (default: skip them)}';
 

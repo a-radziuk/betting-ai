@@ -9,6 +9,8 @@ class Tournament extends Model
 {
     protected $fillable = [
         'name',
+        'country',
+        'stoiximan_url',
     ];
 
     /**
