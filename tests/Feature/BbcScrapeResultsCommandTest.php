@@ -24,6 +24,7 @@ class BbcScrapeResultsCommandTest extends TestCase
             'external_name' => 'Alpha FC',
             'short_name' => 'ALP',
             'league' => 'PL',
+            'country' => 'England',
         ]);
 
         $away = Team::query()->create([
@@ -32,6 +33,7 @@ class BbcScrapeResultsCommandTest extends TestCase
             'external_name' => 'Beta FC',
             'short_name' => 'BET',
             'league' => 'PL',
+            'country' => 'England',
         ]);
 
         Event::query()->create([

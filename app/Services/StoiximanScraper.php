@@ -7,6 +7,7 @@ use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Selection;
 use App\Models\Team;
+use App\Models\Tournament;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -15,8 +16,6 @@ use Symfony\Component\Process\Process;
 
 class StoiximanScraper
 {
-    private const COMPETITION_URL = 'https://en.stoiximan.com.cy/sport/soccer/competitions/england/1/';
-
     /**
      * Scrape nearest events and persist everything.
      *
@@ -24,9 +23,14 @@ class StoiximanScraper
      *                                    Market::SUPPORTED_TYPES. When false (default), those markets are skipped.
      * @return array{events:int,markets:int,selections:int,odds:int}
      */
-    public function scrapeNearestEvents(int $limit = 20, bool $notSupportedMarket = false): array
+    public function scrapeNearestEvents(Tournament $tournament, int $limit = 20, bool $notSupportedMarket = false): array
     {
-        $competitionHtml = $this->fetchHtml(self::COMPETITION_URL);
+        $competitionUrl = trim((string) $tournament->stoiximan_url);
+        if ($competitionUrl === '') {
+            throw new RuntimeException('Tournament has no stoiximan_url set.');
+        }
+
+        $competitionHtml = $this->fetchHtml($competitionUrl);
         $eventUrls = $this->extractEventUrls($competitionHtml)->take($limit)->values();
 
         if ($eventUrls->isEmpty()) {
@@ -45,9 +49,9 @@ class StoiximanScraper
                 continue;
             }
 
-            DB::transaction(function () use ($parsed, &$stats, $notSupportedMarket): void {
-                $homeTeam = $this->findOrCreateTeam($parsed['home_team']);
-                $awayTeam = $this->findOrCreateTeam($parsed['away_team']);
+            DB::transaction(function () use ($parsed, &$stats, $notSupportedMarket, $tournament): void {
+                $homeTeam = $this->findOrCreateTeam($parsed['home_team'], $tournament);
+                $awayTeam = $this->findOrCreateTeam($parsed['away_team'], $tournament);
                 $eventId = $this->toBigIntId('event', $parsed['external_id']);
 
                 Event::query()->updateOrCreate(
@@ -55,6 +59,7 @@ class StoiximanScraper
                     [
                         'home_team_id' => $homeTeam->id,
                         'away_team_id' => $awayTeam->id,
+                        'tournament_id' => $tournament->id,
                         'start_time' => $parsed['start_time'],
                         'status' => Event::STATUS_SCHEDULED,
                     ]
@@ -92,7 +97,7 @@ class StoiximanScraper
                     foreach ($marketData['selections'] as $selectionData) {
                         $selectionId = $this->toBigIntId(
                             'selection',
-                            $parsed['external_id'] . '|' . $marketData['external_id'] . '|' . $selectionData['external_id']
+                            $parsed['external_id'].'|'.$marketData['external_id'].'|'.$selectionData['external_id']
                         );
 
                         $selectionsToCreate[] = [
@@ -116,7 +121,7 @@ class StoiximanScraper
                         $this->normalizeHandicapForSelections($selectionsToCreate);
                     }
 
-                    foreach($selectionsToCreate as $newSelection) {
+                    foreach ($selectionsToCreate as $newSelection) {
                         $selectionData = $newSelection['_selection_data'];
                         unset($newSelection['_selection_data']);
 
@@ -144,9 +149,10 @@ class StoiximanScraper
     private function normalizeHandicapForSelections(array &$marketSelections): void
     {
         $home_handicap = null;
-        foreach($marketSelections as $i => &$marketSelection) {
-            if (!($i % 3)) {
+        foreach ($marketSelections as $i => &$marketSelection) {
+            if (! ($i % 3)) {
                 $home_handicap = $marketSelection['handicap'];
+
                 continue;
             }
             $marketSelection['handicap'] = $home_handicap;
@@ -361,7 +367,7 @@ class StoiximanScraper
     }
 
     /**
-     * @param array<mixed> $node
+     * @param  array<mixed>  $node
      * @return array<int, array{
      *   external_id:string,
      *   type:string,
@@ -403,7 +409,7 @@ class StoiximanScraper
     }
 
     /**
-     * @param array<mixed> $marketNode
+     * @param  array<mixed>  $marketNode
      * @return array<int,array{
      *   external_id:string,
      *   name:string,
@@ -599,13 +605,14 @@ class StoiximanScraper
         return $map[$upper] ?? $upper;
     }
 
-    private function findOrCreateTeam(string $name): Team
+    private function findOrCreateTeam(string $name, Tournament $tournament): Team
     {
         return Team::query()->firstOrCreate(
             ['name' => $name],
             [
                 'short_name' => mb_strtoupper(mb_substr(preg_replace('/\s+/', '', $name) ?? $name, 0, 3)),
                 'league' => 'England',
+                'country' => $tournament->country,
             ]
         );
     }

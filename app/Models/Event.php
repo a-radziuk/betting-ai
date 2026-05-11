@@ -12,6 +12,7 @@ class Event extends Model
         'id',
         'home_team_id',
         'away_team_id',
+        'tournament_id',
         'start_time',
         'status',
         'score',
@@ -73,5 +74,13 @@ class Event extends Model
     public function awayTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'away_team_id');
+    }
+
+    /**
+     * @return BelongsTo<Tournament, $this>
+     */
+    public function tournament(): BelongsTo
+    {
+        return $this->belongsTo(Tournament::class);
     }
 }
