@@ -12,12 +12,20 @@ class Tournament extends Model
         'rank',
         'country',
         'stoiximan_url',
+        'guardian_standings_url',
+        'guardian_results_url',
+        'standings',
+        'standings_updated_at',
+        'standings_promrel',
     ];
 
     protected function casts(): array
     {
         return [
             'rank' => 'integer',
+            'standings' => 'array',
+            'standings_updated_at' => 'datetime',
+            'standings_promrel' => 'array',
         ];
     }
 

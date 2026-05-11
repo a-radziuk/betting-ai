@@ -1,0 +1,244 @@
+{
+    "1": {
+        "1": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "2": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "3": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "4": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "5": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "6": {
+            "type": "promotion",
+            "name": "Europa League (League Phase)",
+            "subtype": "europa-league"
+        },
+        "7": {
+            "type": "promotion",
+            "name": "Conference League (Play Offs)",
+            "subtype": "conference-league"
+        },
+        "18": {
+            "type": "relegation",
+            "name": "Championship"
+        },
+        "19": {
+            "type": "relegation",
+            "name": "Championship"
+        },
+        "20": {
+            "type": "relegation",
+            "name": "Championship"
+        }
+    },
+    "2": {
+        "1": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "2": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "3": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "4": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "5": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "6": {
+            "type": "promotion",
+            "name": "Europa League (League Phase)",
+            "subtype": "europa-league"
+        },
+        "7": {
+            "type": "promotion",
+            "name": "Conference League (Play Offs)",
+            "subtype": "conference-league"
+        },
+        "8": {
+            "type": "promotion",
+            "name": "Europa League (League Phase)",
+            "subtype": "europa-league"
+        },
+        "18": {
+            "type": "relegation",
+            "name": "La Liga 2"
+        },
+        "19": {
+            "type": "relegation",
+            "name": "La Liga 2"
+        },
+        "20": {
+            "type": "relegation",
+            "name": "La Liga 2"
+        }
+    },
+    "3": {
+        "1": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "2": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "3": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "4": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "5": {
+            "type": "promotion",
+            "name": "Europa League (Qualification)",
+            "subtype": "europa-league"
+        },
+        "6": {
+            "type": "promotion",
+            "name": "Conference League (Qualification)",
+            "subtype": "conference-league"
+        },
+        "18": {
+            "type": "relegation",
+            "name": "Serie B"
+        },
+        "19": {
+            "type": "relegation",
+            "name": "Serie B"
+        },
+        "20": {
+            "type": "relegation",
+            "name": "Serie B"
+        }
+    },
+    "4": {
+        "1": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "2": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "3": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "4": {
+            "type": "promotion",
+            "name": "Champions League (Qualification)",
+            "subtype": "champions-league-qualification"
+        },
+        "5": {
+            "type": "promotion",
+            "name": "Europa League (League Phase)",
+            "subtype": "europa-league"
+        },
+        "6": {
+            "type": "promotion",
+            "name": "Conference League (Qualification)",
+            "subtype": "conference-league"
+        },
+        "16": {
+            "type": "relegation",
+            "name": "Ligue 2 (Playoff)",
+            "subtype": "relegation-playoff"
+        },
+        "17": {
+            "type": "relegation",
+            "name": "Ligue 2"
+        },
+        "18": {
+            "type": "relegation",
+            "name": "Ligue 2"
+        }
+    },
+    "5": {
+        "1": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "2": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "3": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "4": {
+            "type": "promotion",
+            "name": "Champions League (League Phase)",
+            "subtype": "champions-league"
+        },
+        "5": {
+            "type": "promotion",
+            "name": "Europa League (League Phase)",
+            "subtype": "europa-league"
+        },
+        "6": {
+            "type": "promotion",
+            "name": "Europa League (League Phase)",
+            "subtype": "europa-league"
+        },
+        "7": {
+            "type": "promotion",
+            "name": "Conference League (Qualification)",
+            "subtype": "conference-league"
+        },
+        "16": {
+            "type": "relegation",
+            "name": "Bundesliga 2 (Playoff)",
+            "subtype": "relegation-playoff"
+        },
+        "17": {
+            "type": "relegation",
+            "name": "Bundesliga 2"
+        },
+        "18": {
+            "type": "relegation",
+            "name": "Bundesliga 2"
+        }
+    }
+}

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
 use App\Models\Odd;
+use App\Models\Tournament;
 use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserSubscription;
@@ -27,8 +28,27 @@ Route::get('/', function () {
             ->get();
     }
 
-    return view('welcome', compact('events'));
+    /** @var Collection<int, Tournament> $topTournaments */
+    $topTournaments = collect();
+    if (Schema::hasTable('tournaments')) {
+        $topTournaments = Tournament::query()
+            ->where('rank', 1)
+            ->orderBy('name')
+            ->get();
+    }
+
+    return view('welcome', compact('events', 'topTournaments'));
 });
+
+Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
+    $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
+
+    return view('tournament-standings', [
+        'tournament' => $tournament,
+        'standingsRows' => is_array($tournament->standings) ? ($tournament->standings['rows'] ?? []) : [],
+        'standingsPromrel' => $standingsPromrel,
+    ]);
+})->name('tournaments.show');
 
 Route::get('/events/{event}', function (Event $event) {
     $event->load([

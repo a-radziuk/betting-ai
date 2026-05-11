@@ -476,4 +476,149 @@
         border-radius: 0.9rem;
         padding: 0.9rem 1rem;
     }
+
+    .tournament-leagues-line {
+        padding: 0.85rem 1rem;
+    }
+
+    .tournament-leagues-line-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 0.5rem;
+    }
+
+    .tournament-league-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .tournament-league-link:hover {
+        text-decoration: underline;
+    }
+
+    .tournament-league-sep {
+        color: var(--muted);
+        user-select: none;
+    }
+
+    .form-icons-cell {
+        white-space: nowrap;
+    }
+
+    .form-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.35rem;
+        height: 1.35rem;
+        margin-right: 0.2rem;
+        margin-bottom: 0.15rem;
+        padding: 0 0.2rem;
+        border-radius: 0.3rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        cursor: default;
+        line-height: 1;
+    }
+
+    .form-icon--w {
+        color: #0d2818;
+        background: rgba(76, 255, 157, 0.85);
+    }
+
+    .form-icon--l {
+        color: #fff5f5;
+        background: rgba(220, 53, 69, 0.75);
+    }
+
+    .form-icon--d {
+        color: #1a1408;
+        background: rgba(255, 214, 102, 0.9);
+    }
+
+    /* Standings promotion / relegation row bands (see Tournament.standings_promrel) */
+    tr.standings-row--promotion > td,
+    tr.standings-row--relegation > td {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+    }
+
+    tr.standings-row--promotion-cl > td {
+        background: linear-gradient(90deg, rgba(255, 214, 102, 0.22), rgba(93, 226, 255, 0.12));
+        border-color: rgba(255, 214, 102, 0.35);
+    }
+
+    tr.standings-row--promotion-el > td {
+        background: linear-gradient(90deg, rgba(255, 165, 92, 0.2), rgba(138, 123, 255, 0.1));
+        border-color: rgba(255, 165, 92, 0.35);
+    }
+
+    tr.standings-row--promotion-cel > td {
+        background: linear-gradient(90deg, rgba(76, 255, 157, 0.14), rgba(93, 226, 255, 0.08));
+        border-color: rgba(76, 255, 157, 0.28);
+    }
+
+    tr.standings-row--promotion-other > td {
+        background: rgba(138, 123, 255, 0.12);
+        border-color: rgba(138, 123, 255, 0.25);
+    }
+
+    tr.standings-row--relegation > td {
+        background: linear-gradient(90deg, rgba(255, 99, 99, 0.16), rgba(255, 99, 99, 0.06));
+        border-color: rgba(255, 99, 99, 0.28);
+    }
+
+    .standings-pos-cell {
+        vertical-align: middle;
+    }
+
+    .standings-pos-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.75rem;
+        height: 1.75rem;
+        padding: 0 0.35rem;
+        border-radius: 0.45rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        cursor: default;
+        box-sizing: border-box;
+        border: 2px solid transparent;
+    }
+
+    .standings-pos-badge--cl {
+        color: #1a1408;
+        background: rgba(255, 214, 102, 0.35);
+        border-color: rgba(255, 193, 7, 0.85);
+        box-shadow: 0 0 0 1px rgba(93, 226, 255, 0.2);
+    }
+
+    .standings-pos-badge--el {
+        color: #2a1810;
+        background: rgba(255, 165, 92, 0.35);
+        border-color: rgba(255, 140, 66, 0.9);
+    }
+
+    .standings-pos-badge--cel {
+        color: #0d2818;
+        background: rgba(76, 255, 157, 0.28);
+        border-color: rgba(76, 255, 157, 0.75);
+    }
+
+    .standings-pos-badge--promo-other {
+        color: #eaf0ff;
+        background: rgba(138, 123, 255, 0.35);
+        border-color: rgba(167, 139, 250, 0.85);
+    }
+
+    .standings-pos-badge--rel {
+        color: #fff5f5;
+        background: rgba(220, 53, 69, 0.45);
+        border-color: rgba(255, 99, 99, 0.95);
+    }
 </style>
