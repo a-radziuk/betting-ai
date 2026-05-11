@@ -56,6 +56,7 @@ class BbcScrapeResultsCommand extends Command
         $this->components->info(sprintf('Found %d finished result(s) on BBC.', count($results)));
 
         $settled = 0;
+
         foreach ($results as $row) {
             $homeTeam = Team::query()
                 ->where('tournament_id', self::TOURNAMENT_ID)

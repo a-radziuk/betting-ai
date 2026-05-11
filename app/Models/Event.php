@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
@@ -28,9 +28,11 @@ class Event extends Model
     protected $keyType = 'int';
 
     public const STATUS_SCHEDULED = 'scheduled';
+
     public const STATUS_LIVE = 'live';
 
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_FINISHED = 'finished';
 
     /**
@@ -39,6 +41,14 @@ class Event extends Model
     public function markets(): HasMany
     {
         return $this->hasMany(Market::class);
+    }
+
+    /**
+     * @return HasMany<EventPrediction, $this>
+     */
+    public function eventPredictions(): HasMany
+    {
+        return $this->hasMany(EventPrediction::class);
     }
 
     /**

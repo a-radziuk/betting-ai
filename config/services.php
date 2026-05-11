@@ -53,4 +53,8 @@ return [
         'redirect' => env('GITHUB_REDIRECT_URI'),
     ],
 
+    'predictions' => [
+        'odds_url' => env('PREDICTIONS_ODDS_API_URL', 'http://127.0.0.1:7999/api/odds'),
+    ],
+
 ];

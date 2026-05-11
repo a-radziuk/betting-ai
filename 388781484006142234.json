@@ -1,0 +1,695 @@
+{
+    "eventId": "388781484006142234",
+    "eventName": "Tottenham Hotspur vs Leeds United",
+    "eventTournament": "Premier League",
+    "eventDateTime": "2026-05-11T19:00:00+00:00",
+    "odds": [
+        {
+            "id": 1150211812664883713,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 3.5",
+            "odds": 11.5
+        },
+        {
+            "id": 949872170821528092,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 2.5",
+            "odds": 6.5
+        },
+        {
+            "id": 1097924518747749168,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 1.5",
+            "odds": 1.39
+        },
+        {
+            "id": 1094170424980749375,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 1.5",
+            "odds": 2.87
+        },
+        {
+            "id": 867861466176381309,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 3.5",
+            "odds": 1.02
+        },
+        {
+            "id": 87109724945167470,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 0.5",
+            "odds": 1.42
+        },
+        {
+            "id": 1063264755164991305,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 2.5",
+            "odds": 1.09
+        },
+        {
+            "id": 1022642705545092294,
+            "type": "AWAY_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 0.5",
+            "odds": 2.72
+        },
+        {
+            "id": 327957301396166635,
+            "type": "OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 2.5",
+            "odds": 1.78
+        },
+        {
+            "id": 752471841670616115,
+            "type": "OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 2.5",
+            "odds": 2.05
+        },
+        {
+            "id": 597343082740665670,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 0.5",
+            "odds": 4.5
+        },
+        {
+            "id": 549900237724702056,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 0.5",
+            "odds": 1.18
+        },
+        {
+            "id": 850771705967350039,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 4.5",
+            "odds": 11
+        },
+        {
+            "id": 344650884778973341,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 3.5",
+            "odds": 6.7
+        },
+        {
+            "id": 735471419893803319,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 1.5",
+            "odds": 1.93
+        },
+        {
+            "id": 327115335634623823,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 2.5",
+            "odds": 1.29
+        },
+        {
+            "id": 356730721985450559,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 1.5",
+            "odds": 1.82
+        },
+        {
+            "id": 466233207332377614,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 3.5",
+            "odds": 1.09
+        },
+        {
+            "id": 1089905137615335735,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 4.5",
+            "odds": 1.02
+        },
+        {
+            "id": 80728533541911441,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 5.5",
+            "odds": 15
+        },
+        {
+            "id": 1143170457416414859,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "UNDER 5.5",
+            "odds": 1.005
+        },
+        {
+            "id": 607818898604972790,
+            "type": "HOME_OVER_UNDER_TOTAL_GOALS",
+            "period": "FT",
+            "selection": "OVER 2.5",
+            "odds": 3.4
+        },
+        {
+            "id": 16700581978200388,
+            "type": "DOUBLE_CHANCE",
+            "period": "FT",
+            "selection": "X2",
+            "odds": 1.95
+        },
+        {
+            "id": 601844423970792775,
+            "type": "DOUBLE_CHANCE",
+            "period": "FT",
+            "selection": "12",
+            "odds": 1.26
+        },
+        {
+            "id": 79501853216237360,
+            "type": "DOUBLE_CHANCE",
+            "period": "FT",
+            "selection": "1X",
+            "odds": 1.28
+        },
+        {
+            "id": 621333998569470518,
+            "type": "MATCH_RESULT",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 1.88
+        },
+        {
+            "id": 88132839286114037,
+            "type": "MATCH_RESULT",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 3.9
+        },
+        {
+            "id": 231752576259348912,
+            "type": "MATCH_RESULT",
+            "period": "FT",
+            "selection": "DRAW",
+            "odds": 3.8
+        },
+        {
+            "id": 998537349643939678,
+            "type": "DRAW_NO_BET",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 2.8
+        },
+        {
+            "id": 77619148964919358,
+            "type": "DRAW_NO_BET",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 1.4
+        },
+        {
+            "id": 728996719734004723,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 20,
+            "handicap_home_team": 2
+        },
+        {
+            "id": 828907739061433238,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 3.25,
+            "handicap_home_team": -1
+        },
+        {
+            "id": 140434576756323750,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 8.75,
+            "handicap_home_team": 1
+        },
+        {
+            "id": 4767204026723249,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "DRAW",
+            "odds": 5.3,
+            "handicap_home_team": -2
+        },
+        {
+            "id": 472572519654474086,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 1.12,
+            "handicap_home_team": -3
+        },
+        {
+            "id": 144241977102897808,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 14.5,
+            "handicap_home_team": -3
+        },
+        {
+            "id": 855362972657071697,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 1.95,
+            "handicap_home_team": -1
+        },
+        {
+            "id": 434709621471145182,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "DRAW",
+            "odds": 8.75,
+            "handicap_home_team": -3
+        },
+        {
+            "id": 357045230823910889,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "AWAY",
+            "odds": 1.34,
+            "handicap_home_team": -2
+        },
+        {
+            "id": 871061664626866764,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "DRAW",
+            "odds": 9.5,
+            "handicap_home_team": 2
+        },
+        {
+            "id": 1024584615618378764,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 1.28,
+            "handicap_home_team": 1
+        },
+        {
+            "id": 447842242671059091,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "DRAW",
+            "odds": 5.5,
+            "handicap_home_team": 1
+        },
+        {
+            "id": 86646336667022210,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 1.08,
+            "handicap_home_team": 2
+        },
+        {
+            "id": 506531315562297910,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "HOME",
+            "odds": 6.7,
+            "handicap_home_team": -2
+        },
+        {
+            "id": 121507161238499373,
+            "type": "HANDICAP",
+            "period": "FT",
+            "selection": "DRAW",
+            "odds": 3.8,
+            "handicap_home_team": -1
+        },
+        {
+            "id": 639128754284755771,
+            "type": "BTTS",
+            "period": "FT",
+            "selection": "NO",
+            "odds": 2.07
+        },
+        {
+            "id": 294158636837738632,
+            "type": "BTTS",
+            "period": "FT",
+            "selection": "YES",
+            "odds": 1.7
+        },
+        {
+            "id": 584073427538265987,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "OVER 3.5",
+            "odds": 2.87
+        },
+        {
+            "id": 21711261779572937,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "OVER 4.5",
+            "odds": 5.2
+        },
+        {
+            "id": 935376088022934027,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "UNDER 3.5",
+            "odds": 1.42
+        },
+        {
+            "id": 109695243921241443,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "UNDER 6.5",
+            "odds": 1.02
+        },
+        {
+            "id": 58809516282876520,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "OVER 5.5",
+            "odds": 9.25
+        },
+        {
+            "id": 804208960192995283,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "UNDER 1.5",
+            "odds": 3.9
+        },
+        {
+            "id": 998583801100957653,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "UNDER 4.5",
+            "odds": 1.17
+        },
+        {
+            "id": 383163232477298866,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "UNDER 5.5",
+            "odds": 1.06
+        },
+        {
+            "id": 846580945214973146,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "UNDER 0.5",
+            "odds": 10
+        },
+        {
+            "id": 178175387007878142,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "OVER 6.5",
+            "odds": 14.5
+        },
+        {
+            "id": 115075432987129174,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "OVER 1.5",
+            "odds": 1.26
+        },
+        {
+            "id": 6732421374870327,
+            "type": "OVER_UNDER_TOTAL_GOALS_EXTRA",
+            "period": "FT",
+            "selection": "OVER 0.5",
+            "odds": 1.05
+        },
+        {
+            "id": 564714603912900362,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "1 - 1",
+            "odds": 7.6
+        },
+        {
+            "id": 700011674828860249,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "3 - 5",
+            "odds": 900
+        },
+        {
+            "id": 981436225032395932,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "1 - 5",
+            "odds": 500
+        },
+        {
+            "id": 278312319730976075,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "5 - 0",
+            "odds": 100
+        },
+        {
+            "id": 48806405280578302,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "7 - 1",
+            "odds": 1250
+        },
+        {
+            "id": 1136012173877049041,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "1 - 2",
+            "odds": 13.5
+        },
+        {
+            "id": 4210884724376306,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "3 - 2",
+            "odds": 25
+        },
+        {
+            "id": 82468821623469278,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "4 - 0",
+            "odds": 37
+        },
+        {
+            "id": 966156212846240453,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "5 - 3",
+            "odds": 400
+        },
+        {
+            "id": 72256605119283019,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "4 - 2",
+            "odds": 55
+        },
+        {
+            "id": 494658527383874878,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "1 - 0",
+            "odds": 7.8
+        },
+        {
+            "id": 1116100499632392829,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "0 - 4",
+            "odds": 200
+        },
+        {
+            "id": 173212614126075730,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "6 - 1",
+            "odds": 300
+        },
+        {
+            "id": 675332041575015231,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "1 - 3",
+            "odds": 35
+        },
+        {
+            "id": 983072468751282283,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "6 - 0",
+            "odds": 350
+        },
+        {
+            "id": 371547042318934365,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "0 - 1",
+            "odds": 11.75
+        },
+        {
+            "id": 1121369721226472667,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "2 - 5",
+            "odds": 600
+        },
+        {
+            "id": 621338883791590560,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "1 - 4",
+            "odds": 120
+        },
+        {
+            "id": 279393539136770123,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "4 - 4",
+            "odds": 450
+        },
+        {
+            "id": 575997675189567472,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "2 - 4",
+            "odds": 120
+        },
+        {
+            "id": 822128448043019445,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "0 - 3",
+            "odds": 60
+        },
+        {
+            "id": 300679102859201196,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "2 - 1",
+            "odds": 8.75
+        },
+        {
+            "id": 1089251283456330523,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "4 - 1",
+            "odds": 32
+        },
+        {
+            "id": 86447087745322726,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "5 - 2",
+            "odds": 150
+        },
+        {
+            "id": 244244965324065836,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "0 - 0",
+            "odds": 10
+        },
+        {
+            "id": 854632447888631626,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "4 - 3",
+            "odds": 150
+        },
+        {
+            "id": 958714946077035462,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "2 - 2",
+            "odds": 15
+        },
+        {
+            "id": 595155637832214505,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "6 - 2",
+            "odds": 500
+        },
+        {
+            "id": 190461961445736679,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "2 - 0",
+            "odds": 10
+        },
+        {
+            "id": 627492245138095288,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "3 - 4",
+            "odds": 200
+        },
+        {
+            "id": 593765359247016485,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "3 - 0",
+            "odds": 17
+        },
+        {
+            "id": 687008170228371028,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "0 - 5",
+            "odds": 800
+        },
+        {
+            "id": 342899244543488865,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "2 - 3",
+            "odds": 40
+        },
+        {
+            "id": 785099826409253728,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "0 - 2",
+            "odds": 23
+        },
+        {
+            "id": 1123964905373352436,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "5 - 1",
+            "odds": 90
+        },
+        {
+            "id": 864107398780359304,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "3 - 1",
+            "odds": 15
+        },
+        {
+            "id": 396809312826176060,
+            "type": "CORRECT_SCORE",
+            "period": "FT",
+            "selection": "3 - 3",
+            "odds": 65
+        }
+    ]
+}

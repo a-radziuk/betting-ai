@@ -79,6 +79,7 @@ class EventExportCommandTest extends TestCase
         $decoded = json_decode($output, true);
         $this->assertIsArray($decoded);
 
+        $this->assertSame('99001', $decoded['eventId']);
         $this->assertSame('H vs A', $decoded['eventName']);
         $this->assertSame('Premier League', $decoded['eventTournament']);
         $this->assertSame($startTime->toIso8601String(), $decoded['eventDateTime']);

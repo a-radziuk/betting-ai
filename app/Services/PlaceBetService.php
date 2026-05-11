@@ -14,7 +14,7 @@ class PlaceBetService
     /**
      * @return array{ok: bool, message: string}
      */
-    public function placeBet(int|string $userId, int|string $oddId, string|float $stakeRaw): array
+    public function placeBet(int|string $userId, int|string $oddId, string|float $stakeRaw, ?string $predictionType = null): array
     {
         if (! is_numeric($stakeRaw) || (float) $stakeRaw <= 0) {
             return ['ok' => false, 'message' => 'Sum must be a positive number.'];
@@ -40,7 +40,7 @@ class PlaceBetService
             return ['ok' => false, 'message' => 'Event for this odd does not exist.'];
         }
 
-        return DB::transaction(function () use ($userId, $odd, $oddId, $eventId, $stake): array {
+        return DB::transaction(function () use ($userId, $odd, $oddId, $eventId, $stake, $predictionType): array {
             $wallet = UserWallet::query()->where('user_id', $userId)->lockForUpdate()->first();
             if ($wallet === null) {
                 return ['ok' => false, 'message' => 'User has no wallet.'];
@@ -70,7 +70,7 @@ class PlaceBetService
             $potentialReturn = bcmul($stake, $oddsAtBet, 4);
             $potentialReturn = number_format((float) $potentialReturn, 2, '.', '');
 
-            $bet = UserBet::query()->create([
+            $betAttributes = [
                 'user_id' => $userId,
                 'event_id' => $eventId,
                 'odd_id' => $oddId,
@@ -78,7 +78,12 @@ class PlaceBetService
                 'odds_at_bet' => $oddsAtBet,
                 'potential_return' => $potentialReturn,
                 'status' => UserBet::STATUS_PENDING,
-            ]);
+            ];
+            if ($predictionType !== null) {
+                $betAttributes['prediction_type'] = $predictionType;
+            }
+
+            $bet = UserBet::query()->create($betAttributes);
 
             return [
                 'ok' => true,

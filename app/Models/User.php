@@ -46,6 +46,14 @@ class User extends Authenticatable
     }
 
     /**
+     * @return HasMany<UserPredictionSubscription, $this>
+     */
+    public function predictionSubscriptions(): HasMany
+    {
+        return $this->hasMany(UserPredictionSubscription::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
