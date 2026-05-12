@@ -3,10 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\Event;
+use App\Models\EventResult;
 use App\Models\Team;
 use App\Models\Tournament;
 use App\Services\EventResultService;
 use App\Services\GuardianResultsParser;
+use Carbon\CarbonInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Throwable;
@@ -71,6 +73,7 @@ class GuardianResultsCommand extends Command
         $this->components->info(sprintf('Parsed %d full-time result(s).', count($rows)));
 
         $settled = 0;
+        $recordedResults = 0;
 
         foreach ($rows as $row) {
             $homeTeam = $this->resolveTeam($tournament, $row['homeName']);
@@ -88,12 +91,35 @@ class GuardianResultsCommand extends Command
             }
 
             $scoreString = $row['homeGoals'].':'.$row['awayGoals'];
+            /** @var CarbonInterface $matchDate */
+            $matchDate = $row['matchDate'];
 
             $event = Event::query()
                 ->where('tournament_id', $tournament->id)
                 ->where('home_team_id', $homeTeam->id)
                 ->where('away_team_id', $awayTeam->id)
                 ->first();
+
+            $hasEventResult = EventResult::query()
+                ->where('home_team_id', $homeTeam->id)
+                ->where('away_team_id', $awayTeam->id)
+                ->whereDate('date', $matchDate)
+                ->exists();
+
+            if (! $hasEventResult) {
+                EventResult::query()->create([
+                    'home_team_id' => $homeTeam->id,
+                    'away_team_id' => $awayTeam->id,
+                    'results' => $scoreString,
+                    'additional_data' => [
+                        'guardian_section_date_heading' => $row['sectionDateHeading'],
+                    ],
+                    'date' => $matchDate,
+                    'tournament_id' => $tournament->id,
+                    'event_id' => $event?->id,
+                ]);
+                $recordedResults++;
+            }
 
             if ($event === null) {
                 $this->components->twoColumnDetail(
@@ -105,7 +131,7 @@ class GuardianResultsCommand extends Command
             }
 
             if (filled($event->score) || $event->status === Event::STATUS_FINISHED) {
-                $this->components->warn("Event {$event->id} is already settled (score present or finished). Skipping.");
+                $this->components->warn("Event {$event->id} is already settled (score present or finished). Skipping settlement.");
 
                 continue;
             }
@@ -126,21 +152,23 @@ class GuardianResultsCommand extends Command
         }
 
         $this->newLine();
-        $this->components->info("Done. Settled {$settled} event(s).");
+        $this->components->info("Done. Recorded {$recordedResults} new EventResult row(s). Settled {$settled} event(s).");
 
         return self::SUCCESS;
     }
 
     /**
-     * @param  list<array{homeName: string, awayName: string, homeGoals: int, awayGoals: int}>  $rows
-     * @return list<array{homeName: string, awayName: string, homeGoals: int, awayGoals: int}>
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
      */
     private function dedupeRows(array $rows): array
     {
         $seen = [];
         $out = [];
         foreach ($rows as $row) {
-            $key = $row['homeName'].'|'.$row['awayName'].'|'.$row['homeGoals'].'|'.$row['awayGoals'];
+            /** @var CarbonInterface $md */
+            $md = $row['matchDate'];
+            $key = $row['homeName'].'|'.$row['awayName'].'|'.$row['homeGoals'].'|'.$row['awayGoals'].'|'.$md->format('Y-m-d');
             if (isset($seen[$key])) {
                 continue;
             }

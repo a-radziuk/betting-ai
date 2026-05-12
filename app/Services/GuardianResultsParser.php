@@ -2,19 +2,30 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
 use RuntimeException;
+use Throwable;
 
 /**
  * Parses The Guardian football results pages (e.g. Premier League /results).
  * Relies on current DOM class hooks (dcr-*) used for full-time rows.
+ * Match date is taken from the enclosing section's first h2 heading.
  */
 final class GuardianResultsParser
 {
     /**
-     * @return list<array{homeName: string, awayName: string, homeGoals: int, awayGoals: int}>
+     * @return list<array{
+     *     homeName: string,
+     *     awayName: string,
+     *     homeGoals: int,
+     *     awayGoals: int,
+     *     matchDate: CarbonInterface,
+     *     sectionDateHeading: string
+     * }>
      */
     public function parseHtml(string $html): array
     {
@@ -30,16 +41,45 @@ final class GuardianResultsParser
 
         $xpath = new DOMXPath($dom);
 
-        $anchors = $xpath->query('//a[.//span[normalize-space()="FT"]]');
+        $sections = $xpath->query('//section[.//span[normalize-space()="FT"]]');
         $out = [];
 
-        foreach ($anchors as $a) {
-            if (! $a instanceof DOMElement) {
+        foreach ($sections as $section) {
+            if (! $section instanceof DOMElement) {
                 continue;
             }
 
-            $parsed = $this->parseMatchAnchor($xpath, $a);
-            if ($parsed !== null) {
+            $h2 = $xpath->query('./h2[1]', $section)->item(0)
+                ?? $xpath->query('.//h2[1]', $section)->item(0);
+            if ($h2 === null) {
+                continue;
+            }
+
+            $sectionDateHeading = trim(preg_replace('/\s+/u', ' ', $h2->textContent) ?? '');
+            if ($sectionDateHeading === '') {
+                continue;
+            }
+
+            try {
+                /** @var CarbonInterface $matchDate */
+                $matchDate = Carbon::parse($sectionDateHeading)->startOfDay();
+            } catch (Throwable $e) {
+                continue;
+            }
+
+            $anchors = $xpath->query('.//a[.//span[normalize-space()="FT"]]', $section);
+            foreach ($anchors as $a) {
+                if (! $a instanceof DOMElement) {
+                    continue;
+                }
+
+                $parsed = $this->parseMatchAnchor($xpath, $a);
+                if ($parsed === null) {
+                    continue;
+                }
+
+                $parsed['matchDate'] = $matchDate;
+                $parsed['sectionDateHeading'] = $sectionDateHeading;
                 $out[] = $parsed;
             }
         }
@@ -48,7 +88,12 @@ final class GuardianResultsParser
     }
 
     /**
-     * @return array{homeName: string, awayName: string, homeGoals: int, awayGoals: int}|null
+     * @return array{
+     *     homeName: string,
+     *     awayName: string,
+     *     homeGoals: int,
+     *     awayGoals: int
+     * }|null
      */
     private function parseMatchAnchor(DOMXPath $xpath, DOMElement $anchor): ?array
     {
