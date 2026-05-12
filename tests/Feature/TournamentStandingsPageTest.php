@@ -2,7 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Event;
+use App\Models\Market;
+use App\Models\Odd;
+use App\Models\Selection;
+use App\Models\Team;
 use App\Models\Tournament;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -129,5 +135,111 @@ class TournamentStandingsPageTest extends TestCase
         $this->assertStringContainsString('standings-pos-badge standings-pos-badge--rel', $html);
         $this->assertStringContainsString('title="Champions League (League Phase)"', $html);
         $this->assertStringContainsString('title="Championship"', $html);
+    }
+
+    public function test_tournament_page_shows_upcoming_events_before_standings(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-04-01 12:00:00', $tz));
+        try {
+            $tournament = Tournament::query()->create([
+                'name' => 'Fixture League',
+                'rank' => 1,
+                'standings' => [
+                    'rows' => [
+                        [
+                            'position' => 1,
+                            'team' => 'Standings Row Club',
+                            'played' => 1,
+                            'won' => 1,
+                            'drawn' => 0,
+                            'lost' => 0,
+                            'goals_for' => 1,
+                            'goals_against' => 0,
+                            'goal_difference' => 1,
+                            'points' => 3,
+                            'form' => null,
+                        ],
+                    ],
+                ],
+            ]);
+
+            $home = Team::query()->create([
+                'name' => 'Upcoming Home FC',
+                'short_name' => 'UHF',
+                'league' => 'FL',
+                'country' => 'Testland',
+                'tournament_id' => $tournament->id,
+            ]);
+            $away = Team::query()->create([
+                'name' => 'Upcoming Away FC',
+                'short_name' => 'UAF',
+                'league' => 'FL',
+                'country' => 'Testland',
+                'tournament_id' => $tournament->id,
+            ]);
+
+            $event = Event::query()->create([
+                'id' => 990001,
+                'home_team_id' => $home->id,
+                'away_team_id' => $away->id,
+                'tournament_id' => $tournament->id,
+                'start_time' => Carbon::parse('2026-04-05 16:30:00', $tz),
+                'status' => Event::STATUS_SCHEDULED,
+            ]);
+
+            $market = Market::query()->create([
+                'id' => 990010,
+                'event_id' => $event->id,
+                'type' => Market::TYPE_MATCH_RESULT,
+                'period' => Market::PERIOD_FULL_TIME,
+                'line' => null,
+                'status' => Market::STATUS_OPEN,
+                'is_supported_market' => true,
+            ]);
+
+            $selectionId = 990020;
+            $oddId = 990030;
+            foreach ([
+                Selection::NAME_HOME => 1.85,
+                Selection::NAME_DRAW => 3.10,
+                Selection::NAME_AWAY => 4.20,
+            ] as $name => $price) {
+                $selection = Selection::query()->create([
+                    'id' => $selectionId,
+                    'market_id' => $market->id,
+                    'name' => $name,
+                    'participant_id' => null,
+                    'handicap' => null,
+                    'created_at' => now(),
+                ]);
+                Odd::query()->create([
+                    'id' => $oddId,
+                    'selection_id' => $selection->id,
+                    'odds' => $price,
+                    'probability' => null,
+                    'is_active' => true,
+                    'created_at' => now(),
+                ]);
+                $selectionId++;
+                $oddId++;
+            }
+
+            $html = $this->get(route('tournaments.show', $tournament))
+                ->assertOk()
+                ->assertSee('Upcoming Home FC', false)
+                ->assertSee('Upcoming Away FC', false)
+                ->assertSee('1.85', false)
+                ->assertSee('Standings Row Club', false)
+                ->getContent();
+
+            $posUpcoming = strpos($html, 'Upcoming Home FC');
+            $posStandings = strpos($html, 'Standings Row Club');
+            $this->assertNotFalse($posUpcoming);
+            $this->assertNotFalse($posStandings);
+            $this->assertLessThan($posStandings, $posUpcoming);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }

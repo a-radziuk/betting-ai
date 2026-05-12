@@ -305,6 +305,10 @@
         padding-top: 0.85rem;
     }
 
+    .tournament-page-upcoming {
+        margin-bottom: 1.25rem;
+    }
+
     .status {
         display: inline-block;
         font-size: 0.74rem;

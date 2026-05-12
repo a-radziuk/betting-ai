@@ -74,10 +74,32 @@ Route::get('/', function () {
 Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
     $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
 
+    /** @var Collection<int, Event> $upcomingEvents */
+    $upcomingEvents = collect();
+    if (Schema::hasTable('events') && Schema::hasColumn('events', 'tournament_id')) {
+        $upcomingEvents = Event::query()
+            ->with(['homeTeam', 'awayTeam', 'tournament'])
+            ->with([
+                'markets' => function ($query) {
+                    $query->where('type', Market::TYPE_MATCH_RESULT)
+                        ->where('is_supported_market', true)
+                        ->with([
+                            'selections.odds' => fn ($oddsQuery) => $oddsQuery->orderByDesc('created_at'),
+                        ]);
+                },
+            ])
+            ->where('tournament_id', $tournament->id)
+            ->where('start_time', '>=', now())
+            ->orderBy('start_time')
+            ->limit(20)
+            ->get();
+    }
+
     return view('tournament-standings', [
         'tournament' => $tournament,
         'standingsRows' => is_array($tournament->standings) ? ($tournament->standings['rows'] ?? []) : [],
         'standingsPromrel' => $standingsPromrel,
+        'upcomingEvents' => $upcomingEvents,
     ]);
 })->name('tournaments.show');
 

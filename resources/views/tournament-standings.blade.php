@@ -20,18 +20,22 @@
 <main class="container">
     <section class="hero">
         <h1>{{ $tournament->name }}</h1>
-        <p class="meta">League standings</p>
-        @if ($tournament->standings_updated_at)
-            <p class="meta" style="margin-top: 0.5rem;">
-                Updated {{ $tournament->standings_updated_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
-            </p>
-        @endif
+    </section>
+
+    <section class="card tournament-page-upcoming" aria-label="Upcoming fixtures">
+        @include('partials.upcoming-events-table', ['events' => $upcomingEvents])
     </section>
 
     <section class="card">
         @if (count($standingsRows) === 0)
             <div class="empty">No standings data yet. Run <code class="tabular-nums">php artisan guardian:standings {{ $tournament->id }}</code> after setting <code>guardian_standings_url</code> on this tournament.</div>
         @else
+            <p class="meta">League standings</p>
+            @if ($tournament->standings_updated_at)
+                <p class="meta" style="margin-top: 0.5rem;">
+                    Updated {{ $tournament->standings_updated_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
+                </p>
+            @endif
             <div class="overflow-x-auto">
                 <table>
                     <thead>
