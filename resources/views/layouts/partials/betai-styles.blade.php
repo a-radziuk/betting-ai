@@ -202,6 +202,109 @@
         color: #eaf0ff;
     }
 
+    .welcome-events-section table.welcome-events-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .welcome-events-section table.welcome-events-table .welcome-time-col {
+        width: 5rem;
+        min-width: 5rem;
+        max-width: 5rem;
+        box-sizing: border-box;
+        text-align: center;
+        vertical-align: middle;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .welcome-events-section table.welcome-events-table .welcome-tournament-col {
+        width: 11rem;
+        min-width: 11rem;
+        max-width: 11rem;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .welcome-events-section table.welcome-events-table .welcome-match-col {
+        min-width: 0;
+    }
+
+    .welcome-events-section table.welcome-events-table .welcome-1x2-col {
+        width: 4.75rem;
+        min-width: 4.75rem;
+        max-width: 4.75rem;
+        box-sizing: border-box;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .welcome-match-meta {
+        display: none;
+    }
+
+    @media (max-width: 639px) {
+        .welcome-events-section table.welcome-events-table .welcome-time-col,
+        .welcome-events-section table.welcome-events-table .welcome-tournament-col {
+            display: none;
+        }
+
+        .welcome-match-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.15rem 0.35rem;
+            margin-top: 0.35rem;
+            font-size: 0.78rem;
+            line-height: 1.35;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .welcome-match-meta-time {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .welcome-match-meta-sep {
+            opacity: 0.65;
+        }
+
+        .welcome-events-section table.welcome-events-table .welcome-1x2-col {
+            width: 3.55rem;
+            min-width: 3.55rem;
+            max-width: 3.55rem;
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.02em;
+        }
+
+        .welcome-events-section table.welcome-events-table .welcome-odds {
+            font-size: 0.92rem;
+        }
+    }
+
+    .welcome-events-section + .welcome-events-section {
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(130, 162, 255, 0.15);
+    }
+
+    .welcome-events-section-title {
+        margin: 0;
+        padding: 1rem 1rem 0.65rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #eaf0ff;
+        letter-spacing: 0.02em;
+    }
+
+    .welcome-events-section:first-of-type .welcome-events-section-title {
+        padding-top: 0.85rem;
+    }
+
     .status {
         display: inline-block;
         font-size: 0.74rem;
