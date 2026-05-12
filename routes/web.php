@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
+use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Tournament;
 use App\Models\User;
@@ -21,7 +22,16 @@ Route::get('/', function () {
 
     if (Schema::hasTable('events')) {
         $events = Event::query()
-            ->with(['homeTeam', 'awayTeam'])
+            ->with(['homeTeam', 'awayTeam', 'tournament'])
+            ->with([
+                'markets' => function ($query) {
+                    $query->where('type', Market::TYPE_MATCH_RESULT)
+                        ->where('is_supported_market', true)
+                        ->with([
+                            'selections.odds' => fn ($oddsQuery) => $oddsQuery->orderByDesc('created_at'),
+                        ]);
+                },
+            ])
             ->where('start_time', '>=', now())
             ->orderBy('start_time')
             ->limit(20)

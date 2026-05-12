@@ -40,23 +40,37 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Date & Time</th>
+                            <th>Kick-off</th>
+                            <th>Tournament</th>
                             <th>Match</th>
-                            <th>Status</th>
+                            <th>Home</th>
+                            <th>Draw</th>
+                            <th>Away</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($events as $event)
+                            @php
+                                $matchResult = $event->markets->firstWhere('period', \App\Models\Market::PERIOD_FULL_TIME)
+                                    ?? $event->markets->first();
+                                $bySelection = $matchResult ? $matchResult->selections->keyBy('name') : collect();
+                                $oddStr = function (?string $name) use ($bySelection) {
+                                    $odd = $bySelection->get($name)?->odds->first();
+
+                                    return $odd !== null ? number_format((float) $odd->odds, 2) : '—';
+                                };
+                            @endphp
                             <tr data-clickable onclick="window.location='{{ route('events.show', $event) }}'">
-                                <td>{{ $event->start_time->format('Y-m-d H:i') }}</td>
+                                <td>{{ $event->start_time->timezone(config('app.timezone'))->translatedFormat('l, j F Y, H:i') }}</td>
+                                <td>{{ $event->tournament?->name ?? '—' }}</td>
                                 <td>
                                     {{ $event->homeTeam?->name ?? ('Team #' . $event->home_team_id) }}
                                     vs
                                     {{ $event->awayTeam?->name ?? ('Team #' . $event->away_team_id) }}
                                 </td>
-                                <td>
-                                    <span class="status">{{ strtoupper($event->status ?? 'unknown') }}</span>
-                                </td>
+                                <td class="welcome-odds">{{ $oddStr(\App\Models\Selection::NAME_HOME) }}</td>
+                                <td class="welcome-odds">{{ $oddStr(\App\Models\Selection::NAME_DRAW) }}</td>
+                                <td class="welcome-odds">{{ $oddStr(\App\Models\Selection::NAME_AWAY) }}</td>
                             </tr>
                         @endforeach
                     </tbody>

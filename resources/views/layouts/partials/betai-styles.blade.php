@@ -196,6 +196,12 @@
         cursor: pointer;
     }
 
+    .welcome-odds {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: #eaf0ff;
+    }
+
     .status {
         display: inline-block;
         font-size: 0.74rem;
