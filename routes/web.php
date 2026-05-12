@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
+use App\Models\EventResult;
 use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Tournament;
@@ -71,6 +72,21 @@ Route::get('/', function () {
     return view('welcome', compact('events', 'topTournaments', 'topBettors'));
 });
 
+Route::get('/tournaments/{tournament}/results', function (Tournament $tournament) {
+    /** @var Collection<int, EventResult> $allEventResults */
+    $allEventResults = collect();
+    if (Schema::hasTable('event_results')) {
+        $allEventResults = EventResult::query()
+            ->where('tournament_id', $tournament->id)
+            ->with(['homeTeam', 'awayTeam'])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    return view('tournament-results', compact('tournament', 'allEventResults'));
+})->name('tournaments.results');
+
 Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
     $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
 
@@ -95,11 +111,29 @@ Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
             ->get();
     }
 
+    /** @var Collection<int, EventResult> $recentEventResults */
+    $recentEventResults = collect();
+    $eventResultsTotal = 0;
+    if (Schema::hasTable('event_results')) {
+        $recentEventResults = EventResult::query()
+            ->where('tournament_id', $tournament->id)
+            ->with(['homeTeam', 'awayTeam'])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get();
+        $eventResultsTotal = EventResult::query()
+            ->where('tournament_id', $tournament->id)
+            ->count();
+    }
+
     return view('tournament-standings', [
         'tournament' => $tournament,
         'standingsRows' => is_array($tournament->standings) ? ($tournament->standings['rows'] ?? []) : [],
         'standingsPromrel' => $standingsPromrel,
         'upcomingEvents' => $upcomingEvents,
+        'recentEventResults' => $recentEventResults,
+        'eventResultsTotal' => $eventResultsTotal,
     ]);
 })->name('tournaments.show');
 

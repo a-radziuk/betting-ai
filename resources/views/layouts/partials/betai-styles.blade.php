@@ -309,6 +309,61 @@
         margin-bottom: 1.25rem;
     }
 
+    .tournament-page-recent-results {
+        margin-bottom: 1.25rem;
+    }
+
+    .tournament-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 0.85rem 1rem 0.5rem;
+        border-bottom: 1px solid rgba(130, 162, 255, 0.12);
+    }
+
+    .tournament-section-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #eaf0ff;
+        letter-spacing: 0.02em;
+    }
+
+    .tournament-see-all-link {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .tournament-see-all-link:hover {
+        text-decoration: underline;
+    }
+
+    .tournament-page-all-results {
+        margin-bottom: 1.25rem;
+    }
+
+    .welcome-events-section .tournament-results-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .welcome-events-section .tournament-results-table .welcome-result-score-col {
+        width: 6rem;
+        min-width: 6rem;
+        max-width: 6rem;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .welcome-events-section .tournament-results-table .welcome-match-col {
+        min-width: 0;
+    }
+
     .status {
         display: inline-block;
         font-size: 0.74rem;

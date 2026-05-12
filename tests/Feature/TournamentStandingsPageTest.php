@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Event;
+use App\Models\EventResult;
 use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Selection;
@@ -241,5 +242,66 @@ class TournamentStandingsPageTest extends TestCase
         } finally {
             Carbon::setTestNow();
         }
+    }
+
+    public function test_tournament_page_shows_latest_five_event_results_and_see_all_link(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'Results League',
+            'rank' => 1,
+            'standings' => null,
+        ]);
+
+        $home = Team::query()->create([
+            'name' => 'ResHome',
+            'short_name' => 'RH',
+            'league' => 'RL',
+            'country' => 'T',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'ResAway',
+            'short_name' => 'RA',
+            'league' => 'RL',
+            'country' => 'T',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        $markers = ['OLDONLY', 'R2', 'R3', 'R4', 'R5', 'NEWEST'];
+        for ($i = 0; $i < 6; $i++) {
+            EventResult::query()->create([
+                'home_team_id' => $home->id,
+                'away_team_id' => $away->id,
+                'results' => $markers[$i],
+                'date' => Carbon::parse('2026-02-10')->addDays($i)->toDateString(),
+                'tournament_id' => $tournament->id,
+                'event_id' => null,
+            ]);
+        }
+
+        $this->get(route('tournaments.show', $tournament))
+            ->assertOk()
+            ->assertSee('Latest results', false)
+            ->assertSee('See all results', false)
+            ->assertSee('NEWEST', false)
+            ->assertSee('R2', false)
+            ->assertDontSee('OLDONLY', false);
+
+        $this->get(route('tournaments.results', $tournament))
+            ->assertOk()
+            ->assertSee('OLDONLY', false)
+            ->assertSee('NEWEST', false);
+    }
+
+    public function test_tournament_results_page_links_back_to_standings(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'BackLink League',
+            'rank' => 1,
+        ]);
+
+        $this->get(route('tournaments.results', $tournament))
+            ->assertOk()
+            ->assertSee('Back to BackLink League', false);
     }
 }

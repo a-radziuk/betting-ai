@@ -26,6 +26,19 @@
         @include('partials.upcoming-events-table', ['events' => $upcomingEvents])
     </section>
 
+    <section class="card tournament-page-recent-results" aria-label="Latest results">
+        <div class="tournament-section-head">
+            <h2 class="tournament-section-title">Latest results</h2>
+            @if ($eventResultsTotal > 0)
+                <a href="{{ route('tournaments.results', $tournament) }}" class="tournament-see-all-link">See all results</a>
+            @endif
+        </div>
+        @include('partials.event-results-by-date', [
+            'eventResults' => $recentEventResults,
+            'emptyMessage' => 'No results recorded for this league yet.',
+        ])
+    </section>
+
     <section class="card">
         @if (count($standingsRows) === 0)
             <div class="empty">No standings data yet. Run <code class="tabular-nums">php artisan guardian:standings {{ $tournament->id }}</code> after setting <code>guardian_standings_url</code> on this tournament.</div>
