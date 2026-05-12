@@ -32,9 +32,9 @@
                         >
                             <td class="welcome-match-col">
                                 <div class="welcome-match-teams">
-                                    {{ $result->homeTeam?->name ?? ('Team #' . $result->home_team_id) }}
+                                    {{ $result->homeTeam?->resolvedDisplayName() ?? ('Team #' . $result->home_team_id) }}
                                     vs
-                                    {{ $result->awayTeam?->name ?? ('Team #' . $result->away_team_id) }}
+                                    {{ $result->awayTeam?->resolvedDisplayName() ?? ('Team #' . $result->away_team_id) }}
                                 </div>
                             </td>
                             <td class="welcome-result-score-col welcome-odds">{{ $result->results }}</td>

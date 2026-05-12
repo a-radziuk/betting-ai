@@ -20,9 +20,9 @@
 <main class="container">
     <section class="hero">
         <h1>
-            {{ $event->homeTeam?->name ?? ('Team #' . $event->home_team_id) }}
+            {{ $event->homeTeam?->resolvedDisplayName() ?? ('Team #' . $event->home_team_id) }}
             vs
-            {{ $event->awayTeam?->name ?? ('Team #' . $event->away_team_id) }}
+            {{ $event->awayTeam?->resolvedDisplayName() ?? ('Team #' . $event->away_team_id) }}
         </h1>
         <p class="meta">
             Place your bet

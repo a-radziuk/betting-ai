@@ -69,7 +69,7 @@
                         @php
                             $event = $bet->event;
                             $eventName = $event && $event->homeTeam && $event->awayTeam
-                                ? $event->homeTeam->name . ' — ' . $event->awayTeam->name
+                                ? $event->homeTeam->resolvedDisplayName() . ' — ' . $event->awayTeam->resolvedDisplayName()
                                 : '—';
                             $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
                             $eventScore = filled($event?->score) ? $event->score : '—';

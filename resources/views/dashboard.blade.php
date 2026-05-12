@@ -60,7 +60,7 @@
                                     <td>
                                         @if ($bet->event && $bet->event->homeTeam && $bet->event->awayTeam)
                                             <a href="{{ route('events.show', $bet->event) }}" class="text-[#5de2ff] hover:underline">
-                                                {{ $bet->event->homeTeam->name }} — {{ $bet->event->awayTeam->name }}
+                                                {{ $bet->event->homeTeam->resolvedDisplayName() }} — {{ $bet->event->awayTeam->resolvedDisplayName() }}
                                             </a>
                                             @if ($bet->event->status !== \App\Models\Event::STATUS_SCHEDULED)
                                                 <div class="text-xs text-[#9fb0d3] mt-1 tabular-nums">

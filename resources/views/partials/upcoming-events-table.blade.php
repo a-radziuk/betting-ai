@@ -49,9 +49,9 @@
                             <td class="welcome-tournament-col">{{ $tournamentName }}</td>
                             <td class="welcome-match-col">
                                 <div class="welcome-match-teams">
-                                    {{ $event->homeTeam?->name ?? ('Team #' . $event->home_team_id) }}
+                                    {{ $event->homeTeam?->resolvedDisplayName() ?? ('Team #' . $event->home_team_id) }}
                                     vs
-                                    {{ $event->awayTeam?->name ?? ('Team #' . $event->away_team_id) }}
+                                    {{ $event->awayTeam?->resolvedDisplayName() ?? ('Team #' . $event->away_team_id) }}
                                 </div>
                                 <div class="welcome-match-meta">
                                     <time datetime="{{ $event->start_time->toIso8601String() }}" class="welcome-match-meta-time">{{ $kickoffTime }}</time>

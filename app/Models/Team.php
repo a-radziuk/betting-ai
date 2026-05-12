@@ -11,12 +11,25 @@ class Team extends Model
     protected $fillable = [
         'tournament_id',
         'name',
+        'display_name',
         'external_name',
         'short_name',
         'league',
         'country',
         'guardian_name',
     ];
+
+    /**
+     * Label shown on the site: `display_name` when set, otherwise `name`.
+     */
+    public function resolvedDisplayName(): string
+    {
+        if ($this->display_name !== null && $this->display_name !== '') {
+            return (string) $this->display_name;
+        }
+
+        return (string) $this->name;
+    }
 
     /**
      * @return BelongsTo<Tournament, $this>
