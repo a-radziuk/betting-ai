@@ -586,6 +586,122 @@
         padding: 0.9rem 1rem;
     }
 
+    .welcome-top-bettors {
+        margin: 1rem 0 1.35rem;
+    }
+
+    .welcome-top-bettors-title {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: 0.01em;
+    }
+
+    .welcome-top-bettors-lead {
+        margin: 0 0 1rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    .welcome-top-bettors-grid {
+        display: grid;
+        gap: 0.85rem;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 767px) {
+        .welcome-top-bettors-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .welcome-bettor-card {
+        display: flex;
+        gap: 0.85rem;
+        align-items: flex-start;
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.95rem;
+        background: var(--surface);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .welcome-bettor-card-rank {
+        flex-shrink: 0;
+        width: 2.25rem;
+        height: 2.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--accent);
+        border: 1px solid rgba(93, 226, 255, 0.35);
+        border-radius: 0.5rem;
+        background: rgba(93, 226, 255, 0.08);
+    }
+
+    .welcome-bettor-card-body {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .welcome-bettor-card-name {
+        margin: 0 0 0.4rem;
+        font-size: 1.02rem;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.25;
+        word-break: break-word;
+    }
+
+    .welcome-bettor-card-bets-meta {
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.2rem 0.45rem;
+        font-size: 0.95rem;
+        line-height: 1.35;
+    }
+
+    .welcome-bettor-card-bets-count {
+        font-weight: 600;
+        color: var(--muted);
+    }
+
+    .welcome-bettor-card-bets-sep {
+        color: var(--muted);
+        opacity: 0.65;
+        user-select: none;
+    }
+
+    .welcome-bettor-card-bets-stake {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: #eaf0ff;
+        letter-spacing: 0.02em;
+    }
+
+    .welcome-bettor-card-result {
+        margin: 0.4rem 0 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+        line-height: 1.25;
+    }
+
+    .welcome-bettor-card-result--pos {
+        color: var(--ok);
+    }
+
+    .welcome-bettor-card-result--neg {
+        color: #ff9a9a;
+    }
+
     .tournament-leagues-line {
         padding: 0.85rem 1rem;
     }

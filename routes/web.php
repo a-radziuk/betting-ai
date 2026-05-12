@@ -47,7 +47,28 @@ Route::get('/', function () {
             ->get();
     }
 
-    return view('welcome', compact('events', 'topTournaments'));
+    /** @var Collection<int, User> $topBettors */
+    $topBettors = collect();
+    if (
+        Schema::hasTable('users')
+        && Schema::hasTable('user_bets')
+        && Schema::hasTable('user_wallets')
+        && Schema::hasColumn('user_wallets', 'total_result')
+    ) {
+        $topBettors = User::query()
+            ->has('bets')
+            ->join('user_wallets', 'user_wallets.user_id', '=', 'users.id')
+            ->orderByDesc('user_wallets.total_result')
+            ->orderBy('users.id')
+            ->select('users.*')
+            ->withCount('bets')
+            ->withSum('bets', 'stake')
+            ->limit(3)
+            ->with('wallet')
+            ->get();
+    }
+
+    return view('welcome', compact('events', 'topTournaments', 'topBettors'));
 });
 
 Route::get('/tournaments/{tournament}', function (Tournament $tournament) {

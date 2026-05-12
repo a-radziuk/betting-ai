@@ -33,6 +33,42 @@
             </section>
         @endif
 
+        @if (isset($topBettors) && $topBettors->isNotEmpty())
+            <section class="welcome-top-bettors" aria-labelledby="welcome-top-bettors-title">
+                <h2 id="welcome-top-bettors-title" class="welcome-top-bettors-title">Top bettors</h2>
+                <p class="welcome-top-bettors-lead">Players with at least one bet, ranked by lifetime wallet result.</p>
+                <div class="welcome-top-bettors-grid">
+                    @foreach ($topBettors as $index => $user)
+                        @php
+                            $wallet = $user->wallet;
+                            $currency = $wallet?->currency ?? 'EUR';
+                            $betCount = (int) ($user->bets_count ?? 0);
+                            $stakeSum = (float) ($user->bets_sum_stake ?? 0);
+                            $total = $wallet ? (float) $wallet->total_result : 0.0;
+                        @endphp
+                        <article class="welcome-bettor-card">
+                            <div class="welcome-bettor-card-rank" aria-hidden="true">{{ $index + 1 }}</div>
+                            <div class="welcome-bettor-card-body">
+                                <h3 class="welcome-bettor-card-name">{{ $user->name }}</h3>
+                                <p class="welcome-bettor-card-bets-meta">
+                                    <span class="welcome-bettor-card-bets-count">{{ $betCount }} {{ $betCount === 1 ? 'bet' : 'bets' }}</span>
+                                    <span class="welcome-bettor-card-bets-sep" aria-hidden="true">·</span>
+                                    <span class="welcome-bettor-card-bets-stake">{{ number_format($stakeSum, 2) }} {{ $currency }}</span>
+                                </p>
+                                <p @class([
+                                    'welcome-bettor-card-result',
+                                    'welcome-bettor-card-result--pos' => $total >= 0,
+                                    'welcome-bettor-card-result--neg' => $total < 0,
+                                ])>
+                                    {{ $total >= 0 ? '+' : '' }}{{ number_format($total, 2) }} {{ $currency }}
+                                </p>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <section class="card">
             @if ($events->isEmpty())
                 <div class="empty">No upcoming events found. Seed more data and refresh.</div>
