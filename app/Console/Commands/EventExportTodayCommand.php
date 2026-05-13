@@ -14,9 +14,10 @@ class EventExportTodayCommand extends Command
 {
     protected $signature = 'event:export-today
         {tournamentId? : Optional tournament primary key; omit for all tournaments}
-        {--no-markets= : Comma-separated market types to omit from each event export (passed to event:export)}';
+        {--no-markets= : Comma-separated market types to omit from each event export (passed to event:export)}
+        {--full : Also write <date>.txt with the same JSON plus bet-finder instructions}';
 
-    protected $description = 'Run event:export for each event scheduled today (app timezone) that has not started yet; write JSON (events grouped by tournament) to storage/app/<Y-m-d>.json';
+    protected $description = 'Run event:export for each event scheduled today (app timezone) that has not started yet; write JSON (events grouped by tournament) to storage/app/<Y-m-d>.json; with --full, also write <Y-m-d>.txt (same JSON plus prompt)';
 
     public function handle(): int
     {
@@ -116,6 +117,8 @@ class EventExportTodayCommand extends Command
 
         $path = storage_path('app/'.$today.'.json');
 
+        $eventCount = $events->count();
+
         try {
             $json = json_encode($payloads, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
@@ -130,7 +133,18 @@ class EventExportTodayCommand extends Command
             return self::FAILURE;
         }
 
-        $eventCount = $events->count();
+        if ($this->option('full')) {
+            $txtPath = storage_path('app/'.$today.'.txt');
+            $instruction = $this->fullExportInstructionTextDaily($eventCount);
+            $txtBody = $json."\n\n".$instruction;
+            if (file_put_contents($txtPath, $txtBody) === false) {
+                $this->components->error('Could not write to '.$txtPath);
+
+                return self::FAILURE;
+            }
+            $this->components->info('Also wrote '.$txtPath);
+        }
+
         $groupCount = count($payloads);
         $this->components->info("Wrote {$groupCount} tournament group(s) ({$eventCount} event export(s)) to {$path}");
 
@@ -149,5 +163,25 @@ class EventExportTodayCommand extends Command
         }
 
         return $params;
+    }
+
+    private function fullExportInstructionTextDaily(int $numberOfEvents): string
+    {
+        $type = 'DAILY';
+        return <<<TXT
+Above is the odds for {$numberOfEvents} games that are happening today. Out of these games find:
+1/ the safest bet
+2/ the best bet
+3/ the potential upset bet
+4/ the never win bet
+Do not consider odds that are too low even for the safest strategy.
+Give me those bets as JSON in the following format:
+{
+    odd_id: // id from the JSON
+    stake: // percent from 1000
+    description: // explain why you want to bet
+    type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET, GPT_MANUAL_{$type}_NEVERWIN
+}
+TXT;
     }
 }

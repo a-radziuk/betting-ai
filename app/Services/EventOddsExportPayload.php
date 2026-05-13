@@ -82,30 +82,47 @@ final class EventOddsExportPayload
         $eventName = ($home && $away) ? "{$home->resolvedDisplayName()} vs {$away->resolvedDisplayName()}" : '';
         $eventTournament = $event->tournament?->name;
 
+        $tournament = $event->tournament;
+        $promrel = is_array($tournament?->standings_promrel) ? $tournament->standings_promrel : [];
+
         return [
             'eventId' => (string) $event->id,
             'eventName' => $eventName,
             'eventTournament' => $eventTournament,
             'eventDateTime' => $event->start_time?->toIso8601String(),
-            'standings' => self::prepareStandings($event->tournament?->standings, $event->tournament->standings_promrel),
+            'standings' => self::prepareStandings($tournament?->standings, $promrel),
             'odds' => array_values($rows),
         ];
     }
 
-    protected static function prepareStandings( array $standings , array $standings_promrel): array
+    /**
+     * @param  array<string, mixed>|null  $standings
+     * @param  array<string, mixed>  $standings_promrel
+     * @return list<array<string, mixed>>|null
+     */
+    private static function prepareStandings(?array $standings, array $standings_promrel): ?array
     {
+        if ($standings === null || ! isset($standings['rows']) || ! is_array($standings['rows'])) {
+            return null;
+        }
+
         return array_map(function ($row) use ($standings_promrel) {
-            $row['team'] = $row['team_display_name'];
+            if (! is_array($row)) {
+                return $row;
+            }
+            $row['team'] = $row['team_display_name'] ?? $row['team'] ?? '';
             unset($row['team_path'], $row['form'], $row['movement'], $row['team_id'], $row['team_display_name']);
-            if (isset($standings_promrel[$row['position']])) {
-                $pr = $standings_promrel[$row['position']];
+            $posKey = isset($row['position']) ? (string) $row['position'] : '';
+            if ($posKey !== '' && isset($standings_promrel[$posKey])) {
+                $pr = $standings_promrel[$posKey];
                 $effect = 'Relegation to ';
-                if ($pr['type'] === 'promotion') {
+                if (($pr['type'] ?? '') === 'promotion') {
                     $effect = 'Promotion to ';
                 }
-                $effect .= $pr['name'];
+                $effect .= $pr['name'] ?? '';
                 $row['outcome'] = $effect;
             }
+
             return $row;
         }, array_values($standings['rows']));
     }

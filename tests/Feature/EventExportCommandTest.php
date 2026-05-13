@@ -93,7 +93,12 @@ class EventExportCommandTest extends TestCase
         $this->assertSame($startTime->toIso8601String(), $decoded['eventDateTime']);
 
         $this->assertArrayHasKey('standings', $decoded);
-        $this->assertSame($tournament->fresh()->standings, $decoded['standings']);
+        $this->assertIsArray($decoded['standings']);
+        $this->assertTrue(array_is_list($decoded['standings']));
+        $this->assertCount(1, $decoded['standings']);
+        $this->assertSame(1, $decoded['standings'][0]['position']);
+        $this->assertSame('Alpha United', $decoded['standings'][0]['team']);
+        $this->assertSame(9, $decoded['standings'][0]['points']);
 
         $this->assertArrayHasKey('odds', $decoded);
         $this->assertTrue(array_is_list($decoded['odds']));

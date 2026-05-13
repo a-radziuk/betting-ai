@@ -101,10 +101,16 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertSame('League Two', $data[1]['tournamentName']);
             $this->assertCount(1, $data[1]['events']);
             $this->assertSame('101002', $data[1]['events'][0]['eventId']);
+
+            $this->assertFileDoesNotExist(storage_path('app/2026-06-01.txt'));
         } finally {
             Carbon::setTestNow();
             if (is_file($out)) {
                 unlink($out);
+            }
+            $outTxt = storage_path('app/2026-06-01.txt');
+            if (is_file($outTxt)) {
+                unlink($outTxt);
             }
         }
     }
@@ -141,6 +147,10 @@ class EventExportTodayCommandTest extends TestCase
             if (is_file($out)) {
                 unlink($out);
             }
+            $outTxt = storage_path('app/2026-06-01.txt');
+            if (is_file($outTxt)) {
+                unlink($outTxt);
+            }
         }
     }
 
@@ -161,10 +171,15 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertSame(0, $exit);
             $this->assertFileExists($out);
             $this->assertSame('[]', trim(file_get_contents($out)));
+            $this->assertFileDoesNotExist(storage_path('app/2026-07-10.txt'));
         } finally {
             Carbon::setTestNow();
             if (is_file($out)) {
                 unlink($out);
+            }
+            $outTxt = storage_path('app/2026-07-10.txt');
+            if (is_file($outTxt)) {
+                unlink($outTxt);
             }
         }
     }
@@ -221,6 +236,74 @@ class EventExportTodayCommandTest extends TestCase
             Carbon::setTestNow();
             if (is_file($out)) {
                 unlink($out);
+            }
+            $outTxt = storage_path('app/2026-08-01.txt');
+            if (is_file($outTxt)) {
+                unlink($outTxt);
+            }
+        }
+    }
+
+    public function test_full_writes_txt_with_same_json_and_instruction(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-15 10:00:00', $tz));
+        $jsonPath = storage_path('app/2026-09-15.json');
+        $txtPath = storage_path('app/2026-09-15.txt');
+
+        try {
+            $t = Tournament::query()->create(['name' => 'Full Day']);
+            $h = Team::query()->create(['name' => 'HF', 'short_name' => 'HF', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'AF', 'short_name' => 'AF', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(104001, 104011, 104021, 104031, $t->id, $h->id, $a->id, Carbon::parse('2026-09-15 14:00:00', $tz));
+
+            $exit = Artisan::call('event:export-today', ['--full' => true]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($jsonPath);
+            $this->assertFileExists($txtPath);
+
+            $json = file_get_contents($jsonPath);
+            $txt = file_get_contents($txtPath);
+            $this->assertStringStartsWith($json, $txt);
+            $this->assertStringContainsString('Above is the odds for 1 games that are happening today.', $txt);
+            $this->assertStringContainsString('1/ the safest bet', $txt);
+            $this->assertStringContainsString('4/ the never win bet', $txt);
+            $this->assertStringContainsString('odd_id: // id from the JSON', $txt);
+            $this->assertStringContainsString('stake: // percent from 1000', $txt);
+            $this->assertStringContainsString('description: // explain why you want to bet', $txt);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
+            }
+        }
+    }
+
+    public function test_full_with_no_events_writes_txt_with_zero_games_instruction(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-16 11:00:00', $tz));
+        $jsonPath = storage_path('app/2026-09-16.json');
+        $txtPath = storage_path('app/2026-09-16.txt');
+
+        try {
+            $exit = Artisan::call('event:export-today', ['--full' => true]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($jsonPath);
+            $this->assertFileExists($txtPath);
+            $this->assertSame('[]', trim(file_get_contents($jsonPath)));
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('Above is the odds for 0 games that are happening today.', $txt);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
             }
         }
     }
