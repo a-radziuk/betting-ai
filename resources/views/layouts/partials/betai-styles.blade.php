@@ -905,4 +905,24 @@
         background: rgba(220, 53, 69, 0.45);
         border-color: rgba(255, 99, 99, 0.95);
     }
+
+    .standings-team-cell {
+        white-space: nowrap;
+    }
+
+    .standings-movement {
+        margin-left: 0.28rem;
+        font-weight: 800;
+        font-size: 0.92em;
+        vertical-align: middle;
+        line-height: 1;
+    }
+
+    .standings-movement--up {
+        color: #1a7f3e;
+    }
+
+    .standings-movement--down {
+        color: #c92a2a;
+    }
 </style>

@@ -110,7 +110,25 @@
                                         {{ $row['position'] ?? '—' }}
                                     @endif
                                 </td>
-                                <td>{{ $row['team'] ?? '—' }}</td>
+                                <td class="standings-team-cell">
+                                    {{ $row['team'] ?? '—' }}
+                                    @php
+                                        $movement = $row['movement'] ?? null;
+                                    @endphp
+                                    @if ($movement === 'up')
+                                        <span
+                                            class="standings-movement standings-movement--up"
+                                            role="img"
+                                            aria-label="Moved up since last update"
+                                        >↑</span>
+                                    @elseif ($movement === 'down')
+                                        <span
+                                            class="standings-movement standings-movement--down"
+                                            role="img"
+                                            aria-label="Moved down since last update"
+                                        >↓</span>
+                                    @endif
+                                </td>
                                 <td class="text-right tabular-nums">{{ $row['played'] ?? '—' }}</td>
                                 <td class="text-right tabular-nums">{{ $row['won'] ?? '—' }}</td>
                                 <td class="text-right tabular-nums">{{ $row['drawn'] ?? '—' }}</td>

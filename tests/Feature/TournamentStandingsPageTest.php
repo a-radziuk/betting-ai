@@ -68,6 +68,72 @@ class TournamentStandingsPageTest extends TestCase
             ->assertSee('Lost 1-2 to Everton', false);
     }
 
+    public function test_standings_table_shows_movement_arrows_after_team_when_up_or_down(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'Movement League',
+            'rank' => 1,
+            'standings' => [
+                'rows' => [
+                    [
+                        'position' => 1,
+                        'team' => 'Risers United',
+                        'played' => 5,
+                        'won' => 3,
+                        'drawn' => 1,
+                        'lost' => 1,
+                        'goals_for' => 8,
+                        'goals_against' => 4,
+                        'goal_difference' => 4,
+                        'points' => 10,
+                        'form' => null,
+                        'movement' => 'up',
+                    ],
+                    [
+                        'position' => 2,
+                        'team' => 'Fallen City',
+                        'played' => 5,
+                        'won' => 2,
+                        'drawn' => 1,
+                        'lost' => 2,
+                        'goals_for' => 5,
+                        'goals_against' => 6,
+                        'goal_difference' => -1,
+                        'points' => 7,
+                        'form' => null,
+                        'movement' => 'down',
+                    ],
+                    [
+                        'position' => 3,
+                        'team' => 'Steady Town',
+                        'played' => 5,
+                        'won' => 1,
+                        'drawn' => 2,
+                        'lost' => 2,
+                        'goals_for' => 4,
+                        'goals_against' => 5,
+                        'goal_difference' => -1,
+                        'points' => 5,
+                        'form' => null,
+                        'movement' => 'none',
+                    ],
+                ],
+            ],
+        ]);
+
+        $html = $this->get(route('tournaments.show', $tournament))
+            ->assertOk()
+            ->assertSee('Risers United', false)
+            ->assertSee('Fallen City', false)
+            ->assertSee('Steady Town', false)
+            ->getContent();
+
+        $this->assertStringContainsString('class="standings-movement standings-movement--up"', $html);
+        $this->assertStringContainsString('class="standings-movement standings-movement--down"', $html);
+        $this->assertSame(1, substr_count($html, 'class="standings-movement standings-movement--up"'));
+        $this->assertSame(1, substr_count($html, 'class="standings-movement standings-movement--down"'));
+    }
+
     public function test_tournament_page_empty_standings_message(): void
     {
         $tournament = Tournament::query()->create([

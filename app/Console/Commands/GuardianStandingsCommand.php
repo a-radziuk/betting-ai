@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Tournament;
 use App\Services\GuardianStandingsParser;
+use App\Support\StandingsMovement;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Throwable;
@@ -62,6 +63,14 @@ class GuardianStandingsCommand extends Command
 
             return self::FAILURE;
         }
+
+        $previousStandings = $tournament->standings;
+        $hasPreviousRows = is_array($previousStandings)
+            && isset($previousStandings['rows'])
+            && is_array($previousStandings['rows'])
+            && count($previousStandings['rows']) > 0;
+
+        $data = StandingsMovement::apply($data, $hasPreviousRows ? $previousStandings : null);
 
         $tournament->standings = $data;
         $tournament->standings_updated_at = now();
