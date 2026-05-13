@@ -71,11 +71,8 @@ final class EventOddsExportPayload
 
         $home = $event->homeTeam;
         $away = $event->awayTeam;
-        $eventName = ($home && $away) ? "{$home->name} vs {$away->name}" : '';
-        $eventTournament = $home?->tournament?->name
-            ?? $away?->tournament?->name
-            ?? $home?->league
-            ?? $away?->league;
+        $eventName = ($home && $away) ? "{$home->display_name} vs {$away->display_name}" : '';
+        $eventTournament = $event->tournament->name;
 
         return [
             'eventId' => (string) $event->id,

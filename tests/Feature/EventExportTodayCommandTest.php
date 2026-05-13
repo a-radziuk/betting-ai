@@ -83,6 +83,7 @@ class EventExportTodayCommandTest extends TestCase
             $this->seedExportableEvent(101001, 101011, 101021, 101031, $t1->id, $h1->id, $a1->id, Carbon::parse('2026-06-01 18:00:00', $tz));
             $this->seedExportableEvent(101002, 101012, 101022, 101032, $t2->id, $h2->id, $a2->id, Carbon::parse('2026-06-01 19:00:00', $tz));
             $this->seedExportableEvent(101003, 101013, 101023, 101033, $t1->id, $h1->id, $a1->id, Carbon::parse('2026-06-01 08:00:00', $tz));
+            $this->seedExportableEvent(101004, 101014, 101024, 101034, $t1->id, $h1->id, $a1->id, Carbon::parse('2026-06-01 20:00:00', $tz));
 
             $exit = Artisan::call('event:export-today');
             $this->assertSame(0, $exit);
@@ -91,8 +92,15 @@ class EventExportTodayCommandTest extends TestCase
             $data = json_decode(file_get_contents($out), true);
             $this->assertIsArray($data);
             $this->assertCount(2, $data);
-            $this->assertSame('101001', $data[0]['eventId']);
-            $this->assertSame('101002', $data[1]['eventId']);
+            $this->assertSame($t1->id, $data[0]['tournamentId']);
+            $this->assertSame('League One', $data[0]['tournamentName']);
+            $this->assertCount(2, $data[0]['events']);
+            $this->assertSame('101001', $data[0]['events'][0]['eventId']);
+            $this->assertSame('101004', $data[0]['events'][1]['eventId']);
+            $this->assertSame($t2->id, $data[1]['tournamentId']);
+            $this->assertSame('League Two', $data[1]['tournamentName']);
+            $this->assertCount(1, $data[1]['events']);
+            $this->assertSame('101002', $data[1]['events'][0]['eventId']);
         } finally {
             Carbon::setTestNow();
             if (is_file($out)) {
@@ -124,7 +132,10 @@ class EventExportTodayCommandTest extends TestCase
 
             $data = json_decode(file_get_contents($out), true);
             $this->assertCount(1, $data);
-            $this->assertSame('102001', $data[0]['eventId']);
+            $this->assertSame($t1->id, $data[0]['tournamentId']);
+            $this->assertSame('Only League', $data[0]['tournamentName']);
+            $this->assertCount(1, $data[0]['events']);
+            $this->assertSame('102001', $data[0]['events'][0]['eventId']);
         } finally {
             Carbon::setTestNow();
             if (is_file($out)) {

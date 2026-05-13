@@ -15,7 +15,7 @@ class EventExportTodayCommand extends Command
     protected $signature = 'event:export-today
         {tournamentId? : Optional tournament primary key; omit for all tournaments}';
 
-    protected $description = 'Run event:export for each event scheduled today (app timezone) that has not started yet; write JSON array to storage/app/<Y-m-d>.json';
+    protected $description = 'Run event:export for each event scheduled today (app timezone) that has not started yet; write JSON (events grouped by tournament) to storage/app/<Y-m-d>.json';
 
     public function handle(): int
     {
@@ -46,29 +46,71 @@ class EventExportTodayCommand extends Command
             $query->where('tournament_id', (int) $tournamentIdArg);
         }
 
-        $events = $query->orderBy('start_time')->orderBy('id')->get(['id']);
+        $hasTournamentId = Schema::hasColumn('events', 'tournament_id');
+        $columns = $hasTournamentId ? ['id', 'start_time', 'tournament_id'] : ['id', 'start_time'];
+
+        $events = $query->orderBy('start_time')->orderBy('id')->get($columns);
 
         if ($events->isEmpty()) {
             $this->components->warn('No matching events for today.');
         }
 
+        $grouped = $hasTournamentId
+            ? $events->groupBy('tournament_id')
+            : $events->groupBy(fn () => 0);
+
+        $sortedGroups = $grouped->sortBy(fn ($group) => $group->min('start_time'));
+
+        $tournamentById = [];
+        if ($hasTournamentId && Schema::hasTable('tournaments')) {
+            $ids = $sortedGroups->keys()
+                ->filter(fn ($key) => $key !== null && $key !== '')
+                ->map(fn ($key) => (int) $key)
+                ->unique()
+                ->values()
+                ->all();
+            if ($ids !== []) {
+                $tournamentById = Tournament::query()->whereIn('id', $ids)->get()->keyBy('id')->all();
+            }
+        }
+
         $payloads = [];
 
-        foreach ($events as $event) {
-            $code = Artisan::call('event:export', ['eventId' => $event->id]);
-            if ($code !== self::SUCCESS) {
-                $this->components->error("event:export failed for event {$event->id}.");
-
-                return self::FAILURE;
+        foreach ($sortedGroups as $rawTournamentKey => $eventGroup) {
+            $tournamentId = null;
+            if ($hasTournamentId && $rawTournamentKey !== null && $rawTournamentKey !== '') {
+                $tournamentId = (int) $rawTournamentKey;
             }
 
-            try {
-                $payloads[] = json_decode(Artisan::output(), true, 512, JSON_THROW_ON_ERROR);
-            } catch (JsonException $e) {
-                $this->components->error("Invalid JSON from event:export for event {$event->id}: {$e->getMessage()}");
-
-                return self::FAILURE;
+            $tournamentName = 'Unknown';
+            if ($tournamentId !== null && isset($tournamentById[$tournamentId])) {
+                $tournamentName = (string) $tournamentById[$tournamentId]->name;
             }
+
+            $eventPayloads = [];
+
+            foreach ($eventGroup as $event) {
+                $code = Artisan::call('event:export', ['eventId' => $event->id]);
+                if ($code !== self::SUCCESS) {
+                    $this->components->error("event:export failed for event {$event->id}.");
+
+                    return self::FAILURE;
+                }
+
+                try {
+                    $eventPayloads[] = json_decode(Artisan::output(), true, 512, JSON_THROW_ON_ERROR);
+                } catch (JsonException $e) {
+                    $this->components->error("Invalid JSON from event:export for event {$event->id}: {$e->getMessage()}");
+
+                    return self::FAILURE;
+                }
+            }
+
+            $payloads[] = [
+                'tournamentId' => $tournamentId,
+                'tournamentName' => $tournamentName,
+                'events' => $eventPayloads,
+            ];
         }
 
         $path = storage_path('app/'.$today.'.json');
@@ -87,7 +129,9 @@ class EventExportTodayCommand extends Command
             return self::FAILURE;
         }
 
-        $this->components->info('Wrote '.count($payloads).' export(s) to '.$path);
+        $eventCount = $events->count();
+        $groupCount = count($payloads);
+        $this->components->info("Wrote {$groupCount} tournament group(s) ({$eventCount} event export(s)) to {$path}");
 
         return self::SUCCESS;
     }
