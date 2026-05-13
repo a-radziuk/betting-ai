@@ -116,6 +116,12 @@ class PredictionsBetCommand extends Command
             }
         }
 
+        $predictionIds = $predictions->pluck('id')->all();
+        if ($predictionIds !== []) {
+            EventPrediction::query()->whereIn('id', $predictionIds)->update(['is_active' => false]);
+            $this->components->info('Marked '.count($predictionIds).' prediction(s) inactive.');
+        }
+
         return self::SUCCESS;
     }
 }

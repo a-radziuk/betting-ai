@@ -106,6 +106,7 @@ class PredictionsBetCommandTest extends TestCase
 
         $exit = Artisan::call('predictions:bet');
         $this->assertSame(0, $exit);
+        $output = Artisan::output();
 
         $bet = UserBet::query()->first();
         $this->assertNotNull($bet);
@@ -116,6 +117,11 @@ class PredictionsBetCommandTest extends TestCase
         $this->assertSame('20.00', (string) $bet->stake);
 
         $this->assertSame('480.00', UserWallet::query()->where('user_id', $user->id)->value('balance'));
+
+        $prediction = EventPrediction::query()->first();
+        $this->assertNotNull($prediction);
+        $this->assertFalse($prediction->is_active);
+        $this->assertStringContainsString('Marked 1 prediction(s) inactive.', $output);
     }
 
     public function test_skips_when_user_already_has_prediction_bet_for_event(): void
@@ -154,8 +160,14 @@ class PredictionsBetCommandTest extends TestCase
 
         $exit = Artisan::call('predictions:bet');
         $this->assertSame(0, $exit);
+        $output = Artisan::output();
         $this->assertSame(1, UserBet::query()->count());
-        $this->assertStringContainsString('already has a bet', Artisan::output());
+        $this->assertStringContainsString('already has a bet', $output);
+        $this->assertStringContainsString('Marked 1 prediction(s) inactive.', $output);
+
+        $prediction = EventPrediction::query()->first();
+        $this->assertNotNull($prediction);
+        $this->assertFalse($prediction->is_active);
     }
 
     public function test_place_bet_service_accepts_prediction_type(): void
