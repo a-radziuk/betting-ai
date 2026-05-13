@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Team;
 use App\Models\Tournament;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,6 +53,15 @@ HTML;
             'guardian_standings_url' => 'https://www.theguardian.com/football/test/table',
         ]);
 
+        $team = Team::query()->create([
+            'name' => 'Test FC',
+            'short_name' => 'TF',
+            'league' => 'TL',
+            'country' => 'UK',
+            'tournament_id' => $tournament->id,
+            'guardian_name' => 'test fc',
+        ]);
+
         Http::fake([
             'https://www.theguardian.com/football/test/table' => Http::response($this->minimalGuardianTableHtml(), 200),
         ]);
@@ -70,6 +80,7 @@ HTML;
         $this->assertSame(10, $row['played']);
         $this->assertSame(18, $row['points']);
         $this->assertSame('none', $row['movement']);
+        $this->assertSame($team->id, $row['team_id']);
         $this->assertInstanceOf(Carbon::class, $tournament->standings_updated_at);
     }
 
@@ -138,6 +149,23 @@ HTML;
             ],
         ]);
 
+        $teamTest = Team::query()->create([
+            'name' => 'Test FC',
+            'short_name' => 'T',
+            'league' => 'ML',
+            'country' => 'UK',
+            'tournament_id' => $tournament->id,
+            'guardian_name' => 'Test FC',
+        ]);
+        $teamOther = Team::query()->create([
+            'name' => 'Other FC',
+            'short_name' => 'O',
+            'league' => 'ML',
+            'country' => 'UK',
+            'tournament_id' => $tournament->id,
+            'guardian_name' => 'Other FC',
+        ]);
+
         $html = <<<'HTML'
 <!DOCTYPE html>
 <html><body>
@@ -191,5 +219,41 @@ HTML;
 
         $this->assertSame('up', $byTeam['Other FC']);
         $this->assertSame('down', $byTeam['Test FC']);
+
+        $idsByTeam = [];
+        foreach ($rows as $r) {
+            $idsByTeam[$r['team']] = $r['team_id'];
+        }
+        $this->assertSame($teamOther->id, $idsByTeam['Other FC']);
+        $this->assertSame($teamTest->id, $idsByTeam['Test FC']);
+    }
+
+    public function test_team_id_null_when_no_team_matches_guardian_name(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'Unmatched League',
+            'guardian_standings_url' => 'https://www.theguardian.com/football/unmatched/table',
+        ]);
+
+        Team::query()->create([
+            'name' => 'Local Name',
+            'short_name' => 'LN',
+            'league' => 'UL',
+            'country' => 'UK',
+            'tournament_id' => $tournament->id,
+            'guardian_name' => 'Different From Table',
+        ]);
+
+        Http::fake([
+            'https://www.theguardian.com/football/unmatched/table' => Http::response($this->minimalGuardianTableHtml(), 200),
+        ]);
+
+        $exit = Artisan::call('guardian:standings', ['tournamentId' => $tournament->id]);
+        $this->assertSame(0, $exit);
+
+        $tournament->refresh();
+        $row = $tournament->standings['rows'][0];
+        $this->assertSame('Test FC', $row['team']);
+        $this->assertNull($row['team_id']);
     }
 }

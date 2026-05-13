@@ -8,7 +8,8 @@ use Illuminate\Console\Command;
 class EventExportCommand extends Command
 {
     protected $signature = 'event:export
-        {eventId : Event primary key}';
+        {eventId : Event primary key}
+        {--no-markets= : Comma-separated market types to omit (e.g. CORRECT_SCORE,HANDICAP)}';
 
     protected $description = 'Export event metadata and all odds as JSON to stdout';
 
@@ -24,10 +25,37 @@ class EventExportCommand extends Command
             return self::FAILURE;
         }
 
-        $payload = EventOddsExportPayload::build($event);
+        $excludeMarketTypes = $this->parseExcludedMarketTypesOption();
+
+        $payload = EventOddsExportPayload::build($event, $excludeMarketTypes);
 
         $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function parseExcludedMarketTypesOption(): array
+    {
+        $raw = $this->option('no-markets');
+        if (! is_string($raw)) {
+            return [];
+        }
+        $raw = trim($raw);
+        if ($raw === '') {
+            return [];
+        }
+
+        $out = [];
+        foreach (explode(',', $raw) as $part) {
+            $t = strtoupper(trim($part));
+            if ($t !== '') {
+                $out[] = $t;
+            }
+        }
+
+        return array_values(array_unique($out, SORT_STRING));
     }
 }

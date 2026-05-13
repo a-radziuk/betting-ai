@@ -168,4 +168,60 @@ class EventExportTodayCommandTest extends TestCase
             }
         }
     }
+
+    public function test_no_markets_option_is_passed_through_to_event_export(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-08-01 12:00:00', $tz));
+        $out = storage_path('app/2026-08-01.json');
+
+        try {
+            $t = Tournament::query()->create(['name' => 'Filter League']);
+            $h = Team::query()->create(['name' => 'H3', 'short_name' => 'H3', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'A3', 'short_name' => 'A3', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(103001, 103011, 103021, 103031, $t->id, $h->id, $a->id, Carbon::parse('2026-08-01 16:00:00', $tz));
+
+            $hcMarket = Market::query()->create([
+                'id' => 103040,
+                'event_id' => 103001,
+                'type' => Market::TYPE_HANDICAP,
+                'period' => Market::PERIOD_FULL_TIME,
+                'line' => null,
+                'status' => Market::STATUS_OPEN,
+                'is_supported_market' => true,
+            ]);
+            $hcSel = Selection::query()->create([
+                'id' => 103041,
+                'market_id' => $hcMarket->id,
+                'name' => Selection::NAME_HOME,
+                'participant_id' => null,
+                'handicap' => -0.25,
+                'created_at' => now(),
+            ]);
+            Odd::query()->create([
+                'id' => 103042,
+                'selection_id' => $hcSel->id,
+                'odds' => 1.9,
+                'probability' => null,
+                'is_active' => true,
+                'created_at' => now(),
+            ]);
+
+            $exit = Artisan::call('event:export-today', ['--no-markets' => 'HANDICAP']);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($out);
+
+            $data = json_decode(file_get_contents($out), true);
+            $this->assertCount(1, $data);
+            $odds = $data[0]['events'][0]['odds'];
+            $this->assertCount(1, $odds);
+            $this->assertSame(Market::TYPE_MATCH_RESULT, $odds[0]['type']);
+        } finally {
+            Carbon::setTestNow();
+            if (is_file($out)) {
+                unlink($out);
+            }
+        }
+    }
 }

@@ -111,7 +111,7 @@
                                     @endif
                                 </td>
                                 <td class="standings-team-cell">
-                                    {{ $row['team'] ?? '—' }}
+                                    {{ $row['team_display_name'] ?? '—' }}
                                     @php
                                         $movement = $row['movement'] ?? null;
                                     @endphp

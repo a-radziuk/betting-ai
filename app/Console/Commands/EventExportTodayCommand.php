@@ -13,7 +13,8 @@ use JsonException;
 class EventExportTodayCommand extends Command
 {
     protected $signature = 'event:export-today
-        {tournamentId? : Optional tournament primary key; omit for all tournaments}';
+        {tournamentId? : Optional tournament primary key; omit for all tournaments}
+        {--no-markets= : Comma-separated market types to omit from each event export (passed to event:export)}';
 
     protected $description = 'Run event:export for each event scheduled today (app timezone) that has not started yet; write JSON (events grouped by tournament) to storage/app/<Y-m-d>.json';
 
@@ -90,7 +91,7 @@ class EventExportTodayCommand extends Command
             $eventPayloads = [];
 
             foreach ($eventGroup as $event) {
-                $code = Artisan::call('event:export', ['eventId' => $event->id]);
+                $code = Artisan::call('event:export', $this->eventExportArguments($event->id));
                 if ($code !== self::SUCCESS) {
                     $this->components->error("event:export failed for event {$event->id}.");
 
@@ -134,5 +135,19 @@ class EventExportTodayCommand extends Command
         $this->components->info("Wrote {$groupCount} tournament group(s) ({$eventCount} event export(s)) to {$path}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function eventExportArguments(int $eventId): array
+    {
+        $params = ['eventId' => $eventId];
+        $raw = $this->option('no-markets');
+        if (is_string($raw) && trim($raw) !== '') {
+            $params['--no-markets'] = $raw;
+        }
+
+        return $params;
     }
 }
