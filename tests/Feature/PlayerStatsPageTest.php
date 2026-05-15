@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\UserBet;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PlayerStatsPageTest extends TestCase
@@ -123,5 +125,74 @@ class PlayerStatsPageTest extends TestCase
         $this->assertNotFalse($posLate);
         $this->assertNotFalse($posEarly);
         $this->assertLessThan($posEarly, $posLate);
+    }
+
+    public function test_displays_extended_profile_fields_when_set(): void
+    {
+        Storage::fake('public');
+
+        $player = User::factory()->create([
+            'tagline' => 'EPL value hunter',
+            'bio' => 'Focus on match odds.',
+            'city' => 'London',
+            'country' => 'United Kingdom',
+        ]);
+
+        $path = UploadedFile::fake()->image('avatar.jpg')->store('avatars', 'public');
+        $player->update(['avatar' => $path]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('class="card card-pad player-profile"', $html);
+        $this->assertStringContainsString('EPL value hunter', $html);
+        $this->assertStringContainsString('Focus on match odds.', $html);
+        $this->assertStringContainsString('London', $html);
+        $this->assertStringContainsString('United Kingdom', $html);
+        $this->assertStringContainsString(Storage::disk('public')->url($path), $html);
+    }
+
+    public function test_hides_extended_profile_rows_when_empty(): void
+    {
+        $player = User::factory()->create([
+            'tagline' => null,
+            'bio' => null,
+            'city' => null,
+            'country' => null,
+            'avatar' => null,
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('class="card card-pad player-profile"', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Tagline</dt>', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Bio</dt>', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">City</dt>', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Country</dt>', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Photo</dt>', $html);
+    }
+
+    public function test_shows_only_filled_profile_rows(): void
+    {
+        $player = User::factory()->create([
+            'tagline' => 'Only tagline',
+            'bio' => null,
+            'city' => 'Berlin',
+            'country' => null,
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Only tagline', $html);
+        $this->assertStringContainsString('Berlin', $html);
+        $this->assertStringContainsString('class="card card-pad player-profile"', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Bio</dt>', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Country</dt>', $html);
+        $this->assertStringNotContainsString('class="player-profile-label">Photo</dt>', $html);
     }
 }

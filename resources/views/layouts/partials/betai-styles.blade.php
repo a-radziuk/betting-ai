@@ -557,6 +557,72 @@
         letter-spacing: 0.01em;
     }
 
+    .player-profile-dl {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .player-profile-row {
+        display: grid;
+        grid-template-columns: minmax(5.5rem, 7rem) 1fr;
+        gap: 0.75rem 1rem;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid var(--border);
+        align-items: start;
+    }
+
+    .player-profile-row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .player-profile-row:first-child {
+        padding-top: 0;
+    }
+
+    .player-profile-label {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .player-profile-value {
+        margin: 0;
+        color: #dce7ff;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .player-profile-tagline {
+        color: #8ab7ff;
+        font-weight: 600;
+    }
+
+    .player-profile-bio {
+        white-space: pre-wrap;
+    }
+
+    .player-profile-avatar {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        border: 1px solid rgba(93, 226, 255, 0.25);
+    }
+
+    @media (max-width: 32rem) {
+        .player-profile-row {
+            grid-template-columns: 1fr;
+            gap: 0.35rem;
+        }
+    }
+
     /* Buttons + form controls (used by place-bet page) */
     .btn {
         appearance: none;

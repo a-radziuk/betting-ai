@@ -18,22 +18,64 @@
 </div>
 
 <main class="container">
+    @php
+        $avatarUrl = $player->profileAvatarUrl();
+        $hasProfileDetails = $avatarUrl !== null
+            || filled($player->tagline)
+            || filled($player->bio)
+            || filled($player->city)
+            || filled($player->country);
+    @endphp
+
     <section class="hero">
         <h1>{{ $player->name }}</h1>
-        @if (filled($player->tagline))
-            <p class="meta text-[#8ab7ff]">{{ $player->tagline }}</p>
-        @endif
-        @if (filled($player->bio))
-            <p class="meta max-w-2xl" style="margin-top: 0.35rem; line-height: 1.5;">{{ $player->bio }}</p>
-        @endif
-        @php
-            $location = collect([$player->city, $player->country])->filter()->implode(', ');
-        @endphp
-        @if ($location !== '')
-            <p class="meta" style="margin-top: 0.35rem;">{{ $location }}</p>
-        @endif
-        <p class="meta" @if (filled($player->tagline) || filled($player->bio) || $location !== '') style="margin-top: 0.5rem;" @endif>Settled bets by event date, newest first.</p>
+        <p class="meta">Settled bets by event date, newest first.</p>
     </section>
+
+    @if ($hasProfileDetails)
+        <section class="card card-pad player-profile" style="margin-bottom: 12px;">
+            <dl class="player-profile-dl">
+                @if ($avatarUrl)
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Photo') }}</dt>
+                        <dd class="player-profile-value">
+                            <img
+                                src="{{ $avatarUrl }}"
+                                alt=""
+                                class="player-profile-avatar"
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </dd>
+                    </div>
+                @endif
+                @if (filled($player->tagline))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Tagline') }}</dt>
+                        <dd class="player-profile-value player-profile-tagline">{{ $player->tagline }}</dd>
+                    </div>
+                @endif
+                @if (filled($player->bio))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Bio') }}</dt>
+                        <dd class="player-profile-value player-profile-bio">{{ $player->bio }}</dd>
+                    </div>
+                @endif
+                @if (filled($player->city))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('City') }}</dt>
+                        <dd class="player-profile-value">{{ $player->city }}</dd>
+                    </div>
+                @endif
+                @if (filled($player->country))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Country') }}</dt>
+                        <dd class="player-profile-value">{{ $player->country }}</dd>
+                    </div>
+                @endif
+            </dl>
+        </section>
+    @endif
 
     @php
         $resultValue = (float) ($player->wallet->total_result);
