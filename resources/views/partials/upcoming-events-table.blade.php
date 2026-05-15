@@ -21,6 +21,7 @@
                         <th class="welcome-time-col">Time</th>
                         <th class="welcome-tournament-col">Tournament</th>
                         <th class="welcome-match-col">Match</th>
+                        <th class="welcome-tips-col">Tips</th>
                         <th class="welcome-1x2-col">Home</th>
                         <th class="welcome-1x2-col">Draw</th>
                         <th class="welcome-1x2-col">Away</th>
@@ -39,6 +40,10 @@
                             };
                             $kickoffTime = $event->start_time->timezone($tz)->translatedFormat('H:i');
                             $tournamentName = $event->tournament?->name ?? '—';
+                            $tipsCount = (int) ($event->user_bets_count ?? 0);
+                            $tipsTooltip = $tipsCount === 1
+                                ? '1 player tip on this match'
+                                : number_format($tipsCount).' player tips on this match';
                         @endphp
                         <tr data-clickable onclick="window.location='{{ route('events.show', $event) }}'">
                             <td class="welcome-time-col">
@@ -57,7 +62,15 @@
                                     <time datetime="{{ $event->start_time->toIso8601String() }}" class="welcome-match-meta-time">{{ $kickoffTime }}</time>
                                     <span class="welcome-match-meta-sep" aria-hidden="true">·</span>
                                     <span class="welcome-match-meta-tournament">{{ $tournamentName }}</span>
+                                    <span class="welcome-match-meta-sep" aria-hidden="true">·</span>
+                                    <span class="welcome-match-meta-tips" title="{{ $tipsTooltip }}">
+                                        <span class="welcome-tips-badge welcome-tips-badge--compact" aria-hidden="true">{{ number_format($tipsCount) }}</span>
+                                        {{ $tipsCount === 1 ? 'tip' : 'tips' }}
+                                    </span>
                                 </div>
+                            </td>
+                            <td class="welcome-tips-col">
+                                <span class="welcome-tips-badge" title="{{ $tipsTooltip }}">{{ number_format($tipsCount) }}</span>
                             </td>
                             <td class="welcome-odds welcome-1x2-col">{{ $oddStr(\App\Models\Selection::NAME_HOME) }}</td>
                             <td class="welcome-odds welcome-1x2-col">{{ $oddStr(\App\Models\Selection::NAME_DRAW) }}</td>

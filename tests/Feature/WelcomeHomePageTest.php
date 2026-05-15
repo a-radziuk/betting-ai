@@ -8,6 +8,8 @@ use App\Models\Odd;
 use App\Models\Selection;
 use App\Models\Team;
 use App\Models\Tournament;
+use App\Models\User;
+use App\Models\UserBet;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -235,6 +237,79 @@ class WelcomeHomePageTest extends TestCase
                 ->assertSee('Wednesday, 4 February 2026', false)
                 ->assertSee('18:00', false)
                 ->assertSee('10:30', false);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_home_shows_user_bet_count_per_upcoming_event(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-01-10 10:00:00', $tz));
+        try {
+            $tournament = Tournament::query()->create([
+                'name' => 'Bets Count League',
+                'rank' => 2,
+                'country' => 'Testland',
+            ]);
+
+            $home = Team::query()->create([
+                'name' => 'Count Home',
+                'short_name' => 'CHM',
+                'league' => 'BCL',
+                'country' => 'Testland',
+                'tournament_id' => $tournament->id,
+            ]);
+            $away = Team::query()->create([
+                'name' => 'Count Away',
+                'short_name' => 'CAY',
+                'league' => 'BCL',
+                'country' => 'Testland',
+                'tournament_id' => $tournament->id,
+            ]);
+
+            $this->seedEventWithMatchOdds(
+                $tournament,
+                $home,
+                $away,
+                Carbon::parse('2026-01-12 14:30:00', $tz),
+                [
+                    'eventId' => 770301,
+                    'marketId' => 770310,
+                    'selectionIdStart' => 770340,
+                    'oddIdStart' => 770350,
+                ],
+            );
+
+            $odd = Odd::query()->find(770350);
+            $this->assertNotNull($odd);
+
+            $userA = User::factory()->create();
+            $userB = User::factory()->create();
+
+            foreach ([$userA, $userB, $userA] as $user) {
+                UserBet::query()->create([
+                    'user_id' => $user->id,
+                    'event_id' => 770301,
+                    'odd_id' => $odd->id,
+                    'stake' => 10,
+                    'odds_at_bet' => 1.95,
+                    'potential_return' => 19.5,
+                    'status' => UserBet::STATUS_PENDING,
+                ]);
+            }
+
+            $html = $this->get('/')
+                ->assertOk()
+                ->assertSee('Count Home', false)
+                ->assertSee('Tips', false)
+                ->getContent();
+
+            $this->assertMatchesRegularExpression(
+                '/<span class="welcome-tips-badge"[^>]*title="3 player tips on this match"[^>]*>\s*3\s*<\/span>/',
+                $html,
+            );
+            $this->assertStringContainsString('3 player tips on this match', $html);
         } finally {
             Carbon::setTestNow();
         }

@@ -25,6 +25,7 @@ Route::get('/', function () {
     if (Schema::hasTable('events')) {
         $events = Event::query()
             ->with(['homeTeam', 'awayTeam', 'tournament'])
+            ->withCount('userBets')
             ->with([
                 'markets' => function ($query) {
                     $query->where('type', Market::TYPE_MATCH_RESULT)
@@ -99,6 +100,7 @@ Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
     if (Schema::hasTable('events') && Schema::hasColumn('events', 'tournament_id')) {
         $upcomingEvents = Event::query()
             ->with(['homeTeam', 'awayTeam', 'tournament'])
+            ->withCount('userBets')
             ->with([
                 'markets' => function ($query) {
                     $query->where('type', Market::TYPE_MATCH_RESULT)

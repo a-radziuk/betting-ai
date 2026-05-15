@@ -9,6 +9,8 @@ use App\Models\Odd;
 use App\Models\Selection;
 use App\Models\Team;
 use App\Models\Tournament;
+use App\Models\User;
+use App\Models\UserBet;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -305,6 +307,104 @@ class TournamentStandingsPageTest extends TestCase
             $this->assertNotFalse($posUpcoming);
             $this->assertNotFalse($posStandings);
             $this->assertLessThan($posStandings, $posUpcoming);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_tournament_page_shows_user_bet_count_for_upcoming_events(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-04-01 12:00:00', $tz));
+        try {
+            $tournament = Tournament::query()->create([
+                'name' => 'Bets Fixture League',
+                'rank' => 1,
+                'standings' => null,
+            ]);
+
+            $home = Team::query()->create([
+                'name' => 'Bets Home FC',
+                'short_name' => 'BHF',
+                'league' => 'BFL',
+                'country' => 'Testland',
+                'tournament_id' => $tournament->id,
+            ]);
+            $away = Team::query()->create([
+                'name' => 'Bets Away FC',
+                'short_name' => 'BAF',
+                'league' => 'BFL',
+                'country' => 'Testland',
+                'tournament_id' => $tournament->id,
+            ]);
+
+            $event = Event::query()->create([
+                'id' => 990101,
+                'home_team_id' => $home->id,
+                'away_team_id' => $away->id,
+                'tournament_id' => $tournament->id,
+                'start_time' => Carbon::parse('2026-04-05 16:30:00', $tz),
+                'status' => Event::STATUS_SCHEDULED,
+            ]);
+
+            $market = Market::query()->create([
+                'id' => 990111,
+                'event_id' => $event->id,
+                'type' => Market::TYPE_MATCH_RESULT,
+                'period' => Market::PERIOD_FULL_TIME,
+                'line' => null,
+                'status' => Market::STATUS_OPEN,
+                'is_supported_market' => true,
+            ]);
+
+            $selection = Selection::query()->create([
+                'id' => 990121,
+                'market_id' => $market->id,
+                'name' => Selection::NAME_HOME,
+                'participant_id' => null,
+                'handicap' => null,
+                'created_at' => now(),
+            ]);
+
+            $odd = Odd::query()->create([
+                'id' => 990131,
+                'selection_id' => $selection->id,
+                'odds' => 2.0,
+                'probability' => null,
+                'is_active' => true,
+                'created_at' => now(),
+            ]);
+
+            $user = User::factory()->create();
+            UserBet::query()->create([
+                'user_id' => $user->id,
+                'event_id' => $event->id,
+                'odd_id' => $odd->id,
+                'stake' => 5,
+                'odds_at_bet' => 2,
+                'potential_return' => 10,
+                'status' => UserBet::STATUS_PENDING,
+            ]);
+            UserBet::query()->create([
+                'user_id' => $user->id,
+                'event_id' => $event->id,
+                'odd_id' => $odd->id,
+                'stake' => 8,
+                'odds_at_bet' => 2,
+                'potential_return' => 16,
+                'status' => UserBet::STATUS_WON,
+            ]);
+
+            $html = $this->get(route('tournaments.show', $tournament))
+                ->assertOk()
+                ->assertSee('Bets Home FC', false)
+                ->assertSee('Tips', false)
+                ->getContent();
+
+            $this->assertMatchesRegularExpression(
+                '/<span class="welcome-tips-badge"[^>]*title="2 player tips on this match"[^>]*>\s*2\s*<\/span>/',
+                $html,
+            );
         } finally {
             Carbon::setTestNow();
         }
