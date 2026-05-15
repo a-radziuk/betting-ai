@@ -45,9 +45,29 @@
                             $betCount = (int) ($user->bets_count ?? 0);
                             $stakeSum = (float) ($user->bets_sum_stake ?? 0);
                             $total = $wallet ? (float) $wallet->total_result : 0.0;
+                            $avatarUrl = $user->profileAvatarUrl();
+                            $nameTrim = trim((string) $user->name);
+                            $initial = mb_strtoupper(mb_substr($nameTrim !== '' ? $nameTrim : '?', 0, 1));
+                            $betFormSegments = \App\Support\UserBetFormIcons::fromBets($user->bets);
                         @endphp
-                        <article class="welcome-bettor-card">
-                            <div class="welcome-bettor-card-rank" aria-hidden="true">{{ $index + 1 }}</div>
+                        <a
+                            href="{{ route('players.show', $user) }}"
+                            class="welcome-bettor-card welcome-bettor-card-link"
+                            aria-label="{{ __('View :name player page', ['name' => $user->name]) }}"
+                        >
+                            <div class="welcome-bettor-card-avatar">
+                                @if ($avatarUrl)
+                                    <img
+                                        src="{{ $avatarUrl }}"
+                                        alt=""
+                                        class="welcome-bettor-card-avatar-img"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                @else
+                                    <span class="welcome-bettor-card-avatar-placeholder" aria-hidden="true">{{ $initial }}</span>
+                                @endif
+                            </div>
                             <div class="welcome-bettor-card-body">
                                 <h3 class="welcome-bettor-card-name">{{ $user->name }}</h3>
                                 <p class="welcome-bettor-card-bets-meta">
@@ -62,8 +82,18 @@
                                 ])>
                                     {{ $total >= 0 ? '+' : '' }}{{ number_format($total, 2) }} {{ $currency }}
                                 </p>
+                                @if (count($betFormSegments) > 0)
+                                    <div class="welcome-bettor-card-form" role="group" aria-label="{{ __('Recent bet results') }}">
+                                        @foreach ($betFormSegments as $seg)
+                                            <span
+                                                class="form-icon form-icon--{{ $seg['css'] }}"
+                                                title="{{ e($seg['tooltip']) }}"
+                                            >{{ $seg['letter'] }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
-                        </article>
+                        </a>
                     @endforeach
                 </div>
             </section>

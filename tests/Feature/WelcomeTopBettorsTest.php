@@ -93,7 +93,14 @@ class WelcomeTopBettorsTest extends TestCase
         $this->placeBet($third, $odd, $eventId);
         $this->placeBet($fourth, $odd, $eventId);
 
-        $this->get('/')
+        $second->forceFill(['avatar' => 'https://example.test/avatar.png'])->saveQuietly();
+
+        $secondBets = UserBet::query()->where('user_id', $second->id)->orderBy('id')->get();
+        $this->assertCount(2, $secondBets);
+        $secondBets[0]->update(['status' => UserBet::STATUS_WON]);
+        $secondBets[1]->update(['status' => UserBet::STATUS_LOST]);
+
+        $html = $this->get('/')
             ->assertOk()
             ->assertSee('Top bettors', false)
             ->assertDontSee('Total result', false)
@@ -110,7 +117,16 @@ class WelcomeTopBettorsTest extends TestCase
                 '1 bet',
                 '10.00 EUR',
                 '+150.50 EUR',
-            ], false);
+            ], false)
+            ->getContent();
+
+        $this->assertStringContainsString('welcome-bettor-card-link', $html);
+        $this->assertStringContainsString(route('players.show', $second), $html);
+        $this->assertStringContainsString('https://example.test/avatar.png', $html);
+        $this->assertStringContainsString('welcome-bettor-card-avatar-placeholder', $html);
+        $this->assertStringContainsString('form-icon--w', $html);
+        $this->assertStringContainsString('form-icon--l', $html);
+        $this->assertStringContainsString('form-icon--muted', $html);
 
         $this->get('/')
             ->assertDontSee('LeaderBoardFourth', false);

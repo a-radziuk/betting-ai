@@ -65,7 +65,10 @@ Route::get('/', function () {
             ->withCount('bets')
             ->withSum('bets', 'stake')
             ->limit(3)
-            ->with('wallet')
+            ->with([
+                'wallet',
+                'bets' => fn ($q) => $q->where('status', '<>', UserBet::STATUS_PENDING)->orderByDesc('id')->limit(5),
+            ])
             ->get();
     }
 
@@ -168,6 +171,12 @@ Route::get('/players', function () {
             DB::raw('COALESCE(user_wallets.total_result, 0) as wallet_total_result'),
             DB::raw("COALESCE(user_wallets.currency, 'EUR') as wallet_currency"),
         ])
+        ->with([
+            'bets' => fn ($q) => $q
+                ->where('status', '!=', UserBet::STATUS_PENDING)
+                ->orderByDesc('id')
+                ->limit(5),
+        ])
         ->paginate(20)
         ->withQueryString();
 
@@ -178,14 +187,17 @@ Route::get('/players', function () {
 
 Route::get('/players/{user}', function (User $user) {
     $bets = UserBet::query()
-        ->where('user_id', $user->id)
-        ->where('status', '!=', UserBet::STATUS_PENDING)
+        ->where('user_bets.user_id', $user->id)
+        ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
+        ->join('events', 'events.id', '=', 'user_bets.event_id')
+        ->orderByDesc('events.start_time')
+        ->orderByDesc('user_bets.id')
+        ->select('user_bets.*')
         ->with([
             'event.homeTeam',
             'event.awayTeam',
             'odd.selection.market',
         ])
-        ->orderBy('updated_at')
         ->paginate(20)
         ->withQueryString();
 

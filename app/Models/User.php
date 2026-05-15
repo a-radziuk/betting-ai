@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
@@ -27,6 +28,40 @@ class User extends Authenticatable
                 'currency' => 'EUR',
             ]);
         });
+
+        static::deleting(function (User $user): void {
+            self::deleteStoredAvatarFile($user->avatar);
+        });
+    }
+
+    /**
+     * Public URL for profile avatar (uploaded path on public disk, or external URL from OAuth).
+     */
+    public function profileAvatarUrl(): ?string
+    {
+        $avatar = $this->avatar;
+        if ($avatar === null || $avatar === '') {
+            return null;
+        }
+        if (str_starts_with($avatar, 'http://') || str_starts_with($avatar, 'https://')) {
+            return $avatar;
+        }
+
+        return Storage::disk('public')->url($avatar);
+    }
+
+    public static function deleteStoredAvatarFile(?string $avatar): void
+    {
+        if ($avatar === null || $avatar === '') {
+            return;
+        }
+        if (str_starts_with($avatar, 'http://') || str_starts_with($avatar, 'https://')) {
+            return;
+        }
+        if (! str_starts_with($avatar, 'avatars/')) {
+            return;
+        }
+        Storage::disk('public')->delete($avatar);
     }
 
     /**

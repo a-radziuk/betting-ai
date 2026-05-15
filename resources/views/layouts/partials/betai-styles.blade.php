@@ -687,6 +687,50 @@
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
     }
 
+    a.welcome-bettor-card-link {
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    a.welcome-bettor-card-link:hover {
+        border-color: rgba(93, 226, 255, 0.45);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    }
+
+    a.welcome-bettor-card-link:focus-visible {
+        outline: 2px solid rgba(93, 226, 255, 0.85);
+        outline-offset: 2px;
+    }
+
+    .welcome-bettor-card-avatar {
+        flex-shrink: 0;
+    }
+
+    .welcome-bettor-card-avatar-img {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        border: 1px solid rgba(93, 226, 255, 0.25);
+    }
+
+    .welcome-bettor-card-avatar-placeholder {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--accent);
+        background: rgba(93, 226, 255, 0.1);
+        border: 1px solid rgba(93, 226, 255, 0.35);
+        line-height: 1;
+    }
+
     .welcome-bettor-card-rank {
         flex-shrink: 0;
         width: 2.25rem;
@@ -761,6 +805,14 @@
         color: #ff9a9a;
     }
 
+    .welcome-bettor-card-form {
+        margin-top: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.15rem 0.1rem;
+    }
+
     .tournament-leagues-line {
         padding: 0.85rem 1rem;
     }
@@ -821,6 +873,14 @@
     .form-icon--d {
         color: #1a1408;
         background: rgba(255, 214, 102, 0.9);
+    }
+
+    .form-icon--muted {
+        color: var(--muted);
+        background: rgba(159, 176, 211, 0.12);
+        border: 1px solid rgba(159, 176, 211, 0.25);
+        font-size: 0.62rem;
+        font-weight: 700;
     }
 
     /* Standings promotion / relegation row bands (see Tournament.standings_promrel) */

@@ -20,7 +20,7 @@
 <main class="container">
     <section class="hero">
         <h1>{{ $player->name }}</h1>
-        <p class="meta">Resolved bets (chronological).</p>
+        <p class="meta">Settled bets by event date, newest first.</p>
     </section>
 
     @php
@@ -56,7 +56,6 @@
                 <table>
                     <thead>
                     <tr>
-                        <th>Resolved</th>
                         <th>Event</th>
                         <th>Bet</th>
                         <th class="text-right">Odd</th>
@@ -73,8 +72,6 @@
                                 : '—';
                             $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
                             $eventScore = filled($event?->score) ? $event->score : '—';
-
-                            $resolvedAt = $bet->updated_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
 
                             $selection = $bet->odd?->selection?->name ?? '—';
                             $market = $bet->odd?->selection?->market?->type;
@@ -93,7 +90,6 @@
                             $deltaColor = $delta > 0.000001 ? '#4cff9d' : ($delta < -0.000001 ? '#ff9a9a' : '#9fb0d3');
                         @endphp
                         <tr>
-                            <td class="whitespace-nowrap text-[#9fb0d3] text-sm tabular-nums">{{ $resolvedAt }}</td>
                             <td>
                                 <div class="text-[#dce7ff]">{{ $eventName }}</div>
                                 <div class="text-xs text-[#9fb0d3] mt-1 tabular-nums">{{ $eventTime }} · {{ $eventScore }}</div>

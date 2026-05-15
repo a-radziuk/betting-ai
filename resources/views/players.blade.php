@@ -32,6 +32,7 @@
                     <thead>
                     <tr>
                         <th>Username</th>
+                        <th>Recent bets</th>
                         <th class="text-right">Wallet balance</th>
                         <th class="text-right">In play</th>
                         <th class="text-right">Total result</th>
@@ -41,6 +42,21 @@
                     @foreach ($players as $player)
                         <tr data-clickable onclick="window.location='{{ route('players.show', ['user' => $player->id]) }}'">
                             <td class="text-[#dce7ff]">{{ $player->name }}</td>
+                            <td class="form-icons-cell align-middle">
+                                @php
+                                    $betFormSegments = \App\Support\UserBetFormIcons::fromBets($player->bets, true);
+                                @endphp
+                                @if (count($betFormSegments) > 0)
+                                    @foreach ($betFormSegments as $seg)
+                                        <span
+                                            class="form-icon form-icon--{{ $seg['css'] }}"
+                                            title="{{ e($seg['tooltip']) }}"
+                                        >{{ $seg['letter'] }}</span>
+                                    @endforeach
+                                @else
+                                    <span class="text-[#9fb0d3] text-sm">—</span>
+                                @endif
+                            </td>
                             <td class="text-right tabular-nums text-[#eaf0ff]">
                                 {{ number_format((float) $player->wallet_balance, 2) }}
                                 <span class="text-[#9fb0d3]">{{ $player->wallet_currency }}</span>
