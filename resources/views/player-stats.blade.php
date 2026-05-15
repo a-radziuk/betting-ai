@@ -78,8 +78,10 @@
     @endif
 
     @php
-        $resultValue = (float) ($player->wallet->total_result);
-        $resultColor = $resultValue > 0.000001 ? '#4cff9d' : ($resultValue < -0.000001 ? '#ff9a9a' : '#9fb0d3');
+        $resultColor = $totalResult > 0.000001 ? '#4cff9d' : ($totalResult < -0.000001 ? '#ff9a9a' : '#9fb0d3');
+        $efficiencyColor = $efficiencyPercent === null
+            ? '#9fb0d3'
+            : ($efficiencyPercent > 0.000001 ? '#4cff9d' : ($efficiencyPercent < -0.000001 ? '#ff9a9a' : '#9fb0d3'));
     @endphp
 
     <div class="event-empty user-results" style="margin-bottom: 12px;">
@@ -87,15 +89,77 @@
         <span class="user-results-item">
             <span class="user-results-label">Currently in play</span>
             <span class="user-results-value">{{ number_format((float) $player->wallet->amount_in_play, 2) }}</span>
+            <span class="user-results-in-play-meta">
+                {{ number_format($pendingBetCount) }} {{ $pendingBetCount === 1 ? __('bet') : __('bets') }}
+            </span>
             <a href="{{ route('players.current', ['user' => $player->id]) }}" class="subbar-back" style="margin-top: 6px;">
                 See bets
             </a>
         </span>
-        <span class="user-results-item">
+        <span class="user-results-item user-results-item--metrics">
             <span class="user-results-label">Result</span>
-            <span class="user-results-value" style="color: {{ $resultColor }};">
-                {{ $resultValue > 0 ? '+' : '' }}{{ number_format($resultValue, 2) }}
-            </span>
+            <div class="user-results-metric user-results-metric--duo">
+                <div class="user-results-metric-duo-item">
+                    @include('players.partials.metric-label', [
+                        'label' => __('Bets'),
+                        'hint' => __('Number of settled bets (won, lost, void, or cancelled).'),
+                    ])
+                    <span class="user-results-metric-value tabular-nums">{{ number_format($resolvedBetCount) }}</span>
+                    @include('players.partials.metric-label', [
+                        'label' => __('Turnover'),
+                        'hint' => __('Total stake staked on all settled bets.'),
+                    ])
+                    <span class="user-results-metric-value tabular-nums">{{ number_format($turnover, 2) }}</span>
+                </div>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Average stake'),
+                    'hint' => __('Turnover divided by the number of settled bets.'),
+                ])
+                <span class="user-results-metric-value tabular-nums">
+                    @if ($averageStake === null)
+                        —
+                    @else
+                        {{ number_format($averageStake, 2) }}
+                    @endif
+                </span>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Won/Lost'),
+                    'hint' => __('Net profit or loss on the wallet from all settled bets.'),
+                ])
+                <span class="user-results-metric-value tabular-nums" style="color: {{ $resultColor }};">
+                    {{ $totalResult > 0 ? '+' : '' }}{{ number_format($totalResult, 2) }}
+                </span>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Relative Efficiency'),
+                    'hint' => __('Won/Lost divided by turnover, expressed as a percentage.'),
+                ])
+                <span class="user-results-metric-value tabular-nums" style="color: {{ $efficiencyColor }};">
+                    @if ($efficiencyPercent === null)
+                        —
+                    @else
+                        {{ $efficiencyPercent > 0 ? '+' : '' }}{{ number_format($efficiencyPercent, 1) }}%
+                    @endif
+                </span>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Absolute Efficiency'),
+                    'hint' => __('Won/Lost divided by starting balance, expressed as a percentage.'),
+                ])
+                <span class="user-results-metric-value tabular-nums" style="color: {{ $efficiencyColor }};">
+                    @if ($efficiencyPercentAbsolute === null)
+                        —
+                    @else
+                        {{ $efficiencyPercentAbsolute > 0 ? '+' : '' }}{{ $efficiencyPercentAbsolute }}%
+                    @endif
+                </span>
+            </div>
         </span>
     </div>
 

@@ -191,8 +191,7 @@ Route::get('/players/{user}', function (User $user) {
         ->where('user_bets.user_id', $user->id)
         ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
         ->join('events', 'events.id', '=', 'user_bets.event_id')
-        ->orderBy('user_bets.updated_at', 'desc')
-    ;
+        ->orderBy('user_bets.updated_at', 'desc');
 
     $chartValues = (clone $resolvedBetsQuery)
         ->orderByDesc('events.start_time')
@@ -204,6 +203,30 @@ Route::get('/players/{user}', function (User $user) {
         ->all();
 
     $resultChart = PlayerWalletResultChart::fromValues($chartValues);
+
+    $resolvedAggregate = UserBet::query()
+        ->where('user_id', $user->id)
+        ->where('status', '!=', UserBet::STATUS_PENDING)
+        ->selectRaw('COUNT(*) as bet_count, COALESCE(SUM(stake), 0) as turnover')
+        ->first();
+
+    $resolvedBetCount = (int) ($resolvedAggregate->bet_count ?? 0);
+    $turnover = (float) ($resolvedAggregate->turnover ?? 0);
+    $averageStake = $resolvedBetCount > 0 ? $turnover / $resolvedBetCount : null;
+    $totalResult = (float) $user->wallet->total_result;
+    $efficiencyPercent = $turnover > 0.000001
+        ? ($totalResult / $turnover) * 100
+        : null;
+
+    $startBalance = (float) $user->wallet->start_balance;
+    $efficiencyPercentAbsolute = $startBalance > 0.000001
+        ? ($totalResult / $startBalance) * 100
+        : null;
+
+    $pendingBetCount = UserBet::query()
+        ->where('user_id', $user->id)
+        ->where('status', UserBet::STATUS_PENDING)
+        ->count();
 
     $bets = (clone $resolvedBetsQuery)
         ->orderByDesc('events.start_time')
@@ -221,6 +244,13 @@ Route::get('/players/{user}', function (User $user) {
         'player' => $user,
         'bets' => $bets,
         'resultChart' => $resultChart,
+        'resolvedBetCount' => $resolvedBetCount,
+        'turnover' => $turnover,
+        'averageStake' => $averageStake,
+        'totalResult' => $totalResult,
+        'efficiencyPercent' => $efficiencyPercent,
+        'efficiencyPercentAbsolute' => $efficiencyPercentAbsolute,
+        'pendingBetCount' => $pendingBetCount,
     ]);
 })->name('players.show');
 

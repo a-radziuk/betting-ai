@@ -557,8 +557,111 @@
         letter-spacing: 0.01em;
     }
 
+    .user-results-in-play-meta {
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
     .user-results-item--chart {
         min-height: 8.5rem;
+    }
+
+    .user-results-item--metrics {
+        gap: 0.5rem;
+    }
+
+    .user-results-metric {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .user-results-metric-label {
+        color: var(--muted);
+        font-size: 0.82rem;
+        letter-spacing: 0.02em;
+    }
+
+    .user-results-metric-label-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        min-width: 0;
+    }
+
+    .user-results-metric--duo {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+    }
+
+    .user-results-metric-duo-item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .metric-info {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--muted);
+        cursor: help;
+        outline: none;
+    }
+
+    .metric-info-icon {
+        display: block;
+    }
+
+    .metric-info:hover,
+    .metric-info:focus-visible {
+        color: var(--accent);
+    }
+
+    .metric-info-tooltip {
+        position: absolute;
+        bottom: calc(100% + 0.4rem);
+        left: 50%;
+        z-index: 20;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: 13rem;
+        padding: 0.45rem 0.55rem;
+        border-radius: 0.45rem;
+        border: 1px solid rgba(93, 226, 255, 0.35);
+        background: rgba(12, 21, 36, 0.97);
+        color: #dce7ff;
+        font-size: 0.72rem;
+        font-weight: 500;
+        line-height: 1.35;
+        letter-spacing: 0;
+        text-transform: none;
+        text-align: left;
+        white-space: normal;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.12s ease;
+    }
+
+    .metric-info:hover .metric-info-tooltip,
+    .metric-info:focus-visible .metric-info-tooltip {
+        opacity: 1;
+    }
+
+    .user-results-metric-value {
+        color: var(--text);
+        font-weight: 700;
+        font-size: 0.95rem;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
     }
 
     .user-results-chart-latest {
