@@ -5,7 +5,7 @@
         </h2>
 
         <p class="mt-1 text-sm text-[#9fb0d3]">
-            {{ __("Update your account's profile information and email address.") }}
+            {{ __('Update your photo, contact details, and what others see on your player page.') }}
         </p>
     </header>
 
@@ -67,6 +67,69 @@
                     @endif
                 </div>
             @endif
+        </div>
+
+        <div class="border-t border-[rgba(130,162,255,0.2)] pt-6">
+            <h3 class="text-base font-medium text-[#eaf0ff]">{{ __('Public profile') }}</h3>
+            <p class="mt-1 text-sm text-[#9fb0d3]">{{ __('Optional. Shown on your player stats page.') }}</p>
+
+            <div class="mt-4">
+                <x-input-label for="tagline" :value="__('Tagline')" />
+                <x-text-input
+                    id="tagline"
+                    name="tagline"
+                    type="text"
+                    class="mt-1 block w-full"
+                    :value="old('tagline', $user->tagline)"
+                    maxlength="120"
+                    placeholder="{{ __('e.g. Value bettor · EPL focus') }}"
+                />
+                <p class="mt-1 text-xs text-[#9fb0d3]">{{ __('Short line under your name (120 characters max).') }}</p>
+                <x-input-error class="mt-2" :messages="$errors->get('tagline')" />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="bio" :value="__('Bio')" />
+                <textarea
+                    id="bio"
+                    name="bio"
+                    rows="4"
+                    maxlength="500"
+                    placeholder="{{ __('A few sentences about your approach or interests…') }}"
+                    class="mt-1 block w-full rounded-md border border-[#3b4e75] bg-[#0f1b31] text-[#eaf0ff] placeholder-[#7f93bd] focus:border-[#5de2ff] focus:ring-[#5de2ff] shadow-sm"
+                >{{ old('bio', $user->bio) }}</textarea>
+                <p class="mt-1 text-xs text-[#9fb0d3]">{{ __('Up to 500 characters.') }}</p>
+                <x-input-error class="mt-2" :messages="$errors->get('bio')" />
+            </div>
+
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                    <x-input-label for="city" :value="__('City')" />
+                    <x-text-input
+                        id="city"
+                        name="city"
+                        type="text"
+                        class="mt-1 block w-full"
+                        :value="old('city', $user->city)"
+                        maxlength="100"
+                        autocomplete="address-level2"
+                    />
+                    <x-input-error class="mt-2" :messages="$errors->get('city')" />
+                </div>
+                <div>
+                    <x-input-label for="country" :value="__('Country')" />
+                    <x-text-input
+                        id="country"
+                        name="country"
+                        type="text"
+                        class="mt-1 block w-full"
+                        :value="old('country', $user->country)"
+                        maxlength="100"
+                        autocomplete="country-name"
+                    />
+                    <x-input-error class="mt-2" :messages="$errors->get('country')" />
+                </div>
+            </div>
         </div>
 
         <div class="flex items-center gap-4">

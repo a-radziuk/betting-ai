@@ -23,6 +23,54 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_extended_profile_fields_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'tagline' => 'Sharp on corners',
+                'bio' => 'Mostly EPL and La Liga.',
+                'city' => 'London',
+                'country' => 'United Kingdom',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertSame('Sharp on corners', $user->tagline);
+        $this->assertSame('Mostly EPL and La Liga.', $user->bio);
+        $this->assertSame('London', $user->city);
+        $this->assertSame('United Kingdom', $user->country);
+    }
+
+    public function test_extended_profile_fields_can_be_cleared(): void
+    {
+        $user = User::factory()->create([
+            'tagline' => 'Old tag',
+            'bio' => 'Old bio',
+        ]);
+
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'tagline' => '',
+                'bio' => '',
+                'city' => '',
+                'country' => '',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $user->refresh();
+        $this->assertNull($user->tagline);
+        $this->assertNull($user->bio);
+        $this->assertNull($user->city);
+        $this->assertNull($user->country);
+    }
+
     public function test_profile_information_can_be_updated(): void
     {
         $user = User::factory()->create();

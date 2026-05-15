@@ -30,7 +30,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $previousAvatar = $user->avatar;
 
-        $user->fill($request->safe()->only(['name', 'email']));
+        $user->fill($request->safe()->only(['name', 'email', 'tagline', 'bio', 'city', 'country']));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

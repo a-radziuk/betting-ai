@@ -20,7 +20,19 @@
 <main class="container">
     <section class="hero">
         <h1>{{ $player->name }}</h1>
-        <p class="meta">Settled bets by event date, newest first.</p>
+        @if (filled($player->tagline))
+            <p class="meta text-[#8ab7ff]">{{ $player->tagline }}</p>
+        @endif
+        @if (filled($player->bio))
+            <p class="meta max-w-2xl" style="margin-top: 0.35rem; line-height: 1.5;">{{ $player->bio }}</p>
+        @endif
+        @php
+            $location = collect([$player->city, $player->country])->filter()->implode(', ');
+        @endphp
+        @if ($location !== '')
+            <p class="meta" style="margin-top: 0.35rem;">{{ $location }}</p>
+        @endif
+        <p class="meta" @if (filled($player->tagline) || filled($player->bio) || $location !== '') style="margin-top: 0.5rem;" @endif>Settled bets by event date, newest first.</p>
     </section>
 
     @php
