@@ -509,6 +509,167 @@
         flex-wrap: wrap;
     }
 
+    /* Event page — player tips */
+    .event-tips-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .event-tips-title {
+        margin: 0 0 0.85rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #eaf0ff;
+        letter-spacing: 0.02em;
+    }
+
+    .event-tips-grid {
+        display: grid;
+        gap: 0.85rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .event-tip-card {
+        border: 1px solid var(--border);
+        border-radius: 0.95rem;
+        background: var(--surface);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+        padding: 1rem 1.1rem;
+    }
+
+    .event-tip-card-head {
+        display: flex;
+        gap: 0.85rem;
+        align-items: flex-start;
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid rgba(130, 162, 255, 0.12);
+    }
+
+    .event-tip-card-avatar {
+        flex-shrink: 0;
+    }
+
+    .event-tip-card-avatar-img {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        border: 1px solid rgba(93, 226, 255, 0.25);
+    }
+
+    .event-tip-card-avatar-placeholder {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1rem;
+        color: var(--accent);
+        background: rgba(93, 226, 255, 0.1);
+        border: 1px solid rgba(93, 226, 255, 0.35);
+        line-height: 1;
+    }
+
+    .event-tip-card-user {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .event-tip-card-name {
+        display: block;
+        margin: 0 0 0.35rem;
+        font-size: 1.02rem;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.25;
+        text-decoration: none;
+        word-break: break-word;
+    }
+
+    a.event-tip-card-name:hover {
+        color: var(--accent);
+    }
+
+    .event-tip-card-result {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.3;
+        color: var(--muted);
+    }
+
+    .event-tip-card-result--pos {
+        color: var(--ok);
+    }
+
+    .event-tip-card-result--neg {
+        color: #ff9a9a;
+    }
+
+    .event-tip-card-form {
+        margin-top: 0.45rem;
+    }
+
+    .event-tip-card-pick {
+        margin: 0;
+    }
+
+    .event-tip-card-pick-row {
+        margin: 0 0 0.65rem;
+    }
+
+    .event-tip-card-pick-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .event-tip-card-pick-row dt {
+        margin: 0 0 0.2rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .event-tip-card-pick-row dd {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #dce7ff;
+        line-height: 1.35;
+    }
+
+    .event-tip-card-pick-row--inline {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.65rem 0.75rem;
+    }
+
+    .event-tip-card-pick-row--inline > div {
+        min-width: 0;
+    }
+
+    @media (max-width: 479px) {
+        .event-tip-card-pick-row--inline {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .event-tip-card-odds {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: #8bffcd;
+    }
+
+    .event-tip-card-stake {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: #eaf0ff;
+    }
+
     /* Event odds page */
     .market-grid {
         display: grid;

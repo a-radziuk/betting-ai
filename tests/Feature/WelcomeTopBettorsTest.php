@@ -93,6 +93,9 @@ class WelcomeTopBettorsTest extends TestCase
         $this->placeBet($third, $odd, $eventId);
         $this->placeBet($fourth, $odd, $eventId);
 
+        UserBet::query()->where('user_id', $first->id)->update(['status' => UserBet::STATUS_WON]);
+        UserBet::query()->where('user_id', $third->id)->update(['status' => UserBet::STATUS_LOST]);
+
         $second->forceFill(['avatar' => 'https://example.test/avatar.png'])->saveQuietly();
 
         $secondBets = UserBet::query()->where('user_id', $second->id)->orderBy('id')->get();
@@ -132,6 +135,28 @@ class WelcomeTopBettorsTest extends TestCase
             ->assertDontSee('LeaderBoardFourth', false);
     }
 
+    public function test_home_excludes_users_with_only_pending_bets_even_with_high_wallet(): void
+    {
+        $odd = $this->seedOddForBets();
+        $eventId = 88001;
+
+        $withResolved = User::factory()->create(['name' => 'ResolvedBettor']);
+        $pendingOnly = User::factory()->create(['name' => 'PendingOnlyBettor']);
+
+        UserWallet::query()->where('user_id', $withResolved->id)->update(['total_result' => 10]);
+        UserWallet::query()->where('user_id', $pendingOnly->id)->update(['total_result' => 50000]);
+
+        $this->placeBet($withResolved, $odd, $eventId);
+        UserBet::query()->where('user_id', $withResolved->id)->update(['status' => UserBet::STATUS_WON]);
+
+        $this->placeBet($pendingOnly, $odd, $eventId);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('ResolvedBettor', false)
+            ->assertDontSee('PendingOnlyBettor', false);
+    }
+
     public function test_home_excludes_users_with_no_bets_even_with_high_wallet(): void
     {
         $odd = $this->seedOddForBets();
@@ -144,6 +169,7 @@ class WelcomeTopBettorsTest extends TestCase
         UserWallet::query()->where('user_id', $noBet->id)->update(['total_result' => 50000]);
 
         $this->placeBet($withBet, $odd, $eventId);
+        UserBet::query()->where('user_id', $withBet->id)->update(['status' => UserBet::STATUS_WON]);
 
         $this->get('/')
             ->assertOk()

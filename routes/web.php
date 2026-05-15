@@ -59,7 +59,9 @@ Route::get('/', function () {
         && Schema::hasColumn('user_wallets', 'total_result')
     ) {
         $topBettors = User::query()
-            ->has('bets')
+            ->whereHas('bets', function ($q): void {
+                $q->where('status', '<>', UserBet::STATUS_PENDING);
+            })
             ->join('user_wallets', 'user_wallets.user_id', '=', 'users.id')
             ->orderByDesc('user_wallets.total_result')
             ->orderBy('users.id')
@@ -154,7 +156,42 @@ Route::get('/events/{event}', function (Event $event) {
             ]),
     ]);
 
-    return view('event', compact('event'));
+    /** @var Collection<int, UserBet> $eventBets */
+    $eventBets = collect();
+    if (Schema::hasTable('user_bets')) {
+        $eventBetsQuery = UserBet::query()
+            ->where('user_bets.event_id', $event->id)
+            ->whereHas('user', function ($q): void {
+                $q->whereHas('bets', function ($bq): void {
+                    $bq->where('status', '<>', UserBet::STATUS_PENDING);
+                });
+            })
+            ->with([
+                'user.wallet',
+                'user.bets' => fn ($q) => $q
+                    ->where('status', '<>', UserBet::STATUS_PENDING)
+                    ->orderByDesc('id')
+                    ->limit(5),
+                'odd.selection.market',
+            ]);
+
+        if (Schema::hasTable('user_wallets')) {
+            $eventBets = $eventBetsQuery
+                ->join('users', 'users.id', '=', 'user_bets.user_id')
+                ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
+                ->select('user_bets.*')
+                ->orderByDesc(DB::raw('COALESCE(user_wallets.total_result, 0)'))
+                ->orderBy('users.id')
+                ->orderByDesc('user_bets.id')
+                ->get();
+        } else {
+            $eventBets = $eventBetsQuery
+                ->orderByDesc('user_bets.id')
+                ->get();
+        }
+    }
+
+    return view('event', compact('event', 'eventBets'));
 })->name('events.show');
 
 Route::get('/players', function () {

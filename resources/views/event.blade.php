@@ -30,6 +30,8 @@
             </p>
         </section>
 
+        @include('partials.event-user-bets', ['eventBets' => $eventBets ?? collect()])
+
         @if ($event->markets->isEmpty())
             <div class="event-empty">No markets available for this event yet.</div>
         @else
