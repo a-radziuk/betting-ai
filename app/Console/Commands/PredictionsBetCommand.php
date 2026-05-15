@@ -103,7 +103,8 @@ class PredictionsBetCommand extends Command
                     $userId,
                     $prediction->odds_id,
                     $stakeStr,
-                    $prediction->prediction_type
+                    $prediction->prediction_type,
+                    $prediction->explanation,
                 );
 
                 if (! $result['ok']) {

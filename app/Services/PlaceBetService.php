@@ -14,8 +14,13 @@ class PlaceBetService
     /**
      * @return array{ok: bool, message: string}
      */
-    public function placeBet(int|string $userId, int|string $oddId, string|float $stakeRaw, ?string $predictionType = null): array
-    {
+    public function placeBet(
+        int|string $userId,
+        int|string $oddId,
+        string|float $stakeRaw,
+        ?string $predictionType = null,
+        ?string $explanation = null,
+    ): array {
         if (! is_numeric($stakeRaw) || (float) $stakeRaw <= 0) {
             return ['ok' => false, 'message' => 'Sum must be a positive number.'];
         }
@@ -40,7 +45,7 @@ class PlaceBetService
             return ['ok' => false, 'message' => 'Event for this odd does not exist.'];
         }
 
-        return DB::transaction(function () use ($userId, $odd, $oddId, $eventId, $stake, $predictionType): array {
+        return DB::transaction(function () use ($userId, $odd, $oddId, $eventId, $stake, $predictionType, $explanation): array {
             $wallet = UserWallet::query()->where('user_id', $userId)->lockForUpdate()->first();
             if ($wallet === null) {
                 return ['ok' => false, 'message' => 'User has no wallet.'];
@@ -81,6 +86,9 @@ class PlaceBetService
             ];
             if ($predictionType !== null) {
                 $betAttributes['prediction_type'] = $predictionType;
+            }
+            if ($explanation !== null) {
+                $betAttributes['explanation'] = $explanation;
             }
 
             $bet = UserBet::query()->create($betAttributes);

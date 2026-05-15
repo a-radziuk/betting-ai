@@ -28,6 +28,7 @@ class UserBet extends Model
         'wallet_total_result',
         'status',
         'prediction_type',
+        'explanation',
     ];
 
     protected function casts(): array

@@ -114,6 +114,7 @@ class PredictionsBetCommandTest extends TestCase
         $this->assertSame((int) $event->id, (int) $bet->event_id);
         $this->assertSame((string) $odd->id, (string) $bet->odd_id);
         $this->assertSame(EventPrediction::PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT, $bet->prediction_type);
+        $this->assertSame('Test pick.', $bet->explanation);
         $this->assertSame('20.00', (string) $bet->stake);
 
         $this->assertSame('480.00', UserWallet::query()->where('user_id', $user->id)->value('balance'));
