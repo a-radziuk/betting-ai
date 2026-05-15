@@ -83,10 +83,7 @@
     @endphp
 
     <div class="event-empty user-results" style="margin-bottom: 12px;">
-        <span class="user-results-item">
-            <span class="user-results-label">Balance</span>
-            <span class="user-results-value">{{ number_format((float) $player->wallet->balance, 2) }}</span>
-        </span>
+        @include('players.partials.wallet-result-chart', ['resultChart' => $resultChart])
         <span class="user-results-item">
             <span class="user-results-label">Currently in play</span>
             <span class="user-results-value">{{ number_format((float) $player->wallet->amount_in_play, 2) }}</span>

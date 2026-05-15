@@ -104,6 +104,7 @@ class PlayerStatsPageTest extends TestCase
             'odds_at_bet' => '2.0000',
             'potential_return' => '20.00',
             'status' => UserBet::STATUS_WON,
+            'wallet_total_result' => '10.00',
         ]);
         UserBet::query()->create([
             'user_id' => $player->id,
@@ -113,6 +114,7 @@ class PlayerStatsPageTest extends TestCase
             'odds_at_bet' => '2.0000',
             'potential_return' => '10.00',
             'status' => UserBet::STATUS_LOST,
+            'wallet_total_result' => '5.00',
         ]);
 
         $html = $this->get(route('players.show', $player))
@@ -125,6 +127,70 @@ class PlayerStatsPageTest extends TestCase
         $this->assertNotFalse($posLate);
         $this->assertNotFalse($posEarly);
         $this->assertLessThan($posEarly, $posLate);
+    }
+
+    public function test_shows_wallet_result_chart_instead_of_balance(): void
+    {
+        $tz = config('app.timezone');
+        $player = User::factory()->create();
+        $home = Team::query()->create(['name' => 'H', 'short_name' => 'H', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'A', 'short_name' => 'A', 'league' => 'T']);
+        $event = Event::query()->create([
+            'id' => 92050,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => Carbon::parse('2026-05-01 12:00:00', $tz),
+            'status' => Event::STATUS_FINISHED,
+            'score' => '1-0',
+        ]);
+        $market = Market::query()->create([
+            'id' => 92051,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_MATCH_RESULT,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        $selection = Selection::query()->create([
+            'id' => 92052,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_HOME,
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+        $odd = Odd::query()->create([
+            'id' => 92059,
+            'selection_id' => $selection->id,
+            'odds' => 2,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        UserBet::query()->create([
+            'user_id' => $player->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => '10.00',
+            'odds_at_bet' => '2.0000',
+            'potential_return' => '20.00',
+            'status' => UserBet::STATUS_WON,
+            'wallet_total_result' => '15.50',
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('user-results-label">Balance</span>', $html);
+        $this->assertStringContainsString('user-results-item--chart', $html);
+        $this->assertStringContainsString('user-results-chart', $html);
+        $this->assertStringContainsString('+15.50', $html);
+        $this->assertStringContainsString('points="', $html);
+        $this->assertStringContainsString('user-results-chart-dot', $html);
+        $this->assertStringContainsString('user-results-chart-tooltip', $html);
     }
 
     public function test_displays_extended_profile_fields_when_set(): void

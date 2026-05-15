@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserSubscription;
 use App\Services\PlaceBetService;
+use App\Support\PlayerWalletResultChart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -186,10 +187,25 @@ Route::get('/players', function () {
 })->name('players.index');
 
 Route::get('/players/{user}', function (User $user) {
-    $bets = UserBet::query()
+    $resolvedBetsQuery = UserBet::query()
         ->where('user_bets.user_id', $user->id)
         ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
         ->join('events', 'events.id', '=', 'user_bets.event_id')
+        ->orderBy('user_bets.updated_at', 'desc')
+    ;
+
+    $chartValues = (clone $resolvedBetsQuery)
+        ->orderByDesc('events.start_time')
+        ->orderByDesc('user_bets.id')
+        ->limit(30)
+        ->pluck('user_bets.wallet_total_result')
+        ->reverse()
+        ->values()
+        ->all();
+
+    $resultChart = PlayerWalletResultChart::fromValues($chartValues);
+
+    $bets = (clone $resolvedBetsQuery)
         ->orderByDesc('events.start_time')
         ->orderByDesc('user_bets.id')
         ->select('user_bets.*')
@@ -204,6 +220,7 @@ Route::get('/players/{user}', function (User $user) {
     return view('player-stats', [
         'player' => $user,
         'bets' => $bets,
+        'resultChart' => $resultChart,
     ]);
 })->name('players.show');
 

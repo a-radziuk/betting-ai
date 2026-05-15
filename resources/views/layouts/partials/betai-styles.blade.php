@@ -557,6 +557,104 @@
         letter-spacing: 0.01em;
     }
 
+    .user-results-item--chart {
+        min-height: 8.5rem;
+    }
+
+    .user-results-chart-latest {
+        font-size: 1.05rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .user-results-chart {
+        display: block;
+        width: 100%;
+        height: 4.5rem;
+        margin-top: 0.15rem;
+    }
+
+    .user-results-chart-line {
+        stroke: #5de2ff;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .user-results-chart-point {
+        cursor: pointer;
+    }
+
+    .user-results-chart-hit {
+        fill: transparent;
+        stroke: none;
+        pointer-events: all;
+    }
+
+    .user-results-chart-dot {
+        fill: #5de2ff;
+        stroke: #0f1b31;
+        stroke-width: 0.6;
+        vector-effect: non-scaling-stroke;
+        pointer-events: none;
+        transition: fill 0.12s ease;
+    }
+
+    .user-results-chart-point:hover .user-results-chart-dot,
+    .user-results-chart-point:focus-visible .user-results-chart-dot {
+        fill: #8bffcd;
+        stroke: #eaf0ff;
+    }
+
+    .user-results-chart-tooltip {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.12s ease;
+    }
+
+    .user-results-chart-point:hover .user-results-chart-tooltip,
+    .user-results-chart-point:focus-visible .user-results-chart-tooltip {
+        opacity: 1;
+    }
+
+    .user-results-chart-tooltip-bg {
+        fill: rgba(12, 21, 36, 0.95);
+        stroke: rgba(93, 226, 255, 0.45);
+        stroke-width: 0.35;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .user-results-chart-tooltip-text {
+        fill: #eaf0ff;
+        font-size: 3.25px;
+        font-weight: 700;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+    }
+
+    .user-results-chart-zero {
+        stroke: rgba(159, 176, 211, 0.45);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .user-results-chart-caption {
+        display: block;
+        margin-top: 0.45rem;
+        color: var(--muted);
+        font-size: 0.78rem;
+        letter-spacing: 0.02em;
+    }
+
+    .user-results-chart-empty {
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
     .player-profile-dl {
         margin: 0;
         display: flex;

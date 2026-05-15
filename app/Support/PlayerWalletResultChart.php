@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Support;
+
+final class PlayerWalletResultChart
+{
+    private const VIEW_WIDTH = 100;
+
+    private const VIEW_HEIGHT = 40;
+
+    private const PADDING = 4;
+
+    /**
+     * @param  list<float>  $values  Chronological wallet_total_result values (oldest → newest).
+     * @param  list<array{x: float, y: float, value: float}>  $points
+     */
+    public function __construct(
+        public readonly array $values,
+        public readonly array $points,
+        public readonly string $polylinePoints,
+        public readonly ?float $min,
+        public readonly ?float $max,
+        public readonly ?float $latest,
+        public readonly ?float $zeroLineY,
+    ) {}
+
+    /**
+     * @param  list<float|int|string|null>  $values
+     */
+    public static function fromValues(array $values): self
+    {
+        $values = array_values(array_map(
+            static fn ($value) => (float) $value,
+            array_filter($values, static fn ($value) => $value !== null),
+        ));
+
+        if ($values === []) {
+            return new self([], [], '', null, null, null, null);
+        }
+
+        $min = min($values);
+        $max = max($values);
+        $range = $max - $min;
+        if ($range < 0.000001) {
+            $range = 1.0;
+        }
+
+        $plotW = self::VIEW_WIDTH - (2 * self::PADDING);
+        $plotH = self::VIEW_HEIGHT - (2 * self::PADDING);
+        $count = count($values);
+
+        $points = [];
+        foreach ($values as $i => $value) {
+            $x = self::PADDING + ($count === 1 ? $plotW / 2 : ($i / ($count - 1)) * $plotW);
+            $normalized = ($value - $min) / $range;
+            $y = self::PADDING + $plotH - ($normalized * $plotH);
+            $points[] = [
+                'x' => round($x, 2),
+                'y' => round($y, 2),
+                'value' => $value,
+            ];
+        }
+
+        $polylinePoints = implode(' ', array_map(
+            static fn (array $point): string => sprintf('%.2f,%.2f', $point['x'], $point['y']),
+            $points,
+        ));
+
+        $zeroLineY = null;
+        if ($min < 0 && $max > 0) {
+            $zeroNormalized = (0 - $min) / $range;
+            $zeroLineY = self::PADDING + $plotH - ($zeroNormalized * $plotH);
+        }
+
+        return new self(
+            $values,
+            $points,
+            $polylinePoints,
+            $min,
+            $max,
+            $values[$count - 1],
+            $zeroLineY,
+        );
+    }
+
+    public function hasData(): bool
+    {
+        return $this->values !== [];
+    }
+}
