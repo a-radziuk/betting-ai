@@ -190,7 +190,9 @@ class PlayerStatsPageTest extends TestCase
         $this->assertStringContainsString('+15.50', $html);
         $this->assertStringContainsString('points="', $html);
         $this->assertStringContainsString('user-results-chart-dot', $html);
+        $this->assertStringContainsString('user-results-chart-dot--origin', $html);
         $this->assertStringContainsString('user-results-chart-tooltip', $html);
+        $this->assertStringContainsString('>0.00</text>', $html);
     }
 
     public function test_displays_extended_profile_fields_when_set(): void

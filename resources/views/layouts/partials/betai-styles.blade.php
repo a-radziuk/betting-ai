@@ -606,6 +606,17 @@
         stroke: #eaf0ff;
     }
 
+    .user-results-chart-dot--origin {
+        fill: #9fb0d3;
+        stroke: #6b7a99;
+    }
+
+    .user-results-chart-point--origin:hover .user-results-chart-dot--origin,
+    .user-results-chart-point--origin:focus-visible .user-results-chart-dot--origin {
+        fill: #b8c8e8;
+        stroke: #9fb0d3;
+    }
+
     .user-results-chart-tooltip {
         opacity: 0;
         pointer-events: none;

@@ -7,17 +7,18 @@ use PHPUnit\Framework\TestCase;
 
 class PlayerWalletResultChartTest extends TestCase
 {
-    public function test_builds_polyline_for_multiple_values(): void
+    public function test_builds_polyline_with_origin_point_first(): void
     {
-        $chart = PlayerWalletResultChart::fromValues([0, 10, 5, 20]);
+        $chart = PlayerWalletResultChart::fromValues([10, 5, 20]);
 
         $this->assertTrue($chart->hasData());
         $this->assertCount(4, $chart->points);
-        $this->assertSame(0.0, $chart->min);
-        $this->assertSame(20.0, $chart->max);
+        $this->assertTrue($chart->points[0]['isOrigin']);
+        $this->assertSame(0.0, $chart->points[0]['value']);
+        $this->assertSame(10.0, $chart->points[1]['value']);
+        $this->assertFalse($chart->points[3]['isOrigin']);
         $this->assertSame(20.0, $chart->latest);
         $this->assertStringContainsString(' ', $chart->polylinePoints);
-        $this->assertSame(20.0, $chart->points[3]['value']);
     }
 
     public function test_empty_values_produce_no_chart_data(): void
@@ -30,12 +31,15 @@ class PlayerWalletResultChartTest extends TestCase
         $this->assertNull($chart->latest);
     }
 
-    public function test_single_value_produces_one_point(): void
+    public function test_single_bet_includes_origin_and_bet_points(): void
     {
         $chart = PlayerWalletResultChart::fromValues([42.5]);
 
         $this->assertTrue($chart->hasData());
-        $this->assertMatchesRegularExpression('/^\d+\.\d+,\d+\.\d+$/', $chart->polylinePoints);
+        $this->assertCount(2, $chart->points);
+        $this->assertTrue($chart->points[0]['isOrigin']);
+        $this->assertSame(0.0, $chart->points[0]['value']);
+        $this->assertSame(42.5, $chart->points[1]['value']);
         $this->assertSame(42.5, $chart->latest);
     }
 
@@ -44,5 +48,6 @@ class PlayerWalletResultChartTest extends TestCase
         $chart = PlayerWalletResultChart::fromValues([-10, 10]);
 
         $this->assertNotNull($chart->zeroLineY);
+        $this->assertTrue($chart->points[0]['isOrigin']);
     }
 }

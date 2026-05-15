@@ -11,8 +11,8 @@ final class PlayerWalletResultChart
     private const PADDING = 4;
 
     /**
-     * @param  list<float>  $values  Chronological wallet_total_result values (oldest → newest).
-     * @param  list<array{x: float, y: float, value: float}>  $points
+     * @param  list<float>  $values  Chronological wallet_total_result values (oldest → newest), excluding the origin.
+     * @param  list<array{x: float, y: float, value: float, isOrigin: bool}>  $points
      */
     public function __construct(
         public readonly array $values,
@@ -38,8 +38,17 @@ final class PlayerWalletResultChart
             return new self([], [], '', null, null, null, null);
         }
 
-        $min = min($values);
-        $max = max($values);
+        $isFromOrigin = false;
+
+        if (count($values) <=  30) {
+            $isFromOrigin = true;
+            $chartValues = array_merge([0.0], $values);
+        } else {
+            $chartValues = array_merge($values);
+        }
+
+        $min = min($chartValues);
+        $max = max($chartValues);
         $range = $max - $min;
         if ($range < 0.000001) {
             $range = 1.0;
@@ -47,10 +56,10 @@ final class PlayerWalletResultChart
 
         $plotW = self::VIEW_WIDTH - (2 * self::PADDING);
         $plotH = self::VIEW_HEIGHT - (2 * self::PADDING);
-        $count = count($values);
+        $count = count($chartValues);
 
         $points = [];
-        foreach ($values as $i => $value) {
+        foreach ($chartValues as $i => $value) {
             $x = self::PADDING + ($count === 1 ? $plotW / 2 : ($i / ($count - 1)) * $plotW);
             $normalized = ($value - $min) / $range;
             $y = self::PADDING + $plotH - ($normalized * $plotH);
@@ -58,6 +67,7 @@ final class PlayerWalletResultChart
                 'x' => round($x, 2),
                 'y' => round($y, 2),
                 'value' => $value,
+                'isOrigin' => $i === 0 && $isFromOrigin,
             ];
         }
 
@@ -78,7 +88,7 @@ final class PlayerWalletResultChart
             $polylinePoints,
             $min,
             $max,
-            $values[$count - 1],
+            $values[array_key_last($values)],
             $zeroLineY,
         );
     }

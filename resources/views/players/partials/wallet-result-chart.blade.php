@@ -5,7 +5,11 @@
         ? '#9fb0d3'
         : ($latest > 0.000001 ? '#4cff9d' : ($latest < -0.000001 ? '#ff9a9a' : '#9fb0d3'));
 
-    $formatChartValue = static function (float $value): string {
+    $formatChartValue = static function (float $value, bool $isOrigin = false): string {
+        if ($isOrigin) {
+            return '0.00';
+        }
+
         return ($value > 0 ? '+' : '').number_format($value, 2);
     };
 @endphp
@@ -39,12 +43,13 @@
             />
             @foreach ($resultChart->points as $point)
                 @php
-                    $label = $formatChartValue($point['value']);
+                    $isOrigin = $point['isOrigin'] ?? false;
+                    $label = $formatChartValue($point['value'], $isOrigin);
                     $tooltipY = $point['y'] > 10 ? $point['y'] - 5.5 : $point['y'] + 7.5;
                     $tooltipWidth = max(22, strlen($label) * 2.35);
                     $tooltipHalf = $tooltipWidth / 2;
                 @endphp
-                <g class="user-results-chart-point" tabindex="0">
+                <g @class(['user-results-chart-point', 'user-results-chart-point--origin' => $isOrigin]) tabindex="0">
                     <circle
                         cx="{{ $point['x'] }}"
                         cy="{{ $point['y'] }}"
@@ -55,7 +60,7 @@
                         cx="{{ $point['x'] }}"
                         cy="{{ $point['y'] }}"
                         r="2.25"
-                        class="user-results-chart-dot"
+                        @class(['user-results-chart-dot', 'user-results-chart-dot--origin' => $isOrigin])
                     />
                     <g class="user-results-chart-tooltip" transform="translate({{ $point['x'] }}, {{ $tooltipY }})">
                         <rect
