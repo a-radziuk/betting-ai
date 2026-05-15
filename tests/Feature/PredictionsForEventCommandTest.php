@@ -195,4 +195,50 @@ class PredictionsForEventCommandTest extends TestCase
         $this->assertStringContainsString('Event not found', Artisan::output());
         Http::assertNothingSent();
     }
+
+    public function test_uses_safest_prediction_type_when_passed_as_2(): void
+    {
+        $this->seedFutureEventWithOdds();
+
+        Http::fake([
+            'http://127.0.0.1:7999/api/odds' => Http::response([
+                'oddsId' => 333,
+                'bankPercentage' => 2,
+                'explanation' => 'Safest line.',
+            ], 200),
+        ]);
+
+        $exit = Artisan::call('predictions:for-event', [
+            'eventId' => 88001,
+            'predictionType' => 2,
+        ]);
+
+        $this->assertSame(0, $exit);
+
+        $this->assertDatabaseHas('event_predictions', [
+            'event_id' => 88001,
+            'prediction_type' => EventPrediction::PREDICTION_TYPE_GET_ONE_SAFEST_FOR_EVENT_DEFAULT,
+            'is_active' => true,
+        ]);
+
+        Http::assertSent(function ($request) {
+            return ($request->data()['type'] ?? null) === EventPrediction::PREDICTION_TYPE_GET_ONE_SAFEST_FOR_EVENT_DEFAULT;
+        });
+    }
+
+    public function test_fails_for_invalid_prediction_type(): void
+    {
+        $this->seedFutureEventWithOdds();
+
+        Http::fake();
+
+        $exit = Artisan::call('predictions:for-event', [
+            'eventId' => 88001,
+            'predictionType' => 4,
+        ]);
+
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('predictionType must be 1, 2, or 3', Artisan::output());
+        Http::assertNothingSent();
+    }
 }

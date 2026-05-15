@@ -10,6 +10,20 @@ class EventPrediction extends Model
 {
     public const PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT = 'GET_ONE_BEST_FOR_EVENT_DEFAULT';
 
+    public const PREDICTION_TYPE_GET_ONE_SAFEST_FOR_EVENT_DEFAULT = 'GET_ONE_SAFEST_FOR_EVENT_DEFAULT';
+
+    public const PREDICTION_TYPE_GET_ONE_UPSET_FOR_EVENT_DEFAULT = 'GET_ONE_UPSET_FOR_EVENT_DEFAULT';
+
+    public static function predictionTypeFor(int $typeKey): ?string
+    {
+        return match ($typeKey) {
+            1 => self::PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT,
+            2 => self::PREDICTION_TYPE_GET_ONE_SAFEST_FOR_EVENT_DEFAULT,
+            3 => self::PREDICTION_TYPE_GET_ONE_UPSET_FOR_EVENT_DEFAULT,
+            default => null,
+        };
+    }
+
     protected $fillable = [
         'event_id',
         'prediction_type',

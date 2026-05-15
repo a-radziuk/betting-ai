@@ -106,7 +106,9 @@ final class EventOddsExportPayload
             return null;
         }
 
-        return array_map(function ($row) use ($standings_promrel) {
+        $totalGamesInTheTournament = (count($standings['rows']) - 1) * 2;
+
+        return array_map(function ($row) use ($standings_promrel, $totalGamesInTheTournament) {
             if (! is_array($row)) {
                 return $row;
             }
@@ -121,7 +123,17 @@ final class EventOddsExportPayload
                 }
                 $effect .= $pr['name'] ?? '';
                 $row['outcome'] = $effect;
+                $row['outcome_positivity'] = $pr['positivity'] ?? 'Unknown';
+            } else {
+                $row['outcome'] = 'None';
+                $row['outcome_positivity'] = 0;
             }
+
+            $remainingGames = $totalGamesInTheTournament - $row['played'];
+            $potentialPointsToScore = $remainingGames * 3;
+
+            $row['remaining_games'] = $remainingGames;
+            $row['potential_points'] = $potentialPointsToScore;
 
             return $row;
         }, array_values($standings['rows']));

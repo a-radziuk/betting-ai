@@ -12,13 +12,21 @@ use Throwable;
 class PredictionsForEventCommand extends Command
 {
     protected $signature = 'predictions:for-event
-        {eventId : Event primary key}';
+        {eventId : Event primary key}
+        {predictionType=1 : Prediction type: 1=best, 2=safest, 3=upset}';
 
-    protected $description = 'Request best-odds prediction for a future event and store the API response';
+    protected $description = 'Request a prediction for a future event and store the API response';
 
     public function handle(): int
     {
         $eventId = $this->argument('eventId');
+        $predictionType = EventPrediction::predictionTypeFor((int) $this->argument('predictionType'));
+
+        if ($predictionType === null) {
+            $this->components->error('predictionType must be 1, 2, or 3.');
+
+            return self::FAILURE;
+        }
 
         $event = EventOddsExportPayload::findForExport($eventId);
 
@@ -35,7 +43,7 @@ class PredictionsForEventCommand extends Command
         }
 
         $body = [
-            'type' => EventPrediction::PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT,
+            'type' => $predictionType,
             'event' => EventOddsExportPayload::build($event),
         ];
 
@@ -70,8 +78,6 @@ class PredictionsForEventCommand extends Command
 
             return self::FAILURE;
         }
-
-        $predictionType = EventPrediction::PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT;
 
         DB::transaction(function () use ($event, $data, $predictionType): void {
             EventPrediction::query()
