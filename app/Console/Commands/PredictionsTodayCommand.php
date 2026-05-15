@@ -3,18 +3,28 @@
 namespace App\Console\Commands;
 
 use App\Models\Event;
+use App\Models\EventPrediction;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
 class PredictionsTodayCommand extends Command
 {
-    protected $signature = 'predictions:today';
+    protected $signature = 'predictions:today
+        {predictionType=1 : Prediction type: 1=best, 2=safest, 3=upset}';
 
     protected $description = 'Run predictions:for-event for each unresolved event scheduled today that has not started yet';
 
     public function handle(): int
     {
+        $predictionTypeKey = (int) $this->argument('predictionType');
+
+        if (EventPrediction::predictionTypeFor($predictionTypeKey) === null) {
+            $this->components->error('predictionType must be 1, 2, or 3.');
+
+            return self::FAILURE;
+        }
+
         $tz = config('app.timezone');
         $today = Carbon::now($tz)->format('Y-m-d');
 
@@ -37,7 +47,10 @@ class PredictionsTodayCommand extends Command
         foreach ($events as $event) {
             $this->components->info("Running predictions:for-event for event {$event->id}...");
 
-            $exitCode = Artisan::call('predictions:for-event', ['eventId' => $event->id]);
+            $exitCode = Artisan::call('predictions:for-event', [
+                'eventId' => $event->id,
+                'predictionType' => $predictionTypeKey,
+            ]);
 
             if ($exitCode !== self::SUCCESS) {
                 $failed++;

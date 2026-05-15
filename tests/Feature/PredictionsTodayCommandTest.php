@@ -141,4 +141,50 @@ class PredictionsTodayCommandTest extends TestCase
         $this->assertStringContainsString('No unresolved', Artisan::output());
         Http::assertNothingSent();
     }
+
+    public function test_passes_prediction_type_to_for_event_command(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00', $tz));
+
+        $this->seedExportableEvent(89010, 89020, Carbon::parse('2026-06-01 18:00:00', $tz));
+
+        Http::fake([
+            'http://127.0.0.1:7999/api/odds' => Http::response([
+                'oddsId' => 89020,
+                'bankPercentage' => 4,
+                'explanation' => 'Upset pick.',
+            ], 200),
+        ]);
+
+        $exit = Artisan::call('predictions:today', ['predictionType' => 3]);
+
+        $this->assertSame(0, $exit);
+
+        $this->assertDatabaseHas('event_predictions', [
+            'event_id' => 89010,
+            'prediction_type' => EventPrediction::PREDICTION_TYPE_GET_ONE_UPSET_FOR_EVENT_DEFAULT,
+            'is_active' => true,
+        ]);
+
+        Http::assertSent(function ($request) {
+            return ($request->data()['type'] ?? null) === EventPrediction::PREDICTION_TYPE_GET_ONE_UPSET_FOR_EVENT_DEFAULT;
+        });
+    }
+
+    public function test_fails_for_invalid_prediction_type(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00', $tz));
+
+        $this->seedExportableEvent(89010, 89020, Carbon::parse('2026-06-01 18:00:00', $tz));
+
+        Http::fake();
+
+        $exit = Artisan::call('predictions:today', ['predictionType' => 9]);
+
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('predictionType must be 1, 2, or 3', Artisan::output());
+        Http::assertNothingSent();
+    }
 }
