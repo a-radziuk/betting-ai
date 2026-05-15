@@ -20,7 +20,14 @@
 <main class="container">
     @php
         $avatarUrl = $player->profileAvatarUrl();
-        $hasProfileDetails = $avatarUrl !== null
+        $wallet = $player->wallet;
+        $walletCurrency = $wallet?->currency ?? 'EUR';
+        $walletStartBalance = $wallet !== null ? (float) $wallet->start_balance : null;
+        $walletTotalResult = $wallet !== null ? (float) $wallet->total_result : null;
+        $walletAmountInPlay = $wallet !== null ? (float) $wallet->amount_in_play : null;
+        $absoluteBankValue = $wallet !== null ? (float) $wallet->balance : null;
+        $hasProfileDetails = $absoluteBankValue !== null
+            || $avatarUrl !== null
             || filled($player->tagline)
             || filled($player->bio)
             || filled($player->city)
@@ -71,6 +78,20 @@
                     <div class="player-profile-row">
                         <dt class="player-profile-label">{{ __('Country') }}</dt>
                         <dd class="player-profile-value">{{ $player->country }}</dd>
+                    </div>
+                @endif
+                @if ($absoluteBankValue !== null)
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Absolute Bank Value') }}</dt>
+                        <dd class="player-profile-value player-profile-bank tabular-nums">
+                            @include('players.partials.bank-formula', [
+                                'walletStartBalance' => $walletStartBalance,
+                                'walletTotalResult' => $walletTotalResult,
+                                'walletAmountInPlay' => $walletAmountInPlay,
+                                'absoluteBankValue' => $absoluteBankValue,
+                                'walletCurrency' => $walletCurrency,
+                            ])
+                        </dd>
                     </div>
                 @endif
             </dl>

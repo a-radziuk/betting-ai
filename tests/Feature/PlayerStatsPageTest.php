@@ -357,6 +357,87 @@ class PlayerStatsPageTest extends TestCase
         $this->assertStringContainsString('London', $html);
         $this->assertStringContainsString('United Kingdom', $html);
         $this->assertStringContainsString(Storage::disk('public')->url($path), $html);
+        $this->assertStringContainsString('Absolute Bank Value', $html);
+    }
+
+    public function test_displays_absolute_bank_value_from_wallet_balance(): void
+    {
+        $player = User::factory()->create();
+        UserWallet::query()->where('user_id', $player->id)->update([
+            'start_balance' => 1000,
+            'total_result' => 284.56,
+            'amount_in_play' => 50,
+            'balance' => 1234.56,
+            'currency' => 'EUR',
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('class="player-profile-label">Absolute Bank Value</dt>', $html);
+        $this->assertStringContainsString('player-profile-bank-formula', $html);
+        $this->assertStringContainsString('player-profile-bank-term--result-pos', $html);
+        $this->assertGreaterThanOrEqual(4, substr_count($html, 'metric-info-tooltip'));
+        $this->assertStringContainsString('Starting wallet balance', $html);
+        $this->assertStringContainsString('1,000.00', $html);
+        $this->assertStringContainsString('284.56', $html);
+        $this->assertStringContainsString('50.00', $html);
+        $this->assertStringContainsString('1,234.56 EUR', $html);
+    }
+
+    public function test_absolute_bank_value_colors_balance_red_when_below_start_balance(): void
+    {
+        $player = User::factory()->create();
+        UserWallet::query()->where('user_id', $player->id)->update([
+            'start_balance' => 1000,
+            'total_result' => -50,
+            'amount_in_play' => 0,
+            'balance' => 950,
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('player-profile-bank-term--balance-neg', $html);
+        $this->assertStringContainsString('950.00 EUR', $html);
+    }
+
+    public function test_absolute_bank_value_colors_balance_green_when_at_or_above_start_balance(): void
+    {
+        $player = User::factory()->create();
+        UserWallet::query()->where('user_id', $player->id)->update([
+            'start_balance' => 1000,
+            'total_result' => 100,
+            'amount_in_play' => 0,
+            'balance' => 1100,
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('player-profile-bank-term--balance-pos', $html);
+        $this->assertStringContainsString('1,100.00 EUR', $html);
+    }
+
+    public function test_absolute_bank_value_colors_negative_total_result_red(): void
+    {
+        $player = User::factory()->create();
+        UserWallet::query()->where('user_id', $player->id)->update([
+            'start_balance' => 1000,
+            'total_result' => -50,
+            'amount_in_play' => 0,
+            'balance' => 950,
+        ]);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('player-profile-bank-term--result-neg', $html);
+        $this->assertStringContainsString('-50.00', $html);
     }
 
     public function test_hides_extended_profile_rows_when_empty(): void
@@ -373,7 +454,11 @@ class PlayerStatsPageTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringNotContainsString('class="card card-pad player-profile"', $html);
+        $this->assertStringContainsString('class="card card-pad player-profile"', $html);
+        $this->assertStringContainsString('class="player-profile-label">Absolute Bank Value</dt>', $html);
+        $this->assertStringContainsString('player-profile-bank-formula', $html);
+        $this->assertStringContainsString('Stake currently locked in pending bets', $html);
+        $this->assertStringContainsString('0.00 EUR', $html);
         $this->assertStringNotContainsString('class="player-profile-label">Tagline</dt>', $html);
         $this->assertStringNotContainsString('class="player-profile-label">Bio</dt>', $html);
         $this->assertStringNotContainsString('class="player-profile-label">City</dt>', $html);

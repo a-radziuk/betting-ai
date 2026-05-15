@@ -1029,6 +1029,63 @@
         line-height: 1.5;
     }
 
+    .player-profile-bank {
+        font-weight: 700;
+        color: #eaf0ff;
+        letter-spacing: 0.02em;
+    }
+
+    .player-profile-bank-formula {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem 0.55rem;
+        line-height: 1.4;
+    }
+
+    .player-profile-bank-term {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .player-profile-bank-amount {
+        font-size: 1.2rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+        color: #eaf0ff;
+    }
+
+    .player-profile-bank-term--result-pos .player-profile-bank-amount {
+        color: var(--ok);
+    }
+
+    .player-profile-bank-term--result-neg .player-profile-bank-amount {
+        color: #ff9a9a;
+    }
+
+    .player-profile-bank-term--balance-pos .player-profile-bank-amount {
+        color: var(--ok);
+    }
+
+    .player-profile-bank-term--balance-neg .player-profile-bank-amount {
+        color: #ff9a9a;
+    }
+
+    .player-profile-bank-op {
+        color: var(--muted);
+        font-size: 1.15rem;
+        font-weight: 700;
+        line-height: 1;
+        user-select: none;
+    }
+
+    .player-profile-bank-formula .metric-info-icon {
+        width: 15px;
+        height: 15px;
+    }
+
     .player-profile-tagline {
         color: #8ab7ff;
         font-weight: 600;
