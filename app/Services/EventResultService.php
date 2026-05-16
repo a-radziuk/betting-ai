@@ -64,9 +64,21 @@ class EventResultService
      */
     private function settleBet(UserBet $bet, array $fullTime, array $additionalData): void
     {
+        $previousBet = UserBet::query()
+            ->where('user_id', $bet->user_id)
+            ->whereKeyNot($bet->id)
+            ->orderByDesc('resolved_order')
+            ->orderByDesc('id')
+            ->first();
+
+        $resolvedOrder = $previousBet !== null
+            ? $previousBet->resolved_order + 1
+            : 1;
+
         $odd = $bet->odd;
         if ($odd === null || $odd->selection === null || $odd->selection->market === null) {
             $this->refundBet($bet);
+            $this->applyResolvedOrder($bet, $resolvedOrder);
 
             return;
         }
@@ -76,6 +88,7 @@ class EventResultService
 
         if (! in_array($market->type, Market::SUPPORTED_TYPES, true)) {
             $this->refundBet($bet);
+            $this->applyResolvedOrder($bet, $resolvedOrder);
 
             return;
         }
@@ -83,6 +96,7 @@ class EventResultService
         $goals = $this->resolveGoalsForMarket($market, $fullTime, $additionalData);
         if ($goals === null) {
             $this->refundBet($bet);
+            $this->applyResolvedOrder($bet, $resolvedOrder);
 
             return;
         }
@@ -93,6 +107,13 @@ class EventResultService
             'refund' => $this->refundBet($bet),
             default => $this->loseBet($bet),
         };
+
+        $this->applyResolvedOrder($bet, $resolvedOrder);
+    }
+
+    private function applyResolvedOrder(UserBet $bet, int $resolvedOrder): void
+    {
+        $bet->update(['resolved_order' => $resolvedOrder]);
     }
 
     /**

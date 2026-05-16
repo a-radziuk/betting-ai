@@ -251,12 +251,18 @@ Route::get('/players/{user}', function (User $user) {
         ->join('events', 'events.id', '=', 'user_bets.event_id')
         ->orderBy('user_bets.updated_at', 'desc');
 
-    $chartValues = (clone $resolvedBetsQuery)
-        ->orderByDesc('events.start_time')
+    $chartValues = UserBet::query()
+        ->where('user_bets.user_id', $user->id)
+        ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
+        ->orderByDesc('user_bets.resolved_order')
         ->orderByDesc('user_bets.id')
         ->limit(30)
-        ->pluck('user_bets.wallet_total_result')
-        ->reverse()
+        ->get(['user_bets.wallet_total_result', 'user_bets.resolved_order', 'user_bets.id'])
+        ->sortBy([
+            ['resolved_order', 'asc'],
+            ['id', 'asc'],
+        ])
+        ->pluck('wallet_total_result')
         ->values()
         ->all();
 

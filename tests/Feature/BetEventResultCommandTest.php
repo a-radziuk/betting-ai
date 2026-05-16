@@ -75,6 +75,87 @@ class BetEventResultCommandTest extends TestCase
         return $user;
     }
 
+    public function test_settles_first_bet_with_resolved_order_one(): void
+    {
+        $this->seedMatchResultBet(88010, 'HOME', 2.0);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88010,
+            'result' => '2:0',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(1, UserBet::query()->value('resolved_order'));
+    }
+
+    public function test_settles_bet_with_resolved_order_after_previous_resolved_bet(): void
+    {
+        $user = $this->seedMatchResultBet(88011, 'HOME', 2.0);
+
+        UserBet::query()->where('user_id', $user->id)->update([
+            'status' => UserBet::STATUS_WON,
+            'resolved_order' => 4,
+        ]);
+
+        $eventId = 88012;
+        $home = Team::query()->firstOrFail();
+        $away = Team::query()->skip(1)->firstOrFail();
+
+        Event::query()->create([
+            'id' => $eventId,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => $eventId * 100 + 1,
+            'event_id' => $eventId,
+            'type' => Market::TYPE_MATCH_RESULT,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        $selection = Selection::query()->create([
+            'id' => $eventId * 100 + 2,
+            'market_id' => $market->id,
+            'name' => 'HOME',
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+
+        $odd = Odd::query()->create([
+            'id' => $eventId * 100 + 3,
+            'selection_id' => $selection->id,
+            'odds' => 2.0,
+            'probability' => 0.5,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $pendingBet = UserBet::query()->create([
+            'user_id' => $user->id,
+            'event_id' => $eventId,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.0,
+            'potential_return' => 20,
+            'status' => UserBet::STATUS_PENDING,
+        ]);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => $eventId,
+            'result' => '2:0',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(5, $pendingBet->fresh()->resolved_order);
+    }
+
     public function test_settles_win_and_credits_wallet(): void
     {
         $user = $this->seedMatchResultBet(88001, 'HOME', 2.0);

@@ -11,7 +11,7 @@ final class PlayerWalletResultChart
     private const PADDING = 4;
 
     /**
-     * @param  list<float>  $values  Chronological wallet_total_result values (oldest → newest), excluding the origin.
+     * @param  list<float>  $values  wallet_total_result values in resolved_order (asc), excluding the origin.
      * @param  list<array{x: float, y: float, value: float, isOrigin: bool}>  $points
      */
     public function __construct(
@@ -38,14 +38,7 @@ final class PlayerWalletResultChart
             return new self([], [], '', null, null, null, null);
         }
 
-        $isFromOrigin = false;
-
-        if (count($values) <=  30) {
-            $isFromOrigin = true;
-            $chartValues = array_merge([0.0], $values);
-        } else {
-            $chartValues = array_merge($values);
-        }
+        $chartValues = array_merge([0.0], $values);
 
         $min = min($chartValues);
         $max = max($chartValues);
@@ -67,7 +60,7 @@ final class PlayerWalletResultChart
                 'x' => round($x, 2),
                 'y' => round($y, 2),
                 'value' => $value,
-                'isOrigin' => $i === 0 && $isFromOrigin,
+                'isOrigin' => $i === 0,
             ];
         }
 
