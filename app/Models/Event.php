@@ -53,6 +53,14 @@ class Event extends Model
     }
 
     /**
+     * @return HasMany<EventAnalysis, $this>
+     */
+    public function eventAnalyses(): HasMany
+    {
+        return $this->hasMany(EventAnalysis::class);
+    }
+
+    /**
      * @return HasMany<UserBet, $this>
      */
     public function userBets(): HasMany
