@@ -27,6 +27,7 @@ class UserBet extends Model
         'real_return',
         'wallet_total_result',
         'status',
+        'resolved_order',
         'prediction_type',
         'explanation',
     ];
@@ -34,6 +35,7 @@ class UserBet extends Model
     protected function casts(): array
     {
         return [
+            'resolved_order' => 'integer',
             'stake' => 'decimal:2',
             'odds_at_bet' => 'decimal:4',
             'potential_return' => 'decimal:2',
