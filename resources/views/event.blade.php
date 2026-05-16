@@ -32,6 +32,22 @@
 
         @include('partials.event-user-bets', ['eventBets' => $eventBets ?? collect()])
 
+        @include('partials.event-analysis', ['eventAnalysis' => $eventAnalysis ?? null])
+
+        @if ($tournament)
+            <section class="card event-page-standings" aria-label="League standings">
+                <div class="tournament-section-head">
+                    <h2 class="tournament-section-title">{{ $tournament->name }}</h2>
+                    <a href="{{ route('tournaments.show', $tournament) }}" class="tournament-see-all-link">Full league page</a>
+                </div>
+                @include('partials.tournament-standings-table', [
+                    'tournament' => $tournament,
+                    'standingsRows' => $standingsRows,
+                    'standingsPromrel' => $standingsPromrel,
+                ])
+            </section>
+        @endif
+
         @if ($event->markets->isEmpty())
             <div class="event-empty">No markets available for this event yet.</div>
         @else

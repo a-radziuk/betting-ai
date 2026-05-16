@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Event;
+use App\Models\EventAnalysis;
 use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Selection;
 use App\Models\Team;
+use App\Models\Tournament;
 use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserWallet;
@@ -204,6 +206,121 @@ class EventShowPageTest extends TestCase
             ->assertOk()
             ->assertSee('Has Resolved History', false)
             ->assertDontSee('Pending Only', false);
+    }
+
+    public function test_event_page_shows_strongest_analysis_before_markets(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92020);
+
+        EventAnalysis::query()->create([
+            'event_id' => $event->id,
+            'type' => EventAnalysis::TYPE_GPT1,
+            'strength' => 4,
+            'event_name' => 'Weak analysis',
+            'likely_outcome' => EventAnalysis::LIKELY_OUTCOME_DRAW,
+            'approximate_goals' => 1,
+            'description' => 'Lower strength should not appear.',
+            'home_motivation' => 3,
+            'away_motivation' => 3,
+            'home_class' => 3,
+            'away_class' => 3,
+        ]);
+
+        EventAnalysis::query()->create([
+            'event_id' => $event->id,
+            'type' => EventAnalysis::TYPE_MANUAL,
+            'strength' => EventAnalysis::STRENGTH_MAX,
+            'event_name' => 'Event Home vs Event Away',
+            'likely_outcome' => EventAnalysis::LIKELY_OUTCOME_AWAY_WIN,
+            'approximate_goals' => 2,
+            'description' => 'Augsburg chase European places.',
+            'home_motivation' => 2,
+            'away_motivation' => 6,
+            'home_class' => 4,
+            'away_class' => 5,
+            'influenced_by' => ['Other Fixture'],
+            'influenced_by_event_ids' => ['92021'],
+        ]);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Match analysis', false)
+            ->assertSee('Away win', false)
+            ->assertSee('Augsburg chase European places.', false)
+            ->assertSee('Other Fixture', false)
+            ->assertDontSee('Lower strength should not appear.', false)
+            ->getContent();
+
+        $posAnalysis = strpos($html, 'event-analysis-section');
+        $posMarkets = strpos($html, 'market-grid');
+        $this->assertNotFalse($posAnalysis);
+        $this->assertNotFalse($posMarkets);
+        $this->assertLessThan($posMarkets, $posAnalysis);
+    }
+
+    public function test_event_page_hides_analysis_when_none_exist(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92022);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('<section class="event-analysis-section"', $html);
+    }
+
+    public function test_event_page_shows_tournament_standings_before_markets(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'Bundesliga',
+            'rank' => 1,
+            'standings' => [
+                'rows' => [
+                    [
+                        'position' => 1,
+                        'team' => 'Alpha FC',
+                        'team_display_name' => 'Alpha FC',
+                        'played' => 5,
+                        'won' => 3,
+                        'drawn' => 1,
+                        'lost' => 1,
+                        'goals_for' => 10,
+                        'goals_against' => 4,
+                        'goal_difference' => 6,
+                        'points' => 10,
+                        'form' => null,
+                    ],
+                ],
+            ],
+        ]);
+
+        ['event' => $event] = $this->seedEventWithOdd(92031);
+        $event->update(['tournament_id' => $tournament->id]);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Bundesliga', false)
+            ->assertSee('Alpha FC', false)
+            ->assertSee('League standings', false)
+            ->assertSee('Full league page', false)
+            ->getContent();
+
+        $posStandings = strpos($html, 'event-page-standings');
+        $posMarkets = strpos($html, 'market-grid');
+        $this->assertNotFalse($posStandings);
+        $this->assertNotFalse($posMarkets);
+        $this->assertLessThan($posMarkets, $posStandings);
+    }
+
+    public function test_event_page_hides_standings_when_event_has_no_tournament(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92032);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('<section class="card event-page-standings"', $html);
     }
 
     public function test_event_page_hides_tips_section_when_no_bets(): void

@@ -18,6 +18,7 @@ class EventAnalysis extends Model
     public const STRENGTH_MAX = 10;
 
     public const TYPE_MANUAL = 'GPT_MANUAL';
+
     public const TYPE_GPT1 = 'GPT_1';
 
     /**
@@ -40,6 +41,16 @@ class EventAnalysis extends Model
     public static function isValidStrength(int $strength): bool
     {
         return $strength >= self::STRENGTH_MIN && $strength <= self::STRENGTH_MAX;
+    }
+
+    public function likelyOutcomeLabel(): string
+    {
+        return match ($this->likely_outcome) {
+            self::LIKELY_OUTCOME_HOME_WIN => 'Home win',
+            self::LIKELY_OUTCOME_DRAW => 'Draw',
+            self::LIKELY_OUTCOME_AWAY_WIN => 'Away win',
+            default => $this->likely_outcome,
+        };
     }
 
     protected $fillable = [

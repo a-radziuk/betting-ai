@@ -670,6 +670,151 @@
         color: #eaf0ff;
     }
 
+    /* Event page — league standings */
+    .event-page-standings {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Event page — match analysis */
+    .event-analysis-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .event-analysis-title {
+        margin: 0 0 0.85rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #eaf0ff;
+        letter-spacing: 0.02em;
+    }
+
+    .event-analysis-card {
+        border: 1px solid var(--border);
+        border-radius: 0.95rem;
+        background: var(--surface);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+        padding: 1.1rem 1.2rem;
+    }
+
+    .event-analysis-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(130, 162, 255, 0.12);
+    }
+
+    .event-analysis-outcome,
+    .event-analysis-goals {
+        min-width: 7rem;
+    }
+
+    .event-analysis-outcome-label,
+    .event-analysis-goals-label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .event-analysis-outcome-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .event-analysis-goals-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #eaf0ff;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .event-analysis-strength {
+        margin-left: auto;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #c8d4ff;
+        background: rgba(130, 162, 255, 0.12);
+        border: 1px solid rgba(130, 162, 255, 0.28);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .event-analysis-description {
+        margin: 0 0 1rem;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        color: var(--text);
+    }
+
+    .event-analysis-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+        gap: 0.65rem 1rem;
+        margin: 0;
+    }
+
+    .event-analysis-metric {
+        margin: 0;
+    }
+
+    .event-analysis-metric-label {
+        display: block;
+        margin: 0 0 0.2rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .event-analysis-metric-value {
+        display: block;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #eaf0ff;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .event-analysis-influenced {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(130, 162, 255, 0.12);
+    }
+
+    .event-analysis-influenced-title {
+        margin: 0 0 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .event-analysis-influenced-list {
+        margin: 0;
+        padding-left: 1.15rem;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: var(--text);
+    }
+
+    .event-analysis-influenced-link {
+        color: var(--accent);
+        text-decoration: none;
+    }
+
+    .event-analysis-influenced-link:hover {
+        text-decoration: underline;
+    }
+
     /* Event odds page */
     .market-grid {
         display: grid;

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
+use App\Models\EventAnalysis;
 use App\Models\EventResult;
 use App\Models\Market;
 use App\Models\Odd;
@@ -149,6 +150,7 @@ Route::get('/events/{event}', function (Event $event) {
     $event->load([
         'homeTeam',
         'awayTeam',
+        'tournament',
         'markets' => fn ($query) => $query
             ->where('is_supported_market', true)
             ->with([
@@ -191,7 +193,24 @@ Route::get('/events/{event}', function (Event $event) {
         }
     }
 
-    return view('event', compact('event', 'eventBets'));
+    $eventAnalysis = null;
+    if (Schema::hasTable('event_analyses')) {
+        $eventAnalysis = EventAnalysis::query()
+            ->where('event_id', $event->id)
+            ->orderByDesc('strength')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    $tournament = $event->tournament;
+    $standingsRows = [];
+    $standingsPromrel = [];
+    if ($tournament !== null) {
+        $standingsRows = is_array($tournament->standings) ? ($tournament->standings['rows'] ?? []) : [];
+        $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
+    }
+
+    return view('event', compact('event', 'eventBets', 'eventAnalysis', 'tournament', 'standingsRows', 'standingsPromrel'));
 })->name('events.show');
 
 Route::get('/players', function () {
