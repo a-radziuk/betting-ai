@@ -215,6 +215,70 @@ class EventExportCommandTest extends TestCase
         $this->assertCount(0, $emptyOdds['odds']);
     }
 
+    public function test_no_odds_omits_odds_from_export(): void
+    {
+        $tournament = Tournament::query()->create(['name' => 'No Odds League']);
+        $home = Team::query()->create([
+            'name' => 'H3',
+            'short_name' => 'H3',
+            'league' => 'England',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'A3',
+            'short_name' => 'A3',
+            'league' => 'England',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        Event::query()->create([
+            'id' => 99300,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::parse('2026-06-17 20:00:00', 'UTC'),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 99301,
+            'event_id' => 99300,
+            'type' => Market::TYPE_MATCH_RESULT,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        $selection = Selection::query()->create([
+            'id' => 99302,
+            'market_id' => $market->id,
+            'name' => 'HOME',
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+        Odd::query()->create([
+            'id' => 99303,
+            'selection_id' => $selection->id,
+            'odds' => 1.85,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $exit = Artisan::call('event:export', [
+            'eventId' => 99300,
+            '--no-odds' => true,
+        ]);
+        $decoded = json_decode(Artisan::output(), true);
+
+        $this->assertSame(0, $exit);
+        $this->assertSame('99300', $decoded['eventId']);
+        $this->assertSame('H3 vs A3', $decoded['eventName']);
+        $this->assertArrayHasKey('odds', $decoded);
+        $this->assertSame([], $decoded['odds']);
+    }
+
     public function test_fails_when_event_missing(): void
     {
         $exit = Artisan::call('event:export', ['eventId' => 99999999]);

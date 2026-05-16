@@ -282,6 +282,44 @@ class EventExportTodayCommandTest extends TestCase
         }
     }
 
+    public function test_full_with_no_odds_writes_standings_focused_instruction(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-17 10:00:00', $tz));
+        $jsonPath = storage_path('app/2026-09-17.json');
+        $txtPath = storage_path('app/2026-09-17.txt');
+
+        try {
+            $t = Tournament::query()->create(['name' => 'Standings Day']);
+            $h = Team::query()->create(['name' => 'HS', 'short_name' => 'HS', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'AS', 'short_name' => 'AS', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(105001, 105011, 105021, 105031, $t->id, $h->id, $a->id, Carbon::parse('2026-09-17 15:00:00', $tz));
+
+            $exit = Artisan::call('event:export-today', ['--full' => true, '--no-odds' => true]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($txtPath);
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('Above are 1 game happening today', $txt);
+            $this->assertStringContainsString('most likely outcome', $txt);
+            $this->assertStringContainsString('Analyse the standings thoroughly', $txt);
+            $this->assertStringContainsString('motivation', $txt);
+            $this->assertStringNotContainsString('1/ the safest bet', $txt);
+            $this->assertStringNotContainsString('odd_id: // id from the JSON', $txt);
+
+            $data = json_decode(file_get_contents($jsonPath), true);
+            $this->assertSame([], $data[0]['events'][0]['odds'] ?? null);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
+            }
+        }
+    }
+
     public function test_full_with_no_events_writes_txt_with_zero_games_instruction(): void
     {
         $tz = config('app.timezone');
@@ -304,6 +342,33 @@ class EventExportTodayCommandTest extends TestCase
                 if (is_file($p)) {
                     unlink($p);
                 }
+            }
+        }
+    }
+
+    public function test_full_with_no_events_and_no_odds_writes_standings_instruction(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-18 11:00:00', $tz));
+        $txtPath = storage_path('app/2026-09-18.txt');
+
+        try {
+            $exit = Artisan::call('event:export-today', ['--full' => true, '--no-odds' => true]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($txtPath);
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('Above are 0 games happening today', $txt);
+            $this->assertStringContainsString('most likely outcome', $txt);
+            $this->assertStringNotContainsString('1/ the safest bet', $txt);
+        } finally {
+            Carbon::setTestNow();
+            if (is_file($txtPath)) {
+                unlink($txtPath);
+            }
+            $jsonPath = storage_path('app/2026-09-18.json');
+            if (is_file($jsonPath)) {
+                unlink($jsonPath);
             }
         }
     }

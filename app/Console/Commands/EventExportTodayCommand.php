@@ -15,6 +15,7 @@ class EventExportTodayCommand extends Command
     protected $signature = 'event:export-today
         {tournamentId? : Optional tournament primary key; omit for all tournaments}
         {--no-markets= : Comma-separated market types to omit from each event export (passed to event:export)}
+        {--no-odds : Omit odds from each event export (passed to event:export)}
         {--full : Also write <date>.txt with the same JSON plus bet-finder instructions}';
 
     protected $description = 'Run event:export for each event scheduled today (app timezone) that has not started yet; write JSON (events grouped by tournament) to storage/app/<Y-m-d>.json; with --full, also write <Y-m-d>.txt (same JSON plus prompt)';
@@ -91,10 +92,10 @@ class EventExportTodayCommand extends Command
 
             $eventPayloads = [];
 
-            foreach ($eventGroup as $event) {
-                $code = Artisan::call('event:export', $this->eventExportArguments($event->id));
+            foreach ($eventGroup as $scheduledEvent) {
+                $code = Artisan::call('event:export', $this->eventExportArguments($scheduledEvent->id));
                 if ($code !== self::SUCCESS) {
-                    $this->components->error("event:export failed for event {$event->id}.");
+                    $this->components->error("event:export failed for event {$scheduledEvent->id}.");
 
                     return self::FAILURE;
                 }
@@ -102,15 +103,23 @@ class EventExportTodayCommand extends Command
                 try {
                     $eventPayloads[] = json_decode(Artisan::output(), true, 512, JSON_THROW_ON_ERROR);
                 } catch (JsonException $e) {
-                    $this->components->error("Invalid JSON from event:export for event {$event->id}: {$e->getMessage()}");
+                    $this->components->error("Invalid JSON from event:export for event {$scheduledEvent->id}: {$e->getMessage()}");
 
                     return self::FAILURE;
                 }
             }
 
+            $standings = null;
+            foreach ($eventPayloads as &$exportedEvent) {
+                $standings = $exportedEvent['standings'];
+                unset($exportedEvent['standings']);
+            }
+            unset($exportedEvent);
+
             $payloads[] = [
                 'tournamentId' => $tournamentId,
                 'tournamentName' => $tournamentName,
+                'standings' => $standings,
                 'events' => $eventPayloads,
             ];
         }
@@ -161,13 +170,21 @@ class EventExportTodayCommand extends Command
         if (is_string($raw) && trim($raw) !== '') {
             $params['--no-markets'] = $raw;
         }
+        if ($this->option('no-odds')) {
+            $params['--no-odds'] = true;
+        }
 
         return $params;
     }
 
     private function fullExportInstructionTextDaily(int $numberOfEvents): string
     {
+        if ($this->option('no-odds')) {
+            return $this->fullExportInstructionTextDailyWithoutOdds($numberOfEvents);
+        }
+
         $type = 'DAILY';
+
         return <<<TXT
 Above is the odds for {$numberOfEvents} games that are happening today. Out of these games find:
 1/ the safest bet
@@ -185,6 +202,21 @@ Give me those bets as JSON in the following format:
     description: // explain why you want to bet
     type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET, GPT_MANUAL_{$type}_NEVERWIN
 }
+TXT;
+    }
+
+    private function fullExportInstructionTextDailyWithoutOdds(int $numberOfEvents): string
+    {
+        $gamesLabel = $numberOfEvents === 1 ? 'game' : 'games';
+
+        return <<<TXT
+Above are {$numberOfEvents} {$gamesLabel} happening today (fixture list and tournament context only — no betting odds are included).
+
+For each game, state the most likely outcome (home win, draw, or away win), how many goals will be scored approximately based primarily on the tournament standings. Analyse the standings thoroughly: match each club in the fixture to its table row and infer motivation (title race, European qualification, relegation fight, mid-table comfort, dead rubbers, etc.) using position, points, goal difference, remaining games, potential points, and the outcome / outcome_positivity fields where present.
+When analysing motivation of each team, also consider other teams who have plus-minus the same amount of points and a similar outcome based on their position in the table. . If there is some other game or games provided in the list of events that can influence this game in any way, please mention them in the description and in the "influenced_by" field
+Explain your reasoning per fixture in terms of what each team is playing for and how that shapes the probable result. If standings are missing or empty for a competition, say so briefly and use only the fixture names and any other context in the JSON.
+
+Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
 TXT;
     }
 }

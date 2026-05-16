@@ -23,9 +23,17 @@ final class EventOddsExportPayload
         ]);
     }
 
-    public static function findForExport(int|string $eventId): ?Event
+    public static function findForExport(int|string $eventId, bool $withOdds = true): ?Event
     {
-        return self::queryWithOddsTree()->find($eventId);
+        if ($withOdds) {
+            return self::queryWithOddsTree()->find($eventId);
+        }
+
+        return Event::query()->with([
+            'tournament',
+            'homeTeam.tournament',
+            'awayTeam.tournament',
+        ])->find($eventId);
     }
 
     /**
@@ -39,7 +47,33 @@ final class EventOddsExportPayload
      *     odds: list<array<string, mixed>>
      * }
      */
-    public static function build(Event $event, array $excludeMarketTypes = []): array
+    public static function build(Event $event, array $excludeMarketTypes = [], bool $includeOdds = true): array
+    {
+        $rows = $includeOdds ? self::buildOddsRows($event, $excludeMarketTypes) : [];
+
+        $home = $event->homeTeam;
+        $away = $event->awayTeam;
+        $eventName = ($home && $away) ? "{$home->resolvedDisplayName()} vs {$away->resolvedDisplayName()}" : '';
+        $eventTournament = $event->tournament?->name;
+
+        $tournament = $event->tournament;
+        $promrel = is_array($tournament?->standings_promrel) ? $tournament->standings_promrel : [];
+
+        return [
+            'eventId' => (string) $event->id,
+            'eventName' => $eventName,
+            'eventTournament' => $eventTournament,
+            'eventDateTime' => $event->start_time?->toIso8601String(),
+            'standings' => self::prepareStandings($tournament?->standings, $promrel),
+            'odds' => array_values($rows),
+        ];
+    }
+
+    /**
+     * @param  list<string>  $excludeMarketTypes
+     * @return list<array<string, mixed>>
+     */
+    private static function buildOddsRows(Event $event, array $excludeMarketTypes): array
     {
         $excluded = array_flip($excludeMarketTypes);
 
@@ -73,26 +107,7 @@ final class EventOddsExportPayload
             return $row;
         }, $rows);
 
-        $rows = array_filter($rows, function ($row) {
-            return $row['id'] !== null;
-        });
-
-        $home = $event->homeTeam;
-        $away = $event->awayTeam;
-        $eventName = ($home && $away) ? "{$home->resolvedDisplayName()} vs {$away->resolvedDisplayName()}" : '';
-        $eventTournament = $event->tournament?->name;
-
-        $tournament = $event->tournament;
-        $promrel = is_array($tournament?->standings_promrel) ? $tournament->standings_promrel : [];
-
-        return [
-            'eventId' => (string) $event->id,
-            'eventName' => $eventName,
-            'eventTournament' => $eventTournament,
-            'eventDateTime' => $event->start_time?->toIso8601String(),
-            'standings' => self::prepareStandings($tournament?->standings, $promrel),
-            'odds' => array_values($rows),
-        ];
+        return array_values(array_filter($rows, fn ($row) => $row['id'] !== null));
     }
 
     /**
@@ -129,7 +144,7 @@ final class EventOddsExportPayload
                 $row['outcome_positivity'] = 0;
             }
 
-            $remainingGames = $totalGamesInTheTournament - $row['played'];
+            $remainingGames = $totalGamesInTheTournament - (int) ($row['played'] ?? 0);
             $potentialPointsToScore = $remainingGames * 3;
 
             $row['remaining_games'] = $remainingGames;

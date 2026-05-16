@@ -9,15 +9,18 @@ class EventExportCommand extends Command
 {
     protected $signature = 'event:export
         {eventId : Event primary key}
-        {--no-markets= : Comma-separated market types to omit (e.g. CORRECT_SCORE,HANDICAP)}';
+        {--no-markets= : Comma-separated market types to omit (e.g. CORRECT_SCORE,HANDICAP)}
+        {--no-odds : Omit odds from the export}';
 
-    protected $description = 'Export event metadata and all odds as JSON to stdout';
+    protected $description = 'Export event metadata and odds as JSON to stdout';
 
     public function handle(): int
     {
         $eventId = $this->argument('eventId');
 
-        $event = EventOddsExportPayload::findForExport($eventId);
+        $includeOdds = ! $this->option('no-odds');
+
+        $event = EventOddsExportPayload::findForExport($eventId, $includeOdds);
 
         if ($event === null) {
             $this->components->error('Event not found.');
@@ -27,7 +30,7 @@ class EventExportCommand extends Command
 
         $excludeMarketTypes = $this->parseExcludedMarketTypesOption();
 
-        $payload = EventOddsExportPayload::build($event, $excludeMarketTypes);
+        $payload = EventOddsExportPayload::build($event, $excludeMarketTypes, $includeOdds);
 
         $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
 
