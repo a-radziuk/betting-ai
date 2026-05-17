@@ -249,7 +249,8 @@ Route::get('/players/{user}', function (User $user) {
         ->where('user_bets.user_id', $user->id)
         ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
         ->join('events', 'events.id', '=', 'user_bets.event_id')
-        ->orderBy('user_bets.updated_at', 'desc');
+        ->orderBy('user_bets.resolved_order', 'desc')
+        ->orderBy('user_bets.id', 'desc');
 
     $chartValues = UserBet::query()
         ->where('user_bets.user_id', $user->id)
