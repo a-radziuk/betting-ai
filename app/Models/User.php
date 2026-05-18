@@ -13,12 +13,36 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar', 'tagline', 'bio', 'city', 'country'])]
+#[Fillable(['name', 'email', 'password', 'is_superadmin', 'priveleges', 'provider', 'provider_id', 'avatar', 'tagline', 'bio', 'city', 'country'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    public const PRIVELEGE_SEE_TIPS = 'SEE_TIPS';
+
+    public const PRIVELEGE_PLACE_BETS = 'PLACE_BETS';
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public function isSuperadmin(): bool
+    {
+        return (bool) $this->is_superadmin;
+    }
+
+    public function hasPrivelege(string $privelege): bool
+    {
+        if ($this->isSuperadmin()) {
+            return true;
+        }
+
+        if ($this->priveleges === null || $this->priveleges === '') {
+            return false;
+        }
+
+        $granted = array_map(trim(...), explode(',', $this->priveleges));
+
+        return in_array($privelege, $granted, true);
+    }
 
     protected static function booted(): void
     {
@@ -98,6 +122,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_superadmin' => 'boolean',
         ];
     }
 }

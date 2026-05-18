@@ -66,6 +66,69 @@ class EventShowPageTest extends TestCase
         return ['event' => $event, 'odd' => $odd];
     }
 
+    private function userWhoCanPlaceBets(): User
+    {
+        return User::factory()->create([
+            'priveleges' => User::PRIVELEGE_PLACE_BETS,
+        ]);
+    }
+
+    public function test_guest_cannot_see_odds_section(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92040);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('<section class="market-grid"', $html);
+    }
+
+    public function test_user_with_place_bets_privilege_sees_odds_section(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92041);
+        $viewer = $this->userWhoCanPlaceBets();
+
+        $html = $this->actingAs($viewer)
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<section class="market-grid"', $html);
+        $this->assertStringContainsString('place-bet', $html);
+    }
+
+    public function test_user_without_place_bets_privilege_cannot_see_odds_section(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92042);
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $html = $this->actingAs($viewer)
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('<section class="market-grid"', $html);
+    }
+
+    public function test_superadmin_sees_odds_section(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92043);
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+            'priveleges' => null,
+        ]);
+
+        $html = $this->actingAs($admin)
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<section class="market-grid"', $html);
+    }
+
     public function test_event_page_shows_user_bets_before_markets(): void
     {
         ['event' => $event, 'odd' => $odd] = $this->seedEventWithOdd(92001);
@@ -104,7 +167,10 @@ class EventShowPageTest extends TestCase
             'status' => UserBet::STATUS_PENDING,
         ]);
 
-        $html = $this->get(route('events.show', $event))
+        $viewer = $this->userWhoCanPlaceBets();
+
+        $html = $this->actingAs($viewer)
+            ->get(route('events.show', $event))
             ->assertOk()
             ->assertSee('Player tips', false)
             ->assertSee('Tipster Alpha', false)
@@ -242,7 +308,8 @@ class EventShowPageTest extends TestCase
             'influenced_by_event_ids' => ['92021'],
         ]);
 
-        $html = $this->get(route('events.show', $event))
+        $html = $this->actingAs($this->userWhoCanPlaceBets())
+            ->get(route('events.show', $event))
             ->assertOk()
             ->assertSee('Match analysis', false)
             ->assertSee('Away win', false)
@@ -297,7 +364,8 @@ class EventShowPageTest extends TestCase
         ['event' => $event] = $this->seedEventWithOdd(92031);
         $event->update(['tournament_id' => $tournament->id]);
 
-        $html = $this->get(route('events.show', $event))
+        $html = $this->actingAs($this->userWhoCanPlaceBets())
+            ->get(route('events.show', $event))
             ->assertOk()
             ->assertSee('Bundesliga', false)
             ->assertSee('Alpha FC', false)

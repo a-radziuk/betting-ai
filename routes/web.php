@@ -163,13 +163,11 @@ Route::get('/events/{event}', function (Event $event) {
     if (Schema::hasTable('user_bets')) {
         $eventBetsQuery = UserBet::query()
             ->where('user_bets.event_id', $event->id)
-            /* TODO: bring it back later
-            // this code only shows predictions of users who have some resolved bets
             ->whereHas('user', function ($q): void {
                 $q->whereHas('bets', function ($bq): void {
                     $bq->where('status', '<>', UserBet::STATUS_PENDING);
                 });
-            }) */
+            })
             ->with([
                 'user.wallet',
                 'user.bets' => fn ($q) => $q
@@ -426,74 +424,76 @@ Route::middleware('auth')->group(function () {
             ->with('status', 'Subscribed.');
     })->name('players.subscribe.store');
 
-    Route::get('/place-bet/{odd}', function (Odd $odd) {
-        $odd->loadMissing('selection.market.event.homeTeam', 'selection.market.event.awayTeam');
+    Route::middleware('can.place.bets')->group(function (): void {
+        Route::get('/place-bet/{odd}', function (Odd $odd) {
+            $odd->loadMissing('selection.market.event.homeTeam', 'selection.market.event.awayTeam');
 
-        $event = $odd->selection?->market?->event;
-        if ($event === null) {
-            abort(404);
-        }
+            $event = $odd->selection?->market?->event;
+            if ($event === null) {
+                abort(404);
+            }
 
-        if ($event->status !== Event::STATUS_SCHEDULED) {
-            abort(400, 'Event is not scheduled.');
-        }
+            if ($event->status !== Event::STATUS_SCHEDULED) {
+                abort(400, 'Event is not scheduled.');
+            }
 
-        $user = Auth::user();
-        $user->loadMissing('wallet');
-        if (! $user->wallet) {
-            $user->wallet()->create([
-                'balance' => 0,
-                'currency' => 'EUR',
+            $user = Auth::user();
+            $user->loadMissing('wallet');
+            if (! $user->wallet) {
+                $user->wallet()->create([
+                    'balance' => 0,
+                    'currency' => 'EUR',
+                ]);
+                $user->load('wallet');
+            }
+
+            return view('place-bet', [
+                'odd' => $odd,
+                'event' => $event,
+                'wallet' => $user->wallet,
             ]);
-            $user->load('wallet');
-        }
+        })->name('bets.place.show');
 
-        return view('place-bet', [
-            'odd' => $odd,
-            'event' => $event,
-            'wallet' => $user->wallet,
-        ]);
-    })->name('bets.place.show');
+        Route::post('/place-bet/{odd}', function (Request $request, Odd $odd, PlaceBetService $placeBetService) {
+            $odd->loadMissing('selection.market.event');
 
-    Route::post('/place-bet/{odd}', function (Request $request, Odd $odd, PlaceBetService $placeBetService) {
-        $odd->loadMissing('selection.market.event');
+            $event = $odd->selection?->market?->event;
+            if ($event === null) {
+                abort(404);
+            }
 
-        $event = $odd->selection?->market?->event;
-        if ($event === null) {
-            abort(404);
-        }
+            if ($event->status !== Event::STATUS_SCHEDULED) {
+                abort(400, 'Event is not scheduled.');
+            }
 
-        if ($event->status !== Event::STATUS_SCHEDULED) {
-            abort(400, 'Event is not scheduled.');
-        }
+            $validated = $request->validate([
+                'sum' => ['required', 'numeric', 'min:0.01'],
+            ]);
 
-        $validated = $request->validate([
-            'sum' => ['required', 'numeric', 'min:0.01'],
-        ]);
+            $user = Auth::user();
+            $user->loadMissing('wallet');
+            if (! $user->wallet) {
+                return back()->withErrors(['sum' => 'User has no wallet.']);
+            }
 
-        $user = Auth::user();
-        $user->loadMissing('wallet');
-        if (! $user->wallet) {
-            return back()->withErrors(['sum' => 'User has no wallet.']);
-        }
+            if ((float) $validated['sum'] > (float) $user->wallet->balance) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['sum' => 'Insufficient wallet balance.']);
+            }
 
-        if ((float) $validated['sum'] > (float) $user->wallet->balance) {
-            return back()
-                ->withInput()
-                ->withErrors(['sum' => 'Insufficient wallet balance.']);
-        }
+            $result = $placeBetService->placeBet($user->id, $odd->id, (string) $validated['sum']);
+            if (! $result['ok']) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['sum' => $result['message']]);
+            }
 
-        $result = $placeBetService->placeBet($user->id, $odd->id, (string) $validated['sum']);
-        if (! $result['ok']) {
-            return back()
-                ->withInput()
-                ->withErrors(['sum' => $result['message']]);
-        }
-
-        return redirect()
-            ->route('dashboard')
-            ->with('status', $result['message']);
-    })->name('bets.place.store');
+            return redirect()
+                ->route('dashboard')
+                ->with('status', $result['message']);
+        })->name('bets.place.store');
+    });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

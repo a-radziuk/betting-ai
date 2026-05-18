@@ -17,6 +17,13 @@ class PlaceBetPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function userWhoCanPlaceBets(): User
+    {
+        return User::factory()->create([
+            'priveleges' => User::PRIVELEGE_PLACE_BETS,
+        ]);
+    }
+
     private function seedOddChain(int $eventId, string $eventStatus): Odd
     {
         $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
@@ -67,10 +74,26 @@ class PlaceBetPageTest extends TestCase
             ->assertRedirect('/login');
     }
 
+    public function test_place_bet_page_forbidden_without_place_bets_privilege(): void
+    {
+        $odd = $this->seedOddChain(90105, Event::STATUS_SCHEDULED);
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('bets.place.show', ['odd' => $odd->id]))
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->post(route('bets.place.store', ['odd' => $odd->id]), ['sum' => 10])
+            ->assertForbidden();
+    }
+
     public function test_place_bet_page_rejects_non_scheduled_event(): void
     {
         $odd = $this->seedOddChain(90102, Event::STATUS_FINISHED);
-        $user = User::factory()->create();
+        $user = $this->userWhoCanPlaceBets();
 
         $this->actingAs($user)
             ->get(route('bets.place.show', ['odd' => $odd->id]))
@@ -80,7 +103,7 @@ class PlaceBetPageTest extends TestCase
     public function test_place_bet_post_validates_wallet_balance(): void
     {
         $odd = $this->seedOddChain(90103, Event::STATUS_SCHEDULED);
-        $user = User::factory()->create();
+        $user = $this->userWhoCanPlaceBets();
         UserWallet::query()->where('user_id', $user->id)->update(['balance' => 5]);
 
         $this->actingAs($user)
@@ -94,7 +117,7 @@ class PlaceBetPageTest extends TestCase
     public function test_place_bet_post_places_bet_and_redirects_to_dashboard(): void
     {
         $odd = $this->seedOddChain(90104, Event::STATUS_SCHEDULED);
-        $user = User::factory()->create();
+        $user = $this->userWhoCanPlaceBets();
         UserWallet::query()->where('user_id', $user->id)->update(['balance' => 100]);
 
         $this->actingAs($user)
