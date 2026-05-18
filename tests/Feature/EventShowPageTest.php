@@ -172,7 +172,7 @@ class EventShowPageTest extends TestCase
             ->assertOk()
             ->assertSee('Subscribe to see the tips', false)
             ->assertSee('Tipster Alpha', false)
-            ->assertSee(route('players.subscribe.show', $player), false)
+            ->assertSee(route('subscribe'), false)
             ->getContent();
 
         $this->assertStringNotContainsString('<dl class="event-tip-card-pick">', $html);
@@ -193,7 +193,7 @@ class EventShowPageTest extends TestCase
             ->getContent();
 
         $this->assertStringNotContainsString('<dl class="event-tip-card-pick">', $html);
-        $this->assertStringContainsString(route('players.subscribe.show', $player), $html);
+        $this->assertStringContainsString(route('subscribe'), $html);
     }
 
     public function test_user_with_see_tips_privilege_sees_pick_details(): void

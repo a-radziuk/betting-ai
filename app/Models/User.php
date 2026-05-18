@@ -35,6 +35,10 @@ class User extends Authenticatable
             return true;
         }
 
+        if ($privelege === self::PRIVELEGE_SEE_TIPS && $this->seeTipsAccessExpired()) {
+            return false;
+        }
+
         if ($this->priveleges === null || $this->priveleges === '') {
             return false;
         }
@@ -42,6 +46,39 @@ class User extends Authenticatable
         $granted = array_map(trim(...), explode(',', $this->priveleges));
 
         return in_array($privelege, $granted, true);
+    }
+
+    public function seeTipsAccessExpired(): bool
+    {
+        return $this->see_tips_expires_at !== null
+            && $this->see_tips_expires_at->isPast();
+    }
+
+    public function hasActiveSeeTipsAccess(): bool
+    {
+        return $this->hasPrivelege(self::PRIVELEGE_SEE_TIPS);
+    }
+
+    public function grantSeeTipsTrial(int $months = 1): void
+    {
+        $this->grantPrivelege(self::PRIVELEGE_SEE_TIPS);
+        $this->see_tips_expires_at = now()->addMonths($months);
+        $this->save();
+    }
+
+    public function grantPrivelege(string $privelege): void
+    {
+        if ($this->priveleges === null || $this->priveleges === '') {
+            $this->priveleges = $privelege;
+
+            return;
+        }
+
+        $granted = array_map(trim(...), explode(',', $this->priveleges));
+        if (! in_array($privelege, $granted, true)) {
+            $granted[] = $privelege;
+            $this->priveleges = implode(',', $granted);
+        }
     }
 
     protected static function booted(): void
@@ -123,6 +160,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
+            'see_tips_expires_at' => 'datetime',
         ];
     }
 }

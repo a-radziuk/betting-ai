@@ -1311,6 +1311,103 @@
         color: #d6e4ff;
     }
 
+    .btn:disabled,
+    .btn[disabled] {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn:disabled:hover,
+    .btn[disabled]:hover {
+        transform: none;
+        background: rgba(12, 21, 36, 0.45);
+    }
+
+    /* Subscribe plans */
+    .subscribe-plans-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 900px) {
+        .subscribe-plans-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .subscribe-plan-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        border-radius: 1rem;
+        border: 1px solid rgba(130, 162, 255, 0.22);
+        background: linear-gradient(180deg, rgba(17, 27, 46, 0.92), rgba(10, 16, 30, 0.88));
+        padding: 1.25rem 1.25rem 1.1rem;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+    }
+
+    .subscribe-plan-card--featured {
+        border-color: rgba(93, 226, 255, 0.45);
+        box-shadow: 0 18px 48px rgba(93, 226, 255, 0.08);
+    }
+
+    .subscribe-plan-card--disabled {
+        opacity: 0.72;
+    }
+
+    .subscribe-plan-name {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #eaf0ff;
+    }
+
+    .subscribe-plan-duration {
+        margin: 0 0 1rem;
+        font-size: 0.9rem;
+        color: #9fb0d3;
+    }
+
+    .subscribe-plan-features {
+        margin: 0 0 1.25rem;
+        padding: 0;
+        list-style: none;
+        flex: 1;
+    }
+
+    .subscribe-plan-features li {
+        margin: 0 0 0.45rem;
+        font-size: 0.88rem;
+        color: #c8d6f5;
+    }
+
+    .subscribe-plan-features li::before {
+        content: "✓ ";
+        color: var(--accent);
+    }
+
+    .subscribe-plan-action {
+        margin-top: auto;
+    }
+
+    .subscribe-plan-badge {
+        display: inline-block;
+        margin-bottom: 0.65rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #8bffcd;
+        border: 1px solid rgba(139, 255, 205, 0.35);
+        background: rgba(139, 255, 205, 0.08);
+    }
+
     .input-dark {
         width: 100%;
         border-radius: 0.75rem;

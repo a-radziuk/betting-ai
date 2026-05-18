@@ -25,7 +25,9 @@
 
     <section class="card overflow-hidden">
         @if (! $canSeeTips)
-            <div class="empty">{{ __('Subscribe to see the tips') }}</div>
+            <div class="empty">
+                <a href="{{ route('subscribe') }}" class="event-tip-card-subscribe-link">{{ __('Subscribe to see the tips') }}</a>
+            </div>
         @elseif ($bets->isEmpty())
             <div class="empty">No current bets.</div>
         @else

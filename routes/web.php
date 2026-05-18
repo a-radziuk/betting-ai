@@ -12,6 +12,7 @@ use App\Models\UserBet;
 use App\Models\UserSubscription;
 use App\Services\PlaceBetService;
 use App\Support\PlayerWalletResultChart;
+use App\Support\SubscriptionPlans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -378,6 +379,49 @@ Route::get('/dashboard', function () {
         'bets' => $bets,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/subscribe', function () {
+    $user = Auth::user();
+    $seeTipsExpiresAt = $user?->see_tips_expires_at;
+
+    return view('subscribe', [
+        'plans' => SubscriptionPlans::all(),
+        'hasActiveSeeTips' => $user?->hasActiveSeeTipsAccess() ?? false,
+        'seeTipsExpiresAt' => $seeTipsExpiresAt,
+    ]);
+})->name('subscribe');
+
+Route::post('/subscribe', function (Request $request) {
+    $viewer = Auth::user();
+    if ($viewer === null) {
+        return redirect()->route('login');
+    }
+
+    $validated = $request->validate([
+        'plan' => ['required', 'string'],
+    ]);
+
+    $planId = $validated['plan'];
+    if (! SubscriptionPlans::isEnabled($planId)) {
+        return redirect()
+            ->route('subscribe')
+            ->withErrors(['plan' => __('This plan is not available yet.')]);
+    }
+
+    if ($viewer->hasActiveSeeTipsAccess()) {
+        return redirect()
+            ->route('subscribe')
+            ->with('status', __('You already have access to tips.'));
+    }
+
+    if ($planId === SubscriptionPlans::FREE_TRIAL) {
+        $viewer->grantSeeTipsTrial(1);
+    }
+
+    return redirect()
+        ->route('subscribe')
+        ->with('status', __('Your free trial has started. Enjoy access to tips for 1 month.'));
+})->middleware('auth')->name('subscribe.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/players/{user}/subscribe', function (User $user) {

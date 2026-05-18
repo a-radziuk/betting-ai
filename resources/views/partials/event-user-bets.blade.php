@@ -88,7 +88,7 @@
                         </dl>
                     @elseif ($user)
                         <p class="event-tip-card-subscribe">
-                            <a href="{{ route('players.subscribe.show', $user) }}" class="event-tip-card-subscribe-link">
+                            <a href="{{ route('subscribe') }}" class="event-tip-card-subscribe-link">
                                 {{ __('Subscribe to see the tips') }}
                             </a>
                         </p>
