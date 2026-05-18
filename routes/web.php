@@ -163,11 +163,13 @@ Route::get('/events/{event}', function (Event $event) {
     if (Schema::hasTable('user_bets')) {
         $eventBetsQuery = UserBet::query()
             ->where('user_bets.event_id', $event->id)
+            /* TODO: bring it back later
+            // this code only shows predictions of users who have some resolved bets
             ->whereHas('user', function ($q): void {
                 $q->whereHas('bets', function ($bq): void {
                     $bq->where('status', '<>', UserBet::STATUS_PENDING);
                 });
-            })
+            }) */
             ->with([
                 'user.wallet',
                 'user.bets' => fn ($q) => $q

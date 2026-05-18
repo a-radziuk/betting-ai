@@ -51,13 +51,14 @@ class PlaceBetService
                 return ['ok' => false, 'message' => 'User has no wallet.'];
             }
 
+            /* TODO: bring back wallet negative balance check when / if needed
             if (bccomp(
                 number_format((float) $wallet->balance, 2, '.', ''),
                 $stake,
                 2
             ) < 0) {
                 return ['ok' => false, 'message' => 'Insufficient wallet balance.'];
-            }
+            } */
 
             $newBalance = bcsub(
                 number_format((float) $wallet->balance, 2, '.', ''),
