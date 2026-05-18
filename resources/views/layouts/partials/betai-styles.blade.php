@@ -578,9 +578,19 @@
         flex: 1;
     }
 
+    .event-tip-card-name-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.35rem;
+    }
+
     .event-tip-card-name {
         display: block;
-        margin: 0 0 0.35rem;
+        margin: 0;
+        flex: 1;
+        min-width: 0;
         font-size: 1.02rem;
         font-weight: 600;
         color: var(--text);
@@ -594,6 +604,7 @@
     }
 
     .event-tip-card-result {
+        flex-shrink: 0;
         margin: 0;
         font-size: 0.9rem;
         font-weight: 700;
@@ -612,6 +623,13 @@
 
     .event-tip-card-form {
         margin-top: 0.45rem;
+    }
+
+    .event-tip-card-pick-box {
+        border: 1px solid rgba(130, 162, 255, 0.2);
+        border-radius: 0.75rem;
+        background: rgba(6, 11, 22, 0.5);
+        padding: 0.85rem 0.95rem;
     }
 
     .event-tip-card-pick {

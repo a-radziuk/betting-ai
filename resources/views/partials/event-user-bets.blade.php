@@ -40,19 +40,20 @@
                             @endif
                         </div>
                         <div class="event-tip-card-user">
-                            @if ($user)
-                                <a href="{{ route('players.show', $user) }}" class="event-tip-card-name">{{ $user->name }}</a>
-                            @else
-                                <span class="event-tip-card-name">—</span>
-                            @endif
-                            <p @class([
-                                'event-tip-card-result',
-                                'event-tip-card-result--pos' => $totalResult >= 0,
-                                'event-tip-card-result--neg' => $totalResult < 0,
-                            ])>
-                                {{ __('Total result') }}:
-                                {{ $totalResult >= 0 ? '+' : '' }}{{ number_format($totalResult, 2) }} {{ $currency }}
-                            </p>
+                            <div class="event-tip-card-name-row">
+                                @if ($user)
+                                    <a href="{{ route('players.show', $user) }}" class="event-tip-card-name">{{ $user->name }}</a>
+                                @else
+                                    <span class="event-tip-card-name">—</span>
+                                @endif
+                                <span @class([
+                                    'event-tip-card-result',
+                                    'event-tip-card-result--pos' => $totalResult >= 0,
+                                    'event-tip-card-result--neg' => $totalResult < 0,
+                                ])>
+                                    {{ $totalResult >= 0 ? '+' : '' }}{{ number_format($totalResult, 2) }}
+                                </span>
+                            </div>
                             @if (count($betFormSegments) > 0)
                                 <div class="welcome-bettor-card-form event-tip-card-form" role="group" aria-label="{{ __('Recent bet results') }}">
                                     @foreach ($betFormSegments as $seg)
@@ -66,7 +67,8 @@
                         </div>
                     </header>
                     @if ($canSeeTips)
-                        <dl class="event-tip-card-pick">
+                        <div class="event-tip-card-pick-box">
+                            <dl class="event-tip-card-pick">
                             <div class="event-tip-card-pick-row">
                                 <dt>{{ __('Market') }}</dt>
                                 <dd>{{ $marketLabel }}</dd>
@@ -85,7 +87,8 @@
                                     <dd class="event-tip-card-stake">{{ number_format((float) $bet->stake, 2) }} {{ $currency }}</dd>
                                 </div>
                             </div>
-                        </dl>
+                            </dl>
+                        </div>
                     @elseif ($user)
                         <p class="event-tip-card-subscribe">
                             <a href="{{ route('subscribe') }}" class="event-tip-card-subscribe-link">
