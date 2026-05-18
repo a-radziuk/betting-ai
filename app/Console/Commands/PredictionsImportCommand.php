@@ -14,7 +14,7 @@ class PredictionsImportCommand extends Command
     protected $signature = 'predictions:import
         {filepath : Absolute or project-relative path to a JSON file (list of objects)}';
 
-    protected $description = 'Import event predictions from a JSON file (array of objects with type, description, odd_id, stake)';
+    protected $description = 'Import event predictions from a JSON file (array of objects with type, description, odd_id, stake, optional confidence)';
 
     public function handle(): int
     {
@@ -90,12 +90,27 @@ class PredictionsImportCommand extends Command
             $bankPercentage = (int) round((float) ($row['stake'] / 1000) * 100);
             $bankPercentage = max(0, min(65535, $bankPercentage));
 
+            $confidence = null;
+            if (array_key_exists('confidence', $row)) {
+                if ($row['confidence'] === null) {
+                    $confidence = null;
+                } elseif (is_numeric($row['confidence'])) {
+                    $confidence = (int) $row['confidence'];
+                } else {
+                    $this->components->warn("Row {$index}: skipped (confidence must be numeric or null).");
+                    $skipped++;
+
+                    continue;
+                }
+            }
+
             EventPrediction::query()->create([
                 'event_id' => $event->id,
                 'prediction_type' => (string) $row['type'],
                 'explanation' => (string) $row['description'],
                 'odds_id' => $oddId,
                 'bank_percentage' => $bankPercentage,
+                'confidence' => $confidence,
                 'is_active' => true,
             ]);
 

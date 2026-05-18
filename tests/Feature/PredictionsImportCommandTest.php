@@ -103,8 +103,36 @@ class PredictionsImportCommandTest extends TestCase
             $this->assertSame('Because form.', $p->explanation);
             $this->assertSame($oddId, $p->odds_id);
             $this->assertSame(910001, $p->event_id);
-            $this->assertSame(3, $p->bank_percentage);
+            $this->assertSame(250, $p->bank_percentage);
             $this->assertTrue($p->is_active);
+            $this->assertNull($p->confidence);
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    public function test_imports_confidence_when_present(): void
+    {
+        [, $oddId] = $this->seedEventWithOdd(910002);
+
+        $path = sys_get_temp_dir().'/predictions-import-confidence-'.uniqid('', true).'.json';
+        file_put_contents($path, json_encode([
+            [
+                'type' => 'CUSTOM_TYPE',
+                'description' => 'High conviction.',
+                'odd_id' => $oddId,
+                'stake' => 1000,
+                'confidence' => 85,
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        try {
+            $exit = Artisan::call('predictions:import', ['filepath' => $path]);
+            $this->assertSame(0, $exit);
+
+            $p = EventPrediction::query()->first();
+            $this->assertNotNull($p);
+            $this->assertSame(85, $p->confidence);
         } finally {
             @unlink($path);
         }

@@ -79,7 +79,20 @@ class PredictionsForEventCommand extends Command
             return self::FAILURE;
         }
 
-        DB::transaction(function () use ($event, $data, $predictionType): void {
+        $confidence = null;
+        if (array_key_exists('confidence', $data)) {
+            if ($data['confidence'] === null) {
+                $confidence = null;
+            } elseif (is_numeric($data['confidence'])) {
+                $confidence = (int) $data['confidence'];
+            } else {
+                $this->components->error('Prediction API confidence must be numeric or null.');
+
+                return self::FAILURE;
+            }
+        }
+
+        DB::transaction(function () use ($event, $data, $predictionType, $confidence): void {
             EventPrediction::query()
                 ->where('event_id', $event->id)
                 ->where('prediction_type', $predictionType)
@@ -92,6 +105,7 @@ class PredictionsForEventCommand extends Command
                 'odds_id' => (int) $data['oddsId'],
                 'bank_percentage' => (int) $data['bankPercentage'],
                 'explanation' => (string) $data['explanation'],
+                'confidence' => $confidence,
                 'is_active' => true,
             ]);
         });

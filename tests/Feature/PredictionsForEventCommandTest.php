@@ -94,6 +94,7 @@ class PredictionsForEventCommandTest extends TestCase
             'odds_id' => 1045886556460321359,
             'bank_percentage' => 3,
             'explanation' => 'Value on OVER 2.5.',
+            'confidence' => null,
             'is_active' => true,
         ]);
 
@@ -110,6 +111,30 @@ class PredictionsForEventCommandTest extends TestCase
                 && ($event['eventId'] ?? null) === '88001'
                 && ($event['eventName'] ?? null) === 'Home FC vs Away FC';
         });
+    }
+
+    public function test_stores_confidence_from_api_response(): void
+    {
+        $this->seedFutureEventWithOdds();
+
+        Http::fake([
+            'http://127.0.0.1:7999/api/odds' => Http::response([
+                'oddsId' => 88004,
+                'bankPercentage' => 4,
+                'explanation' => 'Strong home form.',
+                'confidence' => 8,
+            ], 200),
+        ]);
+
+        $exit = Artisan::call('predictions:for-event', ['eventId' => 88001]);
+        $this->assertSame(0, $exit);
+
+        $this->assertDatabaseHas('event_predictions', [
+            'event_id' => 88001,
+            'odds_id' => 88004,
+            'confidence' => 8,
+            'is_active' => true,
+        ]);
     }
 
     public function test_deactivates_previous_prediction_when_running_again(): void

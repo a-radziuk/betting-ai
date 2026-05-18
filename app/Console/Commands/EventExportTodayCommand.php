@@ -188,9 +188,14 @@ class EventExportTodayCommand extends Command
         return <<<TXT
 Above is the odds for {$numberOfEvents} games that are happening today. Out of these games find:
 1/ the safest bet
+For the safest strategy, do not consider odds below 1.20
+
 2/ the best bet
+The best bet is typically the one between 1.5 and 3
+
 3/ the potential upset bet
-Do not consider odds that are lower than 1.20 even for the safest strategy.
+The upsetter goes for odds that are typically between 3 and 5, but in some cases can be higher
+
 If the event JSON includes a "standings" array, you must use it before choosing a bet. Each row describes one club in the competition table: league position, team name, matches played and results (won/drawn/lost), goals for and against, goal difference, total points, a textual "outcome" describing what that position currently means (e.g. title race, European qualification, mid-table, relegation), an "outcome_positivity" score reflecting how desirable or urgent that situation is (higher for title or European chase, lower or negative for relegation danger), plus "remaining_games" and "potential_points" showing how much can still change in the table.
 Match each side in the fixture (from event name and context) to its standings row. Infer motivation and likely approach: teams fighting for the title or a European spot often press for wins; those in a relegation battle may be desperate or tight; clubs with little left to play for may rotate, conserve energy, or lack intensity; late-season gaps between points and potential_points reveal whether a result is must-win, enough for a draw, or largely irrelevant.
 Weave this motivation analysis into your probability estimates and into the explanation when standings are present. If "standings" is missing or empty, state that limitation briefly and rely on odds and match context only.
