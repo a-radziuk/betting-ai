@@ -31,11 +31,30 @@ final class PlayerResolvedBets
     }
 
     /**
+     * Resolved bets for CSV export (settlement order).
+     *
+     * @return Builder<UserBet>
+     */
+    public static function csvQuery(User $user): Builder
+    {
+        return UserBet::query()
+            ->where('user_bets.user_id', $user->id)
+            ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
+            ->orderBy('user_bets.resolved_order')
+            ->orderBy('user_bets.id')
+            ->with([
+                'event.homeTeam',
+                'event.awayTeam',
+                'odd.selection.market',
+            ]);
+    }
+
+    /**
      * @return Collection<int, UserBet>
      */
-    public static function allForListing(User $user): Collection
+    public static function allForCsv(User $user): Collection
     {
-        return self::listingQuery($user)->get();
+        return self::csvQuery($user)->get();
     }
 
     public static function eventName(UserBet $bet): string
@@ -71,13 +90,13 @@ final class PlayerResolvedBets
     /**
      * @return list<string|float>
      */
-    public static function csvRow(UserBet $bet): array
+    public static function csvRow(UserBet $bet, bool $forSuperadmin = false): array
     {
         $event = $bet->event;
         $eventDate = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
         $score = filled($event?->score) ? (string) $event->score : '—';
 
-        return [
+        $row = [
             $eventDate,
             self::eventName($bet),
             $score,
@@ -87,14 +106,21 @@ final class PlayerResolvedBets
             $bet->status,
             number_format(self::wonLostAmount($bet), 2, '.', ''),
         ];
+
+        if ($forSuperadmin) {
+            $row[] = number_format((float) $bet->wallet_total_result, 2, '.', '');
+            $row[] = (string) ($bet->resolved_order ?? '');
+        }
+
+        return $row;
     }
 
     /**
      * @return list<string>
      */
-    public static function csvHeaders(): array
+    public static function csvHeaders(bool $forSuperadmin = false): array
     {
-        return [
+        $headers = [
             'Date of event',
             'Event',
             'Score',
@@ -104,5 +130,12 @@ final class PlayerResolvedBets
             'Status',
             'Won/Lost',
         ];
+
+        if ($forSuperadmin) {
+            $headers[] = 'Wallet total result';
+            $headers[] = 'Resolved order';
+        }
+
+        return $headers;
     }
 }

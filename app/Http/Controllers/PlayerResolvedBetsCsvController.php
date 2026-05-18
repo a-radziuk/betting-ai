@@ -17,21 +17,22 @@ class PlayerResolvedBetsCsvController extends Controller
             return redirect()->route('subscribe');
         }
 
-        $bets = PlayerResolvedBets::allForListing($user);
+        $bets = PlayerResolvedBets::allForCsv($user);
+        $forSuperadmin = $viewer->isSuperadmin();
 
         $filename = sprintf('player-%d-resolved-bets.csv', $user->id);
 
         return response()->streamDownload(
-            function () use ($bets): void {
+            function () use ($bets, $forSuperadmin): void {
                 $handle = fopen('php://output', 'w');
                 if ($handle === false) {
                     return;
                 }
 
-                fputcsv($handle, PlayerResolvedBets::csvHeaders());
+                fputcsv($handle, PlayerResolvedBets::csvHeaders($forSuperadmin));
 
                 foreach ($bets as $bet) {
-                    fputcsv($handle, PlayerResolvedBets::csvRow($bet));
+                    fputcsv($handle, PlayerResolvedBets::csvRow($bet, $forSuperadmin));
                 }
 
                 fclose($handle);

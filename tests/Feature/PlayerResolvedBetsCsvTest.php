@@ -18,7 +18,7 @@ class PlayerResolvedBetsCsvTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_download_includes_headers_and_resolved_bets_in_event_date_order(): void
+    public function test_download_omits_admin_columns_for_non_superadmin(): void
     {
         $tz = config('app.timezone');
         $player = User::factory()->create();
@@ -26,6 +26,60 @@ class PlayerResolvedBetsCsvTest extends TestCase
             'priveleges' => User::PRIVELEGE_SEE_TIPS,
         ]);
 
+        $this->seedTwoResolvedBets($player, $tz);
+
+        $content = $this->actingAs($viewer)
+            ->get(route('players.bets.csv', $player))
+            ->assertOk()
+            ->streamedContent();
+
+        $lines = array_values(array_filter(explode("\n", trim($content))));
+
+        $this->assertSame(PlayerResolvedBets::csvHeaders(false), str_getcsv($lines[0]));
+        $this->assertCount(8, str_getcsv($lines[1]));
+        $this->assertSame('won', str_getcsv($lines[1])[6]);
+        $this->assertSame('10.00', str_getcsv($lines[1])[7]);
+    }
+
+    public function test_download_includes_admin_columns_for_superadmin(): void
+    {
+        $tz = config('app.timezone');
+        $player = User::factory()->create();
+        $viewer = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $this->seedTwoResolvedBets($player, $tz);
+
+        $content = $this->actingAs($viewer)
+            ->get(route('players.bets.csv', $player))
+            ->assertOk()
+            ->streamedContent();
+
+        $lines = array_values(array_filter(explode("\n", trim($content))));
+
+        $this->assertSame(PlayerResolvedBets::csvHeaders(true), str_getcsv($lines[0]));
+
+        $earlyRow = str_getcsv($lines[1]);
+        $this->assertSame('2026-03-01 12:00', $earlyRow[0]);
+        $this->assertSame('Home FC — Away FC', $earlyRow[1]);
+        $this->assertSame('1-0', $earlyRow[2]);
+        $this->assertSame('won', $earlyRow[6]);
+        $this->assertSame('10.00', $earlyRow[7]);
+        $this->assertSame('10.00', $earlyRow[8]);
+        $this->assertSame('1', $earlyRow[9]);
+
+        $lateRow = str_getcsv($lines[2]);
+        $this->assertSame('2026-06-01 12:00', $lateRow[0]);
+        $this->assertSame('2-2', $lateRow[2]);
+        $this->assertSame('lost', $lateRow[6]);
+        $this->assertSame('-5.00', $lateRow[7]);
+        $this->assertSame('5.00', $lateRow[8]);
+        $this->assertSame('2', $lateRow[9]);
+    }
+
+    private function seedTwoResolvedBets(User $player, string $tz): void
+    {
         $home = Team::query()->create(['name' => 'Home FC', 'short_name' => 'HFC', 'league' => 'T']);
         $away = Team::query()->create(['name' => 'Away FC', 'short_name' => 'AFC', 'league' => 'T']);
 
@@ -46,29 +100,8 @@ class PlayerResolvedBetsCsvTest extends TestCase
             'score' => '2-2',
         ]);
 
-        $this->seedBet($player, $eventEarly, 93010, 93020, 93030, UserBet::STATUS_WON, '10.00', '20.00');
-        $this->seedBet($player, $eventLate, 93011, 93021, 93031, UserBet::STATUS_LOST, '5.00', '10.00');
-
-        $response = $this->actingAs($viewer)->get(route('players.bets.csv', $player));
-        $response->assertOk();
-        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
-
-        $content = $response->streamedContent();
-        $lines = array_values(array_filter(explode("\n", trim($content))));
-
-        $this->assertSame(PlayerResolvedBets::csvHeaders(), str_getcsv($lines[0]));
-
-        $lateRow = str_getcsv($lines[1]);
-        $this->assertSame('2026-06-01 12:00', $lateRow[0]);
-        $this->assertSame('Home FC — Away FC', $lateRow[1]);
-        $this->assertSame('2-2', $lateRow[2]);
-        $this->assertSame('lost', $lateRow[6]);
-        $this->assertSame('-5.00', $lateRow[7]);
-
-        $earlyRow = str_getcsv($lines[2]);
-        $this->assertSame('2026-03-01 12:00', $earlyRow[0]);
-        $this->assertSame('won', $earlyRow[6]);
-        $this->assertSame('10.00', $earlyRow[7]);
+        $this->seedBet($player, $eventEarly, 93010, 93020, 93030, UserBet::STATUS_WON, '10.00', '20.00', '10.00', 1);
+        $this->seedBet($player, $eventLate, 93011, 93021, 93031, UserBet::STATUS_LOST, '5.00', '10.00', '5.00', 2);
     }
 
     public function test_guest_is_redirected_to_subscribe_page(): void
@@ -152,6 +185,8 @@ class PlayerResolvedBetsCsvTest extends TestCase
         string $status,
         string $stake,
         string $potentialReturn,
+        string $walletTotalResult = '0.00',
+        int $resolvedOrder = 0,
     ): void {
         $market = Market::query()->create([
             'id' => $marketId,
@@ -187,7 +222,8 @@ class PlayerResolvedBetsCsvTest extends TestCase
             'odds_at_bet' => '2.0000',
             'potential_return' => $potentialReturn,
             'status' => $status,
-            'wallet_total_result' => '0.00',
+            'wallet_total_result' => $walletTotalResult,
+            'resolved_order' => $resolvedOrder,
         ]);
     }
 }
