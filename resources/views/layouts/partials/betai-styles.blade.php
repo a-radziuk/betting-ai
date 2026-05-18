@@ -952,6 +952,28 @@
         gap: 0.5rem;
     }
 
+    .player-result-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .player-result-outcomes {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.35rem;
+        margin: 0;
+    }
+
+    .player-result-outcomes .form-icon {
+        min-width: 1.75rem;
+        margin-right: 0;
+        margin-bottom: 0;
+    }
+
     .user-results-metric {
         display: flex;
         align-items: baseline;

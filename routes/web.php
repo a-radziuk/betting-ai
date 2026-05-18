@@ -262,10 +262,20 @@ Route::get('/players/{user}', function (User $user) {
     $resolvedAggregate = UserBet::query()
         ->where('user_id', $user->id)
         ->where('status', '!=', UserBet::STATUS_PENDING)
-        ->selectRaw('COUNT(*) as bet_count, COALESCE(SUM(stake), 0) as turnover')
+        ->selectRaw(
+            'COUNT(*) as bet_count,
+            COALESCE(SUM(stake), 0) as turnover,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as won_count,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as lost_count,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as void_count',
+            [UserBet::STATUS_WON, UserBet::STATUS_LOST, UserBet::STATUS_VOID],
+        )
         ->first();
 
     $resolvedBetCount = (int) ($resolvedAggregate->bet_count ?? 0);
+    $wonBetCount = (int) ($resolvedAggregate->won_count ?? 0);
+    $lostBetCount = (int) ($resolvedAggregate->lost_count ?? 0);
+    $voidBetCount = (int) ($resolvedAggregate->void_count ?? 0);
     $turnover = (float) ($resolvedAggregate->turnover ?? 0);
     $averageStake = $resolvedBetCount > 0 ? $turnover / $resolvedBetCount : null;
     $totalResult = (float) $user->wallet->total_result;
@@ -292,6 +302,9 @@ Route::get('/players/{user}', function (User $user) {
         'bets' => $bets,
         'resultChart' => $resultChart,
         'resolvedBetCount' => $resolvedBetCount,
+        'wonBetCount' => $wonBetCount,
+        'lostBetCount' => $lostBetCount,
+        'voidBetCount' => $voidBetCount,
         'turnover' => $turnover,
         'averageStake' => $averageStake,
         'totalResult' => $totalResult,

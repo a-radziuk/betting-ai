@@ -118,7 +118,14 @@
             </a>
         </span>
         <span class="user-results-item user-results-item--metrics">
-            <span class="user-results-label">Result</span>
+            <div class="player-result-head">
+                <span class="user-results-label">Result</span>
+                <div class="player-result-outcomes" role="group" aria-label="{{ __('Settled bet outcomes') }}">
+                    <span class="form-icon form-icon--w" title="{{ __('Won') }}">{{ number_format($wonBetCount) }}</span>
+                    <span class="form-icon form-icon--l" title="{{ __('Lost') }}">{{ number_format($lostBetCount) }}</span>
+                    <span class="form-icon form-icon--d" title="{{ __('Void') }}">{{ number_format($voidBetCount) }}</span>
+                </div>
+            </div>
             <div class="user-results-metric user-results-metric--duo">
                 <div class="user-results-metric-duo-item">
                     @include('players.partials.metric-label', [

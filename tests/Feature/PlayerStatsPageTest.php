@@ -393,20 +393,37 @@ class PlayerStatsPageTest extends TestCase
             'status' => UserBet::STATUS_LOST,
             'wallet_total_result' => '5.00',
         ]);
+        UserBet::query()->create([
+            'user_id' => $player->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => '3.00',
+            'odds_at_bet' => '2.0000',
+            'potential_return' => '6.00',
+            'status' => UserBet::STATUS_VOID,
+            'wallet_total_result' => '5.00',
+        ]);
 
         $html = $this->get(route('players.show', $player))
             ->assertOk()
             ->getContent();
 
+        $this->assertStringContainsString('player-result-outcomes', $html);
+        $this->assertStringContainsString('class="form-icon form-icon--w"', $html);
+        $this->assertStringContainsString('class="form-icon form-icon--l"', $html);
+        $this->assertStringContainsString('class="form-icon form-icon--d"', $html);
+        $this->assertStringContainsString('class="form-icon form-icon--w" title="Won">1</span>', $html);
+        $this->assertStringContainsString('class="form-icon form-icon--l" title="Lost">1</span>', $html);
+        $this->assertStringContainsString('class="form-icon form-icon--d" title="Void">1</span>', $html);
         $this->assertStringContainsString('user-results-item--metrics', $html);
         $this->assertStringContainsString('metric-info', $html);
         $this->assertStringContainsString('Number of settled bets', $html);
         $this->assertStringContainsString('Total stake staked', $html);
         $this->assertStringContainsString('Average stake', $html);
-        $this->assertStringContainsString('7.50', $html);
+        $this->assertStringContainsString('6.00', $html);
         $this->assertStringContainsString('Relative Efficiency', $html);
         $this->assertStringContainsString('+10.00', $html);
-        $this->assertStringContainsString('+66.7%', $html);
+        $this->assertStringContainsString('+55.6%', $html);
     }
 
     public function test_displays_extended_profile_fields_when_set(): void
