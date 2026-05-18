@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
 use App\Models\EventAnalysis;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserSubscription;
 use App\Services\PlaceBetService;
+use App\Support\PlayerResolvedBets;
 use App\Support\PlayerWalletResultChart;
 use App\Support\SubscriptionPlans;
 use Illuminate\Http\Request;
@@ -246,13 +248,6 @@ Route::get('/players', function () {
 })->name('players.index');
 
 Route::get('/players/{user}', function (User $user) {
-    $resolvedBetsQuery = UserBet::query()
-        ->where('user_bets.user_id', $user->id)
-        ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
-        ->join('events', 'events.id', '=', 'user_bets.event_id')
-        ->orderBy('user_bets.resolved_order', 'desc')
-        ->orderBy('user_bets.id', 'desc');
-
     $chartValues = UserBet::query()
         ->where('user_bets.user_id', $user->id)
         ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
@@ -294,15 +289,7 @@ Route::get('/players/{user}', function (User $user) {
         ->where('status', UserBet::STATUS_PENDING)
         ->count();
 
-    $bets = (clone $resolvedBetsQuery)
-        ->orderByDesc('events.start_time')
-        ->orderByDesc('user_bets.id')
-        ->select('user_bets.*')
-        ->with([
-            'event.homeTeam',
-            'event.awayTeam',
-            'odd.selection.market',
-        ])
+    $bets = PlayerResolvedBets::listingQuery($user)
         ->paginate(20)
         ->withQueryString();
 
@@ -319,6 +306,9 @@ Route::get('/players/{user}', function (User $user) {
         'pendingBetCount' => $pendingBetCount,
     ]);
 })->name('players.show');
+
+Route::get('/players/{user}/bets.csv', PlayerResolvedBetsCsvController::class)
+    ->name('players.bets.csv');
 
 Route::get('/players/{user}/current', function (User $user) {
     $viewer = Auth::user();

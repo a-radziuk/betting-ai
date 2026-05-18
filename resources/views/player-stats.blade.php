@@ -185,6 +185,13 @@
     </div>
 
     <section class="card overflow-hidden">
+        @if ($bets->isNotEmpty())
+            <div class="card-pad" style="padding-bottom: 0;">
+                <a href="{{ route('players.bets.csv', ['user' => $player->id]) }}" class="subbar-back">
+                    {{ __("Download Player's CSV") }}
+                </a>
+            </div>
+        @endif
         @if ($bets->isEmpty())
             <div class="empty">No resolved bets yet.</div>
         @else
