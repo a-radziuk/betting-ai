@@ -670,6 +670,22 @@
         color: #eaf0ff;
     }
 
+    .event-tip-card-subscribe {
+        margin: 0;
+        padding-top: 0.15rem;
+    }
+
+    .event-tip-card-subscribe-link {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+    }
+
+    .event-tip-card-subscribe-link:hover {
+        text-decoration: underline;
+    }
+
     /* Event page — league standings */
     .event-page-standings {
         margin-bottom: 1.5rem;

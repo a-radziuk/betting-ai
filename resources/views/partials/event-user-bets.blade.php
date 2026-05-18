@@ -1,4 +1,8 @@
 @if ($eventBets->isNotEmpty())
+    @php
+        $canSeeTips = auth()->check()
+            && auth()->user()->hasPrivelege(\App\Models\User::PRIVELEGE_SEE_TIPS);
+    @endphp
     <section class="event-tips-section" aria-labelledby="event-tips-title">
         <h2 id="event-tips-title" class="event-tips-title">Player tips</h2>
         <div class="event-tips-grid">
@@ -61,26 +65,34 @@
                             @endif
                         </div>
                     </header>
-                    <dl class="event-tip-card-pick">
-                        <div class="event-tip-card-pick-row">
-                            <dt>{{ __('Market') }}</dt>
-                            <dd>{{ $marketLabel }}</dd>
-                        </div>
-                        <div class="event-tip-card-pick-row event-tip-card-pick-row--inline">
-                            <div>
-                                <dt>{{ __('Selection') }}</dt>
-                                <dd>{{ $selectionName ?? '—' }}</dd>
+                    @if ($canSeeTips)
+                        <dl class="event-tip-card-pick">
+                            <div class="event-tip-card-pick-row">
+                                <dt>{{ __('Market') }}</dt>
+                                <dd>{{ $marketLabel }}</dd>
                             </div>
-                            <div>
-                                <dt>{{ __('Odds') }}</dt>
-                                <dd class="event-tip-card-odds">{{ number_format((float) $bet->odds_at_bet, 2) }}</dd>
+                            <div class="event-tip-card-pick-row event-tip-card-pick-row--inline">
+                                <div>
+                                    <dt>{{ __('Selection') }}</dt>
+                                    <dd>{{ $selectionName ?? '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt>{{ __('Odds') }}</dt>
+                                    <dd class="event-tip-card-odds">{{ number_format((float) $bet->odds_at_bet, 2) }}</dd>
+                                </div>
+                                <div>
+                                    <dt>{{ __('Stake') }}</dt>
+                                    <dd class="event-tip-card-stake">{{ number_format((float) $bet->stake, 2) }} {{ $currency }}</dd>
+                                </div>
                             </div>
-                            <div>
-                                <dt>{{ __('Stake') }}</dt>
-                                <dd class="event-tip-card-stake">{{ number_format((float) $bet->stake, 2) }} {{ $currency }}</dd>
-                            </div>
-                        </div>
-                    </dl>
+                        </dl>
+                    @elseif ($user)
+                        <p class="event-tip-card-subscribe">
+                            <a href="{{ route('players.subscribe.show', $user) }}" class="event-tip-card-subscribe-link">
+                                {{ __('Subscribe to see the tips') }}
+                            </a>
+                        </p>
+                    @endif
                 </article>
             @endforeach
         </div>

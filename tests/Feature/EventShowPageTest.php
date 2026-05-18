@@ -69,8 +69,43 @@ class EventShowPageTest extends TestCase
     private function userWhoCanPlaceBets(): User
     {
         return User::factory()->create([
-            'priveleges' => User::PRIVELEGE_PLACE_BETS,
+            'priveleges' => User::PRIVELEGE_PLACE_BETS.','.User::PRIVELEGE_SEE_TIPS,
         ]);
+    }
+
+    /**
+     * @return array{event: Event, odd: Odd, player: User}
+     */
+    private function seedEventWithTipFromPlayer(int $eventId, string $playerName = 'Tipster Alpha'): array
+    {
+        ['event' => $event, 'odd' => $odd] = $this->seedEventWithOdd($eventId);
+
+        $player = User::factory()->create(['name' => $playerName]);
+        UserWallet::query()->where('user_id', $player->id)->update(['total_result' => 42.5]);
+
+        ['event' => $pastEvent, 'odd' => $pastOdd] = $this->seedEventWithOdd($eventId + 10);
+
+        UserBet::query()->create([
+            'user_id' => $player->id,
+            'event_id' => $pastEvent->id,
+            'odd_id' => $pastOdd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.0,
+            'potential_return' => 20,
+            'status' => UserBet::STATUS_WON,
+        ]);
+
+        UserBet::query()->create([
+            'user_id' => $player->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 25,
+            'odds_at_bet' => 2.15,
+            'potential_return' => 53.75,
+            'status' => UserBet::STATUS_PENDING,
+        ]);
+
+        return ['event' => $event, 'odd' => $odd, 'player' => $player];
     }
 
     public function test_guest_cannot_see_odds_section(): void
@@ -129,43 +164,59 @@ class EventShowPageTest extends TestCase
         $this->assertStringContainsString('<section class="market-grid"', $html);
     }
 
+    public function test_guest_sees_subscribe_link_instead_of_tip_pick_details(): void
+    {
+        ['event' => $event, 'player' => $player] = $this->seedEventWithTipFromPlayer(92050);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Subscribe to see the tips', false)
+            ->assertSee('Tipster Alpha', false)
+            ->assertSee(route('players.subscribe.show', $player), false)
+            ->getContent();
+
+        $this->assertStringNotContainsString('<dl class="event-tip-card-pick">', $html);
+    }
+
+    public function test_user_without_see_tips_privilege_sees_subscribe_link(): void
+    {
+        ['event' => $event, 'player' => $player] = $this->seedEventWithTipFromPlayer(92051);
+
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_PLACE_BETS,
+        ]);
+
+        $html = $this->actingAs($viewer)
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Subscribe to see the tips', false)
+            ->getContent();
+
+        $this->assertStringNotContainsString('<dl class="event-tip-card-pick">', $html);
+        $this->assertStringContainsString(route('players.subscribe.show', $player), $html);
+    }
+
+    public function test_user_with_see_tips_privilege_sees_pick_details(): void
+    {
+        ['event' => $event] = $this->seedEventWithTipFromPlayer(92052);
+
+        $html = $this->actingAs(User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]))
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('MATCH_RESULT · FT', false)
+            ->assertSee(Selection::NAME_HOME, false)
+            ->assertSee('2.15', false)
+            ->getContent();
+
+        $this->assertStringContainsString('<dl class="event-tip-card-pick">', $html);
+        $this->assertStringNotContainsString('Subscribe to see the tips', $html);
+    }
+
     public function test_event_page_shows_user_bets_before_markets(): void
     {
-        ['event' => $event, 'odd' => $odd] = $this->seedEventWithOdd(92001);
-
-        $player = User::factory()->create(['name' => 'Tipster Alpha']);
-        UserWallet::query()->where('user_id', $player->id)->update(['total_result' => 42.5]);
-
-        ['event' => $pastEvent, 'odd' => $pastOdd] = $this->seedEventWithOdd(92011);
-
-        UserBet::query()->create([
-            'user_id' => $player->id,
-            'event_id' => $pastEvent->id,
-            'odd_id' => $pastOdd->id,
-            'stake' => 10,
-            'odds_at_bet' => 2.0,
-            'potential_return' => 20,
-            'status' => UserBet::STATUS_WON,
-        ]);
-        UserBet::query()->create([
-            'user_id' => $player->id,
-            'event_id' => $pastEvent->id,
-            'odd_id' => $pastOdd->id,
-            'stake' => 12,
-            'odds_at_bet' => 2.0,
-            'potential_return' => 24,
-            'status' => UserBet::STATUS_LOST,
-        ]);
-
-        UserBet::query()->create([
-            'user_id' => $player->id,
-            'event_id' => $event->id,
-            'odd_id' => $odd->id,
-            'stake' => 25,
-            'odds_at_bet' => 2.15,
-            'potential_return' => 53.75,
-            'status' => UserBet::STATUS_PENDING,
-        ]);
+        ['event' => $event] = $this->seedEventWithTipFromPlayer(92001, 'Tipster Alpha');
 
         $viewer = $this->userWhoCanPlaceBets();
 
