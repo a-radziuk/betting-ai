@@ -325,33 +325,30 @@ Route::get('/players/{user}/current', function (User $user) {
         return redirect()->route('login');
     }
 
-    if ($viewer->id !== $user->id) {
-        $isSubscribed = UserSubscription::query()
-            ->where('subscriber_user_id', $viewer->id)
-            ->where('player_user_id', $user->id)
-            ->exists();
-        if (! $isSubscribed) {
-            return redirect()->route('players.subscribe.show', ['user' => $user->id]);
-        }
-    }
+    $canSeeTips = $viewer->id === $user->id
+        || $viewer->hasPrivelege(User::PRIVELEGE_SEE_TIPS);
 
-    $bets = UserBet::query()
-        ->where('user_id', $user->id)
-        ->where('user_bets.status', UserBet::STATUS_PENDING)
-        ->join('events', 'events.id', '=', 'user_bets.event_id')
-        ->orderBy('events.start_time')
-        ->select('user_bets.*')
-        ->with([
-            'event.homeTeam',
-            'event.awayTeam',
-            'odd.selection.market',
-        ])
-        ->paginate(20)
-        ->withQueryString();
+    $bets = collect();
+    if ($canSeeTips) {
+        $bets = UserBet::query()
+            ->where('user_id', $user->id)
+            ->where('user_bets.status', UserBet::STATUS_PENDING)
+            ->join('events', 'events.id', '=', 'user_bets.event_id')
+            ->orderBy('events.start_time')
+            ->select('user_bets.*')
+            ->with([
+                'event.homeTeam',
+                'event.awayTeam',
+                'odd.selection.market',
+            ])
+            ->paginate(20)
+            ->withQueryString();
+    }
 
     return view('player-current-bets', [
         'player' => $user,
         'bets' => $bets,
+        'canSeeTips' => $canSeeTips,
     ]);
 })->name('players.current');
 

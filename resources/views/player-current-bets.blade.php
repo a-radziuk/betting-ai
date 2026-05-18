@@ -24,7 +24,9 @@
     </section>
 
     <section class="card overflow-hidden">
-        @if ($bets->isEmpty())
+        @if (! $canSeeTips)
+            <div class="empty">{{ __('Subscribe to see the tips') }}</div>
+        @elseif ($bets->isEmpty())
             <div class="empty">No current bets.</div>
         @else
             <div class="overflow-x-auto">

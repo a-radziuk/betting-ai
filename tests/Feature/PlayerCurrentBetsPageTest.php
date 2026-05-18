@@ -9,7 +9,6 @@ use App\Models\Selection;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserBet;
-use App\Models\UserSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,14 +16,12 @@ class PlayerCurrentBetsPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_lists_only_pending_bets_ordered_by_nearest_event(): void
+    /**
+     * @return array{user: User, eSoon: Event, eLater: Event}
+     */
+    private function seedPlayerWithPendingBets(): array
     {
         $user = User::factory()->create();
-        $viewer = User::factory()->create();
-        UserSubscription::query()->create([
-            'subscriber_user_id' => $viewer->id,
-            'player_user_id' => $user->id,
-        ]);
 
         $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
         $away = Team::query()->create(['name' => 'Away', 'short_name' => 'AWY', 'league' => 'T']);
@@ -130,11 +127,21 @@ class PlayerCurrentBetsPageTest extends TestCase
             'status' => UserBet::STATUS_WON,
         ]);
 
-        $res = $this->actingAs($viewer)->get(route('players.current', ['user' => $user->id]));
-        $res->assertOk();
+        return ['user' => $user, 'eSoon' => $eSoon, 'eLater' => $eLater];
+    }
 
-        $html = $res->getContent();
-        $this->assertIsString($html);
+    public function test_lists_only_pending_bets_ordered_by_nearest_event(): void
+    {
+        ['user' => $user] = $this->seedPlayerWithPendingBets();
+
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $html = $this->actingAs($viewer)
+            ->get(route('players.current', ['user' => $user->id]))
+            ->assertOk()
+            ->getContent();
 
         $posSoon = strpos($html, 'Home — Away');
         $posLater = strpos($html, 'Away — Home');
@@ -144,13 +151,37 @@ class PlayerCurrentBetsPageTest extends TestCase
         $this->assertLessThan($posLater, $posSoon);
     }
 
-    public function test_forbids_access_when_not_subscribed(): void
+    public function test_player_can_see_own_current_bets_without_see_tips_privilege(): void
     {
-        $user = User::factory()->create();
+        ['user' => $user] = $this->seedPlayerWithPendingBets();
+
+        $this->actingAs($user)
+            ->get(route('players.current', ['user' => $user->id]))
+            ->assertOk()
+            ->assertSee('Home — Away', false)
+            ->assertDontSee('Subscribe to see the tips', false);
+    }
+
+    public function test_shows_subscribe_message_when_viewer_lacks_see_tips_privilege(): void
+    {
+        ['user' => $user] = $this->seedPlayerWithPendingBets();
         $viewer = User::factory()->create();
 
-        $this->actingAs($viewer)
+        $html = $this->actingAs($viewer)
             ->get(route('players.current', ['user' => $user->id]))
-            ->assertRedirect(route('players.subscribe.show', ['user' => $user->id]));
+            ->assertOk()
+            ->assertSee('Subscribe to see the tips', false)
+            ->getContent();
+
+        $this->assertStringNotContainsString('Home — Away', $html);
+        $this->assertStringNotContainsString('Away — Home', $html);
+    }
+
+    public function test_requires_auth(): void
+    {
+        $user = User::factory()->create();
+
+        $this->get(route('players.current', ['user' => $user->id]))
+            ->assertRedirect(route('login'));
     }
 }
