@@ -37,8 +37,8 @@ class PlayerResolvedBetsCsvTest extends TestCase
 
         $this->assertSame(PlayerResolvedBets::csvHeaders(false), str_getcsv($lines[0]));
         $this->assertCount(8, str_getcsv($lines[1]));
-        $this->assertSame('won', str_getcsv($lines[1])[6]);
-        $this->assertSame('10.00', str_getcsv($lines[1])[7]);
+        $this->assertSame('lost', str_getcsv($lines[1])[6]);
+        $this->assertSame('-5.00', str_getcsv($lines[1])[7]);
     }
 
     public function test_download_includes_admin_columns_for_superadmin(): void
@@ -60,22 +60,22 @@ class PlayerResolvedBetsCsvTest extends TestCase
 
         $this->assertSame(PlayerResolvedBets::csvHeaders(true), str_getcsv($lines[0]));
 
-        $earlyRow = str_getcsv($lines[1]);
-        $this->assertSame('2026-03-01 12:00', $earlyRow[0]);
-        $this->assertSame('Home FC — Away FC', $earlyRow[1]);
-        $this->assertSame('1-0', $earlyRow[2]);
-        $this->assertSame('won', $earlyRow[6]);
-        $this->assertSame('10.00', $earlyRow[7]);
-        $this->assertSame('10.00', $earlyRow[8]);
-        $this->assertSame('1', $earlyRow[9]);
-
-        $lateRow = str_getcsv($lines[2]);
+        $lateRow = str_getcsv($lines[1]);
         $this->assertSame('2026-06-01 12:00', $lateRow[0]);
+        $this->assertSame('Home FC — Away FC', $lateRow[1]);
         $this->assertSame('2-2', $lateRow[2]);
         $this->assertSame('lost', $lateRow[6]);
         $this->assertSame('-5.00', $lateRow[7]);
         $this->assertSame('5.00', $lateRow[8]);
         $this->assertSame('2', $lateRow[9]);
+
+        $earlyRow = str_getcsv($lines[2]);
+        $this->assertSame('2026-03-01 12:00', $earlyRow[0]);
+        $this->assertSame('1-0', $earlyRow[2]);
+        $this->assertSame('won', $earlyRow[6]);
+        $this->assertSame('10.00', $earlyRow[7]);
+        $this->assertSame('10.00', $earlyRow[8]);
+        $this->assertSame('1', $earlyRow[9]);
     }
 
     private function seedTwoResolvedBets(User $player, string $tz): void

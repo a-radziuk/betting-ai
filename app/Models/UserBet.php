@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -68,5 +69,30 @@ class UserBet extends Model
     public function odd(): BelongsTo
     {
         return $this->belongsTo(Odd::class);
+    }
+
+    /**
+     * @param  Builder<UserBet>  $query
+     * @return Builder<UserBet>
+     */
+    public function scopeOrderByResolvedSettlementDesc(Builder $query): Builder
+    {
+        return $query
+            ->orderByDesc($query->qualifyColumn('resolved_order'))
+            ->orderByDesc($query->qualifyColumn('id'));
+    }
+
+    /**
+     * Eager-load the five most recent resolved bets for form icons.
+     */
+    public static function eagerLoadRecentResolved(): \Closure
+    {
+        return function ($query): void {
+            $query
+                ->where('status', '<>', self::STATUS_PENDING)
+                ->orderByDesc('resolved_order')
+                ->orderByDesc('id')
+                ->limit(5);
+        };
     }
 }

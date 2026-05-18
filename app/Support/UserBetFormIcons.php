@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 final class UserBetFormIcons
 {
     /**
-     * Build W / L / D style segments from up to the five most recent bets (oldest → newest for display, like league form).
+     * Build W / L / D style segments from up to the five most recent resolved bets (oldest → newest for display, like league form).
      *
      * @param  Collection<int, UserBet>  $bets
      * @return list<array{letter: string, css: string, tooltip: string}>
@@ -19,7 +19,10 @@ final class UserBetFormIcons
             $bets = $bets->where('status', '!=', UserBet::STATUS_PENDING)->values();
         }
 
-        $sorted = $bets->sortBy('id')->values();
+        $sorted = $bets->sortBy([
+            ['resolved_order', 'asc'],
+            ['id', 'asc'],
+        ])->values();
         $out = [];
         foreach ($sorted as $bet) {
             $out[] = self::mapBet($bet);

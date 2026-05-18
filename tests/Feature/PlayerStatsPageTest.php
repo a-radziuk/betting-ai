@@ -20,7 +20,7 @@ class PlayerStatsPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_resolved_bets_sorted_by_event_start_time_desc(): void
+    public function test_resolved_bets_sorted_by_resolved_order_desc(): void
     {
         $tz = config('app.timezone');
         $player = User::factory()->create();
@@ -106,6 +106,7 @@ class PlayerStatsPageTest extends TestCase
             'potential_return' => '20.00',
             'status' => UserBet::STATUS_WON,
             'wallet_total_result' => '10.00',
+            'resolved_order' => 1,
         ]);
         UserBet::query()->create([
             'user_id' => $player->id,
@@ -116,6 +117,7 @@ class PlayerStatsPageTest extends TestCase
             'potential_return' => '10.00',
             'status' => UserBet::STATUS_LOST,
             'wallet_total_result' => '5.00',
+            'resolved_order' => 2,
         ]);
 
         $html = $this->get(route('players.show', $player))

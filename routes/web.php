@@ -75,7 +75,7 @@ Route::get('/', function () {
             ->limit(3)
             ->with([
                 'wallet',
-                'bets' => fn ($q) => $q->where('status', '<>', UserBet::STATUS_PENDING)->orderByDesc('id')->limit(5),
+                'bets' => UserBet::eagerLoadRecentResolved(),
             ])
             ->get();
     }
@@ -173,10 +173,7 @@ Route::get('/events/{event}', function (Event $event) {
             })
             ->with([
                 'user.wallet',
-                'user.bets' => fn ($q) => $q
-                    ->where('status', '<>', UserBet::STATUS_PENDING)
-                    ->orderByDesc('id')
-                    ->limit(5),
+                'user.bets' => UserBet::eagerLoadRecentResolved(),
                 'odd.selection.market',
             ]);
 
@@ -234,10 +231,7 @@ Route::get('/players', function () {
             DB::raw("COALESCE(user_wallets.currency, 'EUR') as wallet_currency"),
         ])
         ->with([
-            'bets' => fn ($q) => $q
-                ->where('status', '!=', UserBet::STATUS_PENDING)
-                ->orderByDesc('id')
-                ->limit(5),
+            'bets' => UserBet::eagerLoadRecentResolved(),
         ])
         ->paginate(20)
         ->withQueryString();

@@ -10,19 +10,16 @@ use Illuminate\Support\Collection;
 final class PlayerResolvedBets
 {
     /**
-     * Resolved bets for the player stats table / CSV (event date newest first).
+     * Resolved bets for the player stats table and CSV (newest settlement first).
      *
      * @return Builder<UserBet>
      */
     public static function listingQuery(User $user): Builder
     {
         return UserBet::query()
-            ->where('user_bets.user_id', $user->id)
-            ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
-            ->join('events', 'events.id', '=', 'user_bets.event_id')
-            ->orderByDesc('events.start_time')
-            ->orderByDesc('user_bets.id')
-            ->select('user_bets.*')
+            ->where('user_id', $user->id)
+            ->where('status', '!=', UserBet::STATUS_PENDING)
+            ->orderByResolvedSettlementDesc()
             ->with([
                 'event.homeTeam',
                 'event.awayTeam',
@@ -31,22 +28,11 @@ final class PlayerResolvedBets
     }
 
     /**
-     * Resolved bets for CSV export (settlement order).
-     *
      * @return Builder<UserBet>
      */
     public static function csvQuery(User $user): Builder
     {
-        return UserBet::query()
-            ->where('user_bets.user_id', $user->id)
-            ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
-            ->orderBy('user_bets.resolved_order')
-            ->orderBy('user_bets.id')
-            ->with([
-                'event.homeTeam',
-                'event.awayTeam',
-                'odd.selection.market',
-            ]);
+        return self::listingQuery($user);
     }
 
     /**

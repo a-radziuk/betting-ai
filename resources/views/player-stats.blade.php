@@ -36,7 +36,7 @@
 
     <section class="hero">
         <h1>{{ $player->name }}</h1>
-        <p class="meta">Settled bets by event date, newest first.</p>
+        <p class="meta">Settled bets by settlement order, newest first.</p>
     </section>
 
     @if ($hasProfileDetails)

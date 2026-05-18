@@ -24,11 +24,11 @@ class UserBetFormIconsTest extends TestCase
         ], $segments);
     }
 
-    public function test_sorts_by_id_ascending_for_display(): void
+    public function test_sorts_by_resolved_order_ascending_for_display(): void
     {
         $bets = collect([
-            (new UserBet)->forceFill(['id' => 30, 'status' => UserBet::STATUS_LOST, 'stake' => 1]),
-            (new UserBet)->forceFill(['id' => 10, 'status' => UserBet::STATUS_WON, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 30, 'resolved_order' => 2, 'status' => UserBet::STATUS_LOST, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 10, 'resolved_order' => 1, 'status' => UserBet::STATUS_WON, 'stake' => 1]),
         ]);
 
         $letters = array_map(fn ($s) => $s['letter'], UserBetFormIcons::fromBets($bets));
