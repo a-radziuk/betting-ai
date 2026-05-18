@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\PlayerResolvedBets;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PlayerResolvedBetsCsvController extends Controller
 {
-    public function __invoke(User $user): StreamedResponse
+    public function __invoke(User $user): StreamedResponse|RedirectResponse
     {
+        $viewer = Auth::user();
+        if ($viewer === null || ! $viewer->hasPrivelege(User::PRIVELEGE_SEE_TIPS)) {
+            return redirect()->route('subscribe');
+        }
+
         $bets = PlayerResolvedBets::allForListing($user);
 
         $filename = sprintf('player-%d-resolved-bets.csv', $user->id);

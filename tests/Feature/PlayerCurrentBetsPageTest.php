@@ -184,4 +184,41 @@ class PlayerCurrentBetsPageTest extends TestCase
         $this->get(route('players.current', ['user' => $user->id]))
             ->assertRedirect(route('login'));
     }
+
+    public function test_shows_explanation_under_bet_row_when_present(): void
+    {
+        ['user' => $user, 'eSoon' => $eSoon] = $this->seedPlayerWithPendingBets();
+
+        UserBet::query()
+            ->where('user_id', $user->id)
+            ->where('event_id', $eSoon->id)
+            ->where('status', UserBet::STATUS_PENDING)
+            ->update(['explanation' => 'Home side value based on recent form.']);
+
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('players.current', ['user' => $user->id]))
+            ->assertOk()
+            ->assertSee('Home side value based on recent form.', false)
+            ->assertSee('player-current-bet-explanation', false);
+    }
+
+    public function test_hides_explanation_row_when_explanation_missing(): void
+    {
+        ['user' => $user] = $this->seedPlayerWithPendingBets();
+
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $html = $this->actingAs($viewer)
+            ->get(route('players.current', ['user' => $user->id]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertSame(0, substr_count($html, 'class="player-current-bet-explanation"'));
+    }
 }

@@ -186,9 +186,9 @@
 
     <section class="card overflow-hidden">
         @if ($bets->isNotEmpty())
-            <div class="card-pad" style="padding-bottom: 0;">
+            <div class="card-pad player-stats-download-bar">
                 <a href="{{ route('players.bets.csv', ['user' => $player->id]) }}" class="subbar-back">
-                    {{ __("Download Player's CSV") }}
+                    {{ __('Download CSV') }}
                 </a>
             </div>
         @endif

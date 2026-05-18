@@ -65,6 +65,13 @@
                             <td class="text-right tabular-nums text-[#eaf0ff]">{{ number_format((float) $bet->stake, 2) }}</td>
                             <td class="text-right tabular-nums text-[#eaf0ff]">{{ number_format((float) $bet->potential_return, 2) }}</td>
                         </tr>
+                        @if (filled($bet->explanation))
+                            <tr class="player-current-bet-explanation-row">
+                                <td colspan="5" class="player-current-bet-explanation">
+                                    {{ $bet->explanation }}
+                                </td>
+                            </tr>
+                        @endif
                     @endforeach
                     </tbody>
                 </table>

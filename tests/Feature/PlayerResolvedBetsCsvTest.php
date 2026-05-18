@@ -22,6 +22,9 @@ class PlayerResolvedBetsCsvTest extends TestCase
     {
         $tz = config('app.timezone');
         $player = User::factory()->create();
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
 
         $home = Team::query()->create(['name' => 'Home FC', 'short_name' => 'HFC', 'league' => 'T']);
         $away = Team::query()->create(['name' => 'Away FC', 'short_name' => 'AFC', 'league' => 'T']);
@@ -46,7 +49,7 @@ class PlayerResolvedBetsCsvTest extends TestCase
         $this->seedBet($player, $eventEarly, 93010, 93020, 93030, UserBet::STATUS_WON, '10.00', '20.00');
         $this->seedBet($player, $eventLate, 93011, 93021, 93031, UserBet::STATUS_LOST, '5.00', '10.00');
 
-        $response = $this->get(route('players.bets.csv', $player));
+        $response = $this->actingAs($viewer)->get(route('players.bets.csv', $player));
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
 
@@ -68,9 +71,65 @@ class PlayerResolvedBetsCsvTest extends TestCase
         $this->assertSame('10.00', $earlyRow[7]);
     }
 
-    public function test_player_page_shows_download_link_when_bets_exist(): void
+    public function test_guest_is_redirected_to_subscribe_page(): void
     {
         $player = User::factory()->create();
+
+        $this->get(route('players.bets.csv', $player))
+            ->assertRedirect(route('subscribe'));
+    }
+
+    public function test_user_without_see_tips_is_redirected_to_subscribe_page(): void
+    {
+        $player = User::factory()->create();
+        $viewer = User::factory()->create();
+
+        $this->actingAs($viewer)
+            ->get(route('players.bets.csv', $player))
+            ->assertRedirect(route('subscribe'));
+    }
+
+    public function test_player_page_shows_download_link_even_without_see_tips(): void
+    {
+        $player = User::factory()->create();
+        $viewer = User::factory()->create();
+        $this->seedResolvedBetForPlayer($player);
+
+        $this->actingAs($viewer)
+            ->get(route('players.show', $player))
+            ->assertOk()
+            ->assertSee('Download CSV', false)
+            ->assertSee(route('players.bets.csv', $player), false);
+    }
+
+    public function test_guest_sees_download_link_on_player_page(): void
+    {
+        $player = User::factory()->create();
+        $this->seedResolvedBetForPlayer($player);
+
+        $this->get(route('players.show', $player))
+            ->assertOk()
+            ->assertSee('Download CSV', false)
+            ->assertSee(route('players.bets.csv', $player), false);
+    }
+
+    public function test_player_page_hides_download_link_without_resolved_bets(): void
+    {
+        $player = User::factory()->create();
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $html = $this->actingAs($viewer)
+            ->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('Download CSV', $html);
+    }
+
+    private function seedResolvedBetForPlayer(User $player): void
+    {
         $home = Team::query()->create(['name' => 'H', 'short_name' => 'H', 'league' => 'T']);
         $away = Team::query()->create(['name' => 'A', 'short_name' => 'A', 'league' => 'T']);
         $event = Event::query()->create([
@@ -82,22 +141,6 @@ class PlayerResolvedBetsCsvTest extends TestCase
             'score' => '0-0',
         ]);
         $this->seedBet($player, $event, 93051, 93052, 93053, UserBet::STATUS_WON, '10.00', '20.00');
-
-        $this->get(route('players.show', $player))
-            ->assertOk()
-            ->assertSee('Download Player', false)
-            ->assertSee(route('players.bets.csv', $player), false);
-    }
-
-    public function test_player_page_hides_download_link_without_resolved_bets(): void
-    {
-        $player = User::factory()->create();
-
-        $html = $this->get(route('players.show', $player))
-            ->assertOk()
-            ->getContent();
-
-        $this->assertStringNotContainsString("Download Player's CSV", $html);
     }
 
     private function seedBet(

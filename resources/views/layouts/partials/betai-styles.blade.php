@@ -1149,6 +1149,25 @@
         line-height: 1.45;
     }
 
+    .player-stats-download-bar {
+        display: flex;
+        justify-content: flex-end;
+        padding-bottom: 0;
+    }
+
+    .player-current-bet-explanation-row td {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    .player-current-bet-explanation {
+        font-size: 0.88rem;
+        line-height: 1.45;
+        color: #9fb0d3;
+        padding-bottom: 0.85rem;
+        white-space: pre-wrap;
+    }
+
     .player-profile-dl {
         margin: 0;
         display: flex;
