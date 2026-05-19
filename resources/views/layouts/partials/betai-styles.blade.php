@@ -1195,6 +1195,86 @@
         padding-bottom: 0;
     }
 
+    /* Admin */
+    .admin-shell {
+        display: grid;
+        grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+        padding-top: 0.5rem;
+        padding-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .admin-shell {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .admin-sidebar {
+        padding: 1rem;
+        position: sticky;
+        top: 1rem;
+    }
+
+    .admin-sidebar-title {
+        margin: 0 0 0.75rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .admin-sidebar-nav {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .admin-sidebar-nav li + li {
+        margin-top: 0.25rem;
+    }
+
+    .admin-sidebar-link {
+        display: block;
+        padding: 0.55rem 0.7rem;
+        border-radius: 0.55rem;
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #c8d6f5;
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .admin-sidebar-link:hover {
+        color: var(--text);
+        background: rgba(93, 226, 255, 0.08);
+    }
+
+    .admin-sidebar-link--active {
+        color: var(--text);
+        background: rgba(93, 226, 255, 0.14);
+        border: 1px solid rgba(93, 226, 255, 0.28);
+    }
+
+    .admin-main {
+        min-width: 0;
+    }
+
+    .admin-page-title {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #eaf0ff;
+    }
+
+    .admin-page-meta {
+        margin: 0.65rem 0 0;
+        font-size: 0.92rem;
+        color: #9fb0d3;
+    }
+
     .player-current-bet-explanation-row td {
         border-top: none;
         padding-top: 0;

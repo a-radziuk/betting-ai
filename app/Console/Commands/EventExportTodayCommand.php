@@ -204,7 +204,7 @@ Give me those bets as JSON in the following format:
     odd_id: // id from the JSON
     stake: // percent from 1000
     description: // explain why you want to bet
-    type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET, GPT_MANUAL_{$type}_NEVERWIN
+    type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET
     confidence: // how confident you are that this bet will win, int from 1 to 10
 }
 TXT;

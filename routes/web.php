@@ -377,6 +377,28 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): void {
+    Route::get('/', function () {
+        return view('admin.index');
+    })->name('admin');
+
+    Route::get('/upload-events', function () {
+        return view('admin.stub', ['pageTitle' => 'Upload Events']);
+    })->name('admin.upload-events');
+
+    Route::get('/upload-analysis', function () {
+        return view('admin.stub', ['pageTitle' => 'Upload Analysis']);
+    })->name('admin.upload-analysis');
+
+    Route::get('/upload-predictions', function () {
+        return view('admin.stub', ['pageTitle' => 'Upload Predictions']);
+    })->name('admin.upload-predictions');
+
+    Route::get('/resolve-event', function () {
+        return view('admin.stub', ['pageTitle' => 'Resolve Event']);
+    })->name('admin.resolve-event');
+});
+
 Route::get('/subscribe', function () {
     $user = Auth::user();
     $seeTipsExpiresAt = $user?->see_tips_expires_at;
