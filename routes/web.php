@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
@@ -396,9 +397,12 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
         return view('admin.stub', ['pageTitle' => 'Upload Predictions']);
     })->name('admin.upload-predictions');
 
-    Route::get('/resolve-event', function () {
-        return view('admin.stub', ['pageTitle' => 'Resolve Event']);
-    })->name('admin.resolve-event');
+    Route::get('/resolve-event', [AdminResolveEventController::class, 'index'])
+        ->name('admin.resolve-event');
+    Route::get('/resolve-event/{event}', [AdminResolveEventController::class, 'show'])
+        ->name('admin.resolve-event.show');
+    Route::post('/resolve-event/{event}', [AdminResolveEventController::class, 'store'])
+        ->name('admin.resolve-event.store');
 });
 
 Route::get('/subscribe', function () {

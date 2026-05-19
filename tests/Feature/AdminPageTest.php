@@ -58,6 +58,7 @@ class AdminPageTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.resolve-event'))
             ->assertOk()
-            ->assertSee('Resolve Event', false);
+            ->assertSee('Resolve Event', false)
+            ->assertSee('No events ready to resolve', false);
     }
 }

@@ -1322,6 +1322,99 @@
         border: 1px solid color-mix(in srgb, #dc2626 35%, transparent);
     }
 
+    .admin-empty {
+        margin: 1rem 0 0;
+        color: var(--muted);
+    }
+
+    .admin-table-wrap {
+        margin-top: 1rem;
+        overflow-x: auto;
+    }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 0.55rem 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+    }
+
+    .admin-table th {
+        font-weight: 600;
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .admin-table-nowrap {
+        white-space: nowrap;
+    }
+
+    .admin-table-link {
+        color: var(--accent);
+        text-decoration: none;
+    }
+
+    .admin-table-link:hover {
+        text-decoration: underline;
+    }
+
+    .admin-table-actions {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .btn-sm {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .admin-back-link {
+        margin: 0 0 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .admin-back-link a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+
+    .admin-back-link a:hover {
+        text-decoration: underline;
+    }
+
+    .admin-resolve-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+        max-width: 20rem;
+    }
+
+    .admin-resolve-score-input {
+        width: 100%;
+        padding: 0.55rem 0.75rem;
+        font-size: 1.1rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--surface);
+        color: var(--text);
+    }
+
+    .admin-resolve-score-input:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+    }
+
     .admin-page-meta {
         margin: 0.65rem 0 0;
         font-size: 0.92rem;

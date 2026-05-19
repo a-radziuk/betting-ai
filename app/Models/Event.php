@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,28 @@ class Event extends Model
     public const STATUS_PROCESSING = 'processing';
 
     public const STATUS_FINISHED = 'finished';
+
+    /**
+     * @param  Builder<Event>  $query
+     * @return Builder<Event>
+     */
+    public function scopeUnresolved(Builder $query): Builder
+    {
+        return $query->where('status', '!=', self::STATUS_FINISHED);
+    }
+
+    /**
+     * Unresolved events whose kickoff was more than two hours ago.
+     *
+     * @param  Builder<Event>  $query
+     * @return Builder<Event>
+     */
+    public function scopeReadyToResolve(Builder $query): Builder
+    {
+        return $query
+            ->unresolved()
+            ->where('start_time', '<', now()->subHours(2));
+    }
 
     /**
      * @return HasMany<Market, $this>
