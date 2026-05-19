@@ -53,7 +53,7 @@ class AdminPageTest extends TestCase
             ->get(route('admin.upload-events'))
             ->assertOk()
             ->assertSee('Upload Events', false)
-            ->assertSee('not implemented yet', false);
+            ->assertSee('Submit', false);
 
         $this->actingAs($admin)
             ->get(route('admin.resolve-event'))

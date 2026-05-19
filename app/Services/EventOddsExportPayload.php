@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Event;
 use App\Models\Market;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 final class EventOddsExportPayload
 {
@@ -21,6 +23,71 @@ final class EventOddsExportPayload
             'markets.selections' => fn ($q) => $q->orderBy('id'),
             'markets.selections.odds' => fn ($q) => $q->orderBy('id'),
         ]);
+    }
+
+    /**
+     * @return Builder<Event>
+     */
+    public static function unresolvedEventsQuery(): Builder
+    {
+        return Event::query()
+            ->with([
+                'markets' => fn ($q) => $q->orderBy('id'),
+                'markets.selections' => fn ($q) => $q->orderBy('id'),
+                'markets.selections.odds' => fn ($q) => $q->orderBy('id'),
+            ])
+            ->where('status', '!=', Event::STATUS_FINISHED)
+            ->orderBy('start_time')
+            ->orderBy('id');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function buildForUpload(Event $event): array
+    {
+        return array_merge(self::exportModelAttributes($event), [
+            'markets' => $event->markets
+                ->map(function (Market $market): array {
+                    return array_merge(self::exportModelAttributes($market), [
+                        'selections' => $market->selections
+                            ->map(function ($selection): array {
+                                return array_merge(self::exportModelAttributes($selection), [
+                                    'odds' => $selection->odds
+                                        ->map(fn ($odd) => self::exportModelAttributes($odd))
+                                        ->values()
+                                        ->all(),
+                                ]);
+                            })
+                            ->values()
+                            ->all(),
+                    ]);
+                })
+                ->values()
+                ->all(),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function exportModelAttributes(Model $model): array
+    {
+        $out = [];
+        foreach (array_keys($model->getAttributes()) as $key) {
+            $out[$key] = self::exportAttributeValue($model->getAttribute($key));
+        }
+
+        return $out;
+    }
+
+    private static function exportAttributeValue(mixed $value): mixed
+    {
+        if ($value instanceof CarbonInterface) {
+            return $value->toIso8601String();
+        }
+
+        return $value;
     }
 
     public static function findForExport(int|string $eventId, bool $withOdds = true): ?Event

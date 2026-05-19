@@ -1269,6 +1269,59 @@
         color: #eaf0ff;
     }
 
+    .admin-upload-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .admin-upload-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .admin-upload-textarea {
+        width: 100%;
+        min-height: 28rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--surface);
+        color: var(--text);
+        resize: vertical;
+    }
+
+    .admin-upload-textarea:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+    }
+
+    .admin-upload-submit {
+        align-self: flex-start;
+        margin-top: 0.25rem;
+    }
+
+    .admin-flash {
+        margin: 0.75rem 0 0;
+        padding: 0.65rem 0.85rem;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .admin-flash--success {
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+
+    .admin-flash--error {
+        background: color-mix(in srgb, #dc2626 10%, transparent);
+        border: 1px solid color-mix(in srgb, #dc2626 35%, transparent);
+    }
+
     .admin-page-meta {
         margin: 0.65rem 0 0;
         font-size: 0.92rem;

@@ -1,0 +1,119 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Event;
+use App\Models\Market;
+use App\Models\Odd;
+use App\Models\Selection;
+use App\Models\Team;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Tests\TestCase;
+
+class EventExportAllForUploadCommandTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_exports_unresolved_events_to_dated_json_file(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-05-19 12:00:00', config('app.timezone')));
+
+        $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Away', 'short_name' => 'AWY', 'league' => 'T']);
+
+        $scheduled = Event::query()->create([
+            'id' => 88001,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+        $finished = Event::query()->create([
+            'id' => 88002,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->subDay(),
+            'status' => Event::STATUS_FINISHED,
+            'score' => '1-0',
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 88010,
+            'event_id' => $scheduled->id,
+            'type' => Market::TYPE_MATCH_RESULT,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        $selection = Selection::query()->create([
+            'id' => 88011,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_HOME,
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+        Odd::query()->create([
+            'id' => 88012,
+            'selection_id' => $selection->id,
+            'odds' => 2.15,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $path = storage_path('app/export_2026-05-19.json');
+        if (is_file($path)) {
+            unlink($path);
+        }
+
+        $this->assertSame(0, Artisan::call('event:export-all-for-upload'));
+
+        $this->assertFileExists($path);
+        $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('2026-05-19', $data['exportDate']);
+        $this->assertCount(1, $data['events']);
+        $this->assertSame(88001, $data['events'][0]['id']);
+        $this->assertSame(Event::STATUS_SCHEDULED, $data['events'][0]['status']);
+        $this->assertArrayNotHasKey('eventName', $data['events'][0]);
+        $this->assertArrayNotHasKey('standings', $data['events'][0]);
+        $this->assertCount(1, $data['events'][0]['markets']);
+        $this->assertSame(Market::TYPE_MATCH_RESULT, $data['events'][0]['markets'][0]['type']);
+        $this->assertSame(88010, $data['events'][0]['markets'][0]['id']);
+        $this->assertCount(1, $data['events'][0]['markets'][0]['selections']);
+        $this->assertSame(Selection::NAME_HOME, $data['events'][0]['markets'][0]['selections'][0]['name']);
+        $this->assertCount(1, $data['events'][0]['markets'][0]['selections'][0]['odds']);
+        $this->assertSame(88012, $data['events'][0]['markets'][0]['selections'][0]['odds'][0]['id']);
+        $this->assertEquals(2.15, $data['events'][0]['markets'][0]['selections'][0]['odds'][0]['odds']);
+
+        $eventIds = array_column($data['events'], 'id');
+        $this->assertNotContains(88002, $eventIds);
+
+        unlink($path);
+        Carbon::setTestNow();
+    }
+
+    public function test_succeeds_with_empty_export_when_no_unresolved_events(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-05-20 12:00:00', config('app.timezone')));
+
+        $path = storage_path('app/export_2026-05-20.json');
+        if (is_file($path)) {
+            unlink($path);
+        }
+
+        $exitCode = Artisan::call('event:export-all-for-upload');
+        $this->assertSame(0, $exitCode);
+        $this->assertFileExists($path);
+
+        $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame([], $data['events']);
+
+        unlink($path);
+        Carbon::setTestNow();
+    }
+}

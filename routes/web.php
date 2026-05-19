@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
@@ -382,9 +383,10 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
         return view('admin.index');
     })->name('admin');
 
-    Route::get('/upload-events', function () {
-        return view('admin.stub', ['pageTitle' => 'Upload Events']);
-    })->name('admin.upload-events');
+    Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
+        ->name('admin.upload-events');
+    Route::post('/upload-events', [AdminUploadEventsController::class, 'store'])
+        ->name('admin.upload-events.store');
 
     Route::get('/upload-analysis', function () {
         return view('admin.stub', ['pageTitle' => 'Upload Analysis']);
