@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AdminResolveEventController;
+use App\Http\Controllers\AdminUploadAnalysisController;
 use App\Http\Controllers\AdminUploadEventsController;
+use App\Http\Controllers\AdminUploadPredictionsController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
@@ -389,13 +391,15 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
     Route::post('/upload-events', [AdminUploadEventsController::class, 'store'])
         ->name('admin.upload-events.store');
 
-    Route::get('/upload-analysis', function () {
-        return view('admin.stub', ['pageTitle' => 'Upload Analysis']);
-    })->name('admin.upload-analysis');
+    Route::get('/upload-analysis', [AdminUploadAnalysisController::class, 'show'])
+        ->name('admin.upload-analysis');
+    Route::post('/upload-analysis', [AdminUploadAnalysisController::class, 'store'])
+        ->name('admin.upload-analysis.store');
 
-    Route::get('/upload-predictions', function () {
-        return view('admin.stub', ['pageTitle' => 'Upload Predictions']);
-    })->name('admin.upload-predictions');
+    Route::get('/upload-predictions', [AdminUploadPredictionsController::class, 'show'])
+        ->name('admin.upload-predictions');
+    Route::post('/upload-predictions', [AdminUploadPredictionsController::class, 'store'])
+        ->name('admin.upload-predictions.store');
 
     Route::get('/resolve-event', [AdminResolveEventController::class, 'index'])
         ->name('admin.resolve-event');

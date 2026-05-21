@@ -56,6 +56,18 @@ class AdminPageTest extends TestCase
             ->assertSee('Submit', false);
 
         $this->actingAs($admin)
+            ->get(route('admin.upload-analysis'))
+            ->assertOk()
+            ->assertSee('Upload Analysis', false)
+            ->assertSee('Submit', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.upload-predictions'))
+            ->assertOk()
+            ->assertSee('Upload Predictions', false)
+            ->assertSee('Submit', false);
+
+        $this->actingAs($admin)
             ->get(route('admin.resolve-event'))
             ->assertOk()
             ->assertSee('Resolve Event', false)
