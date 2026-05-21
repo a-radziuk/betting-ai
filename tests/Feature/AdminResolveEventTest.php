@@ -153,6 +153,59 @@ class AdminResolveEventTest extends TestCase
         $this->assertSame(Event::STATUS_SCHEDULED, $event->fresh()->status);
     }
 
+    public function test_superadmin_can_abandon_event_and_cancel_pending_bets(): void
+    {
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        $event = $this->createResolvableEvent(97105);
+        $user = $this->seedHomeWinBet($event->id);
+        UserWallet::query()->where('user_id', $user->id)->update([
+            'balance' => 990,
+            'amount_in_play' => 10,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.resolve-event.abandon', $event), [
+                'comment' => 'Weather delay',
+            ])
+            ->assertRedirect(route('admin.resolve-event'))
+            ->assertSessionHas('status');
+
+        $event->refresh();
+        $this->assertSame(Event::STATUS_FINISHED, $event->status);
+        $this->assertSame('ABANDONED Weather delay', $event->comment);
+
+        $bet = UserBet::query()->where('event_id', $event->id)->first();
+        $this->assertSame(UserBet::STATUS_CANCELLED, $bet->status);
+        $this->assertSame(1, $bet->resolved_order);
+
+        $wallet = UserWallet::query()->where('user_id', $user->id)->first();
+        $this->assertEquals(1000.0, (float) $wallet->balance);
+        $this->assertEquals(0.0, (float) $wallet->amount_in_play);
+    }
+
+    public function test_abandon_without_comment_sets_abandoned_marker_only(): void
+    {
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        $event = $this->createResolvableEvent(97106);
+
+        $this->actingAs($admin)
+            ->post(route('admin.resolve-event.abandon', $event), [])
+            ->assertRedirect(route('admin.resolve-event'));
+
+        $this->assertSame('ABANDONED', $event->fresh()->comment);
+    }
+
+    public function test_abandon_on_resolved_event_redirects_to_list(): void
+    {
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        $event = $this->createResolvableEvent(97107, Event::STATUS_FINISHED, '1-0');
+
+        $this->actingAs($admin)
+            ->post(route('admin.resolve-event.abandon', $event), ['comment' => 'Too late'])
+            ->assertRedirect(route('admin.resolve-event'))
+            ->assertSessionHas('status');
+    }
+
     private function createResolvableEvent(
         int $id,
         string $status = Event::STATUS_SCHEDULED,

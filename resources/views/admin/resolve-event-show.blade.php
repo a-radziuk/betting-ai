@@ -49,5 +49,29 @@
             <p class="admin-page-meta">{{ __('Use home:away format, e.g. 2:3 or 2-3.') }}</p>
             <button type="submit" class="btn btn-primary admin-upload-submit">{{ __('Submit') }}</button>
         </form>
+
+        <hr class="admin-section-divider">
+
+        <h2 class="admin-section-title">{{ __('Abandon event') }}</h2>
+        <p class="admin-page-meta">
+            {{ __('Mark the event as finished without a score. Pending bets are cancelled and stakes refunded.') }}
+        </p>
+
+        <form
+            method="post"
+            action="{{ route('admin.resolve-event.abandon', $event) }}"
+            class="admin-abandon-form"
+        >
+            @csrf
+            <label class="admin-upload-label" for="abandon_comment">{{ __('Comment') }}</label>
+            <textarea
+                id="abandon_comment"
+                name="comment"
+                class="admin-abandon-textarea"
+                rows="4"
+                spellcheck="true"
+            >{{ old('comment') }}</textarea>
+            <button type="submit" class="btn btn-danger admin-abandon-submit">{{ __('Abandon') }}</button>
+        </form>
     </section>
 @endsection

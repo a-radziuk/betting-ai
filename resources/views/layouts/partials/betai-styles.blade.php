@@ -1415,6 +1415,61 @@
         outline-offset: 1px;
     }
 
+    .admin-section-divider {
+        margin: 2rem 0 1.25rem;
+        border: 0;
+        border-top: 1px solid var(--border);
+    }
+
+    .admin-section-title {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+    }
+
+    .admin-abandon-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        max-width: 32rem;
+    }
+
+    .admin-abandon-textarea {
+        width: 100%;
+        min-height: 6rem;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--surface);
+        color: var(--text);
+        resize: vertical;
+    }
+
+    .admin-abandon-textarea:focus {
+        outline: 2px solid #dc2626;
+        outline-offset: 1px;
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        border-color: #dc2626;
+        color: #fff;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+        color: #fff;
+    }
+
+    .admin-abandon-submit {
+        align-self: flex-start;
+        margin-top: 0.25rem;
+    }
+
     .admin-page-meta {
         margin: 0.65rem 0 0;
         font-size: 0.92rem;

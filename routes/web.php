@@ -403,6 +403,8 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
         ->name('admin.resolve-event.show');
     Route::post('/resolve-event/{event}', [AdminResolveEventController::class, 'store'])
         ->name('admin.resolve-event.store');
+    Route::post('/resolve-event/{event}/abandon', [AdminResolveEventController::class, 'abandon'])
+        ->name('admin.resolve-event.abandon');
 });
 
 Route::get('/subscribe', function () {

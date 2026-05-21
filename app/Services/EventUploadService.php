@@ -56,6 +56,7 @@ final class EventUploadService
             'status',
             'score',
             'additional_data',
+            'comment',
             'created_at',
             'updated_at',
         ]));

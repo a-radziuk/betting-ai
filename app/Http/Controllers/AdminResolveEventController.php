@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Services\EventAbandonService;
 use App\Services\EventResultService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,6 +70,35 @@ class AdminResolveEventController extends Controller
             return redirect()
                 ->route('admin.resolve-event.show', $event)
                 ->withErrors(['score' => $result['message']])
+                ->withInput();
+        }
+
+        return redirect()
+            ->route('admin.resolve-event')
+            ->with('status', $result['message']);
+    }
+
+    public function abandon(Request $request, Event $event, EventAbandonService $eventAbandonService): RedirectResponse
+    {
+        if ($this->isResolved($event)) {
+            return redirect()
+                ->route('admin.resolve-event')
+                ->with('status', __('This event is already resolved.'));
+        }
+
+        $validated = $request->validate([
+            'comment' => ['nullable', 'string'],
+        ]);
+
+        $result = $eventAbandonService->abandon(
+            $event->id,
+            $validated['comment'] ?? null
+        );
+
+        if (! $result['ok']) {
+            return redirect()
+                ->route('admin.resolve-event.show', $event)
+                ->withErrors(['comment' => $result['message']])
                 ->withInput();
         }
 

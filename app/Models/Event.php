@@ -18,6 +18,7 @@ class Event extends Model
         'status',
         'score',
         'additional_data',
+        'comment',
     ];
 
     protected $casts = [
