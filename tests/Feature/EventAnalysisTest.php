@@ -95,4 +95,76 @@ class EventAnalysisTest extends TestCase
             'influenced_by_event_ids' => ['537909020840964760', '595596105163812078'],
         ], $analysis->toExportArray());
     }
+
+    public function test_influenced_by_entries_resolve_labels_from_related_events(): void
+    {
+        $eventId = 1152117365672713706;
+        $relatedEventId = 1152117365672713707;
+        $tournament = Tournament::query()->create(['name' => 'Bundesliga']);
+        $home = Team::query()->create([
+            'name' => 'Freiburg',
+            'short_name' => 'SCF',
+            'league' => 'BL',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'Leipzig',
+            'short_name' => 'RBL',
+            'league' => 'BL',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        $mainHome = Team::query()->create([
+            'name' => 'Main Home',
+            'short_name' => 'MH',
+            'league' => 'BL',
+            'tournament_id' => $tournament->id,
+        ]);
+        $mainAway = Team::query()->create([
+            'name' => 'Main Away',
+            'short_name' => 'MA',
+            'league' => 'BL',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        Event::query()->create([
+            'id' => $eventId,
+            'home_team_id' => $mainHome->id,
+            'away_team_id' => $mainAway->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        Event::query()->create([
+            'id' => $relatedEventId,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $analysis = EventAnalysis::query()->create([
+            'event_id' => $eventId,
+            'type' => EventAnalysis::TYPE_MANUAL,
+            'strength' => EventAnalysis::STRENGTH_MAX,
+            'event_name' => 'Main Fixture',
+            'likely_outcome' => EventAnalysis::LIKELY_OUTCOME_DRAW,
+            'approximate_goals' => 2,
+            'description' => 'Test.',
+            'home_motivation' => 5,
+            'away_motivation' => 5,
+            'home_class' => 5,
+            'away_class' => 5,
+            'influenced_by' => null,
+            'influenced_by_event_ids' => [(string) $relatedEventId],
+        ]);
+
+        $entries = $analysis->influencedByEntries();
+
+        $this->assertCount(1, $entries);
+        $this->assertSame((string) $relatedEventId, $entries[0]['event_id']);
+        $this->assertSame('Freiburg vs Leipzig', $entries[0]['label']);
+    }
 }

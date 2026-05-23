@@ -53,6 +53,110 @@ class EventAnalysis extends Model
         };
     }
 
+    /**
+     * @return list<array{label: string, event_id: string|null}>
+     */
+    public function influencedByEntries(): array
+    {
+        $labels = $this->normalizedInfluencedByLabels();
+        $ids = $this->normalizedInfluencedByEventIds();
+        $count = max(count($labels), count($ids));
+
+        if ($count === 0) {
+            return [];
+        }
+
+        $entries = [];
+        $eventIdsNeedingLabels = [];
+
+        for ($index = 0; $index < $count; $index++) {
+            $label = $labels[$index] ?? '';
+            $eventId = $ids[$index] ?? null;
+
+            if ($label === '' && $eventId !== null) {
+                $eventIdsNeedingLabels[] = $eventId;
+            }
+
+            $entries[] = [
+                'label' => $label,
+                'event_id' => $eventId,
+            ];
+        }
+
+        if ($eventIdsNeedingLabels !== []) {
+            $events = Event::query()
+                ->with(['homeTeam', 'awayTeam'])
+                ->whereIn('id', array_unique($eventIdsNeedingLabels))
+                ->get()
+                ->keyBy(static fn (Event $event): string => (string) $event->id);
+
+            foreach ($entries as &$entry) {
+                if ($entry['label'] !== '' || $entry['event_id'] === null) {
+                    continue;
+                }
+
+                $related = $events->get($entry['event_id']);
+                $entry['label'] = $related !== null
+                    ? trim(
+                        ($related->homeTeam?->resolvedDisplayName() ?? ('Team #'.$related->home_team_id))
+                        .' vs '
+                        .($related->awayTeam?->resolvedDisplayName() ?? ('Team #'.$related->away_team_id))
+                    )
+                    : 'Event #'.$entry['event_id'];
+            }
+            unset($entry);
+        }
+
+        return array_values(array_filter(
+            $entries,
+            static fn (array $entry): bool => $entry['label'] !== '' || $entry['event_id'] !== null,
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function normalizedInfluencedByLabels(): array
+    {
+        $value = $this->influenced_by;
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+
+            return $trimmed === '' ? [] : [$trimmed];
+        }
+
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (mixed $item): string => trim((string) $item),
+            $value,
+        ), static fn (string $item): bool => $item !== ''));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function normalizedInfluencedByEventIds(): array
+    {
+        $value = $this->influenced_by_event_ids;
+
+        if (is_string($value) || is_int($value)) {
+            return [(string) $value];
+        }
+
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (mixed $id): string => trim((string) $id),
+            $value,
+        ), static fn (string $id): bool => $id !== ''));
+    }
+
     protected $fillable = [
         'event_id',
         'type',

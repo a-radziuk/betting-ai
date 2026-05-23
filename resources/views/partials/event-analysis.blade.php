@@ -37,21 +37,18 @@
                 </div>
             </div>
 
-            @if (! empty($eventAnalysis->influenced_by))
+            @if (count($influencedByEntries = $eventAnalysis->influencedByEntries()) > 0)
                 <div class="event-analysis-influenced">
                     <h3 class="event-analysis-influenced-title">Can be influenced by</h3>
                     <ul class="event-analysis-influenced-list">
-                        @foreach ($eventAnalysis->influenced_by as $index => $label)
-                            @php
-                                $influencerEventId = $eventAnalysis->influenced_by_event_ids[$index] ?? null;
-                            @endphp
+                        @foreach ($influencedByEntries as $entry)
                             <li>
-                                @if ($influencerEventId)
-                                    <a href="{{ route('events.show', $influencerEventId) }}" class="event-analysis-influenced-link">
-                                        {{ $label }}
+                                @if ($entry['event_id'])
+                                    <a href="{{ route('events.show', $entry['event_id']) }}" class="event-analysis-influenced-link">
+                                        {{ $entry['label'] }}
                                     </a>
                                 @else
-                                    {{ $label }}
+                                    {{ $entry['label'] }}
                                 @endif
                             </li>
                         @endforeach

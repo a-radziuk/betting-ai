@@ -377,6 +377,36 @@ class EventShowPageTest extends TestCase
         $this->assertLessThan($posMarkets, $posAnalysis);
     }
 
+    public function test_event_page_shows_influenced_by_from_event_ids_when_labels_missing(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92023);
+        $relatedEventId = 92024;
+        $this->seedEventWithOdd($relatedEventId);
+
+        EventAnalysis::query()->create([
+            'event_id' => $event->id,
+            'type' => EventAnalysis::TYPE_MANUAL,
+            'strength' => EventAnalysis::STRENGTH_MAX,
+            'event_name' => 'Event Home vs Event Away',
+            'likely_outcome' => EventAnalysis::LIKELY_OUTCOME_DRAW,
+            'approximate_goals' => 2,
+            'description' => 'Related fixture matters.',
+            'home_motivation' => 5,
+            'away_motivation' => 5,
+            'home_class' => 5,
+            'away_class' => 5,
+            'influenced_by' => null,
+            'influenced_by_event_ids' => [(string) $relatedEventId],
+        ]);
+
+        $this->actingAs($this->userWhoCanPlaceBets())
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Can be influenced by', false)
+            ->assertSee('Event Home vs Event Away', false)
+            ->assertSee(route('events.show', $relatedEventId), false);
+    }
+
     public function test_event_page_hides_analysis_when_none_exist(): void
     {
         ['event' => $event] = $this->seedEventWithOdd(92022);
