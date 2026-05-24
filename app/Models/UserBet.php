@@ -75,6 +75,15 @@ class UserBet extends Model
      * @param  Builder<UserBet>  $query
      * @return Builder<UserBet>
      */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where($query->qualifyColumn('status'), self::STATUS_PENDING);
+    }
+
+    /**
+     * @param  Builder<UserBet>  $query
+     * @return Builder<UserBet>
+     */
     public function scopeOrderByResolvedSettlementDesc(Builder $query): Builder
     {
         return $query

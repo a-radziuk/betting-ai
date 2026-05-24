@@ -1367,6 +1367,29 @@
         text-decoration: underline;
     }
 
+    .admin-table-sub {
+        margin-top: 0.2rem;
+        font-size: 0.78rem;
+        color: var(--muted);
+    }
+
+    .admin-table-num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .admin-table-explanation {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-style: italic;
+        padding-top: 0;
+    }
+
+    .admin-pagination {
+        margin-top: 1rem;
+    }
+
     .admin-table-actions {
         text-align: right;
         white-space: nowrap;

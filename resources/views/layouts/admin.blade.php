@@ -16,15 +16,16 @@
         <p class="admin-sidebar-title">{{ __('Admin') }}</p>
         <ul class="admin-sidebar-nav">
             @foreach ([
-                ['label' => __('Upload Events'), 'route' => 'admin.upload-events'],
-                ['label' => __('Upload Analysis'), 'route' => 'admin.upload-analysis'],
-                ['label' => __('Upload Predictions'), 'route' => 'admin.upload-predictions'],
-                ['label' => __('Resolve Event'), 'route' => 'admin.resolve-event'],
+                ['label' => __('User Bets'), 'route' => 'admin.user-bets', 'active' => 'admin.user-bets*'],
+                ['label' => __('Upload Events'), 'route' => 'admin.upload-events', 'active' => 'admin.upload-events*'],
+                ['label' => __('Upload Analysis'), 'route' => 'admin.upload-analysis', 'active' => 'admin.upload-analysis*'],
+                ['label' => __('Upload Predictions'), 'route' => 'admin.upload-predictions', 'active' => 'admin.upload-predictions*'],
+                ['label' => __('Resolve Event'), 'route' => 'admin.resolve-event', 'active' => 'admin.resolve-event*'],
             ] as $item)
                 <li>
                     <a
                         href="{{ route($item['route']) }}"
-                        @class(['admin-sidebar-link', 'admin-sidebar-link--active' => request()->routeIs($item['route'])])
+                        @class(['admin-sidebar-link', 'admin-sidebar-link--active' => request()->routeIs($item['active'])])
                     >
                         {{ $item['label'] }}
                     </a>

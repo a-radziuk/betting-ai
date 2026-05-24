@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\AdminUploadAnalysisController;
 use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\AdminUploadPredictionsController;
+use App\Http\Controllers\AdminUserBetsController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
@@ -385,6 +386,11 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
     Route::get('/', function () {
         return view('admin.index');
     })->name('admin');
+
+    Route::get('/user-bets', [AdminUserBetsController::class, 'index'])
+        ->name('admin.user-bets');
+    Route::delete('/user-bets/{bet}', [AdminUserBetsController::class, 'destroy'])
+        ->name('admin.user-bets.destroy');
 
     Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
         ->name('admin.upload-events');
