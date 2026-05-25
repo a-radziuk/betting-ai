@@ -214,6 +214,102 @@ class EventShowPageTest extends TestCase
         $this->assertStringNotContainsString('Subscribe to see the tips', $html);
     }
 
+    public function test_guest_sees_finished_event_tip_details_without_subscription(): void
+    {
+        ['event' => $event] = $this->seedEventWithTipFromPlayer(92053);
+        UserBet::query()
+            ->where('event_id', $event->id)
+            ->update([
+                'status' => UserBet::STATUS_WON,
+                'real_return' => 28.75,
+                'wallet_total_result' => 71.25,
+                'resolved_order' => 2,
+            ]);
+        $event->update([
+            'status' => Event::STATUS_FINISHED,
+            'score' => '2:1',
+        ]);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Final score: 2:1', false)
+            ->assertSee('MATCH_RESULT · FT', false)
+            ->assertSee(Selection::NAME_HOME, false)
+            ->assertSee('2.15', false)
+            ->getContent();
+
+        $this->assertStringContainsString('<dl class="event-tip-card-pick">', $html);
+        $this->assertStringNotContainsString('Subscribe to see the tips', $html);
+        $this->assertStringContainsString('event-tip-card--won', $html);
+    }
+
+    public function test_finished_event_tip_cards_show_result_borders(): void
+    {
+        ['event' => $event, 'odd' => $odd] = $this->seedEventWithOdd(92054);
+
+        $won = User::factory()->create(['name' => 'Won Tipster']);
+        $void = User::factory()->create(['name' => 'Void Tipster']);
+        $lost = User::factory()->create(['name' => 'Lost Tipster']);
+
+        foreach ([$won, $void, $lost] as $index => $user) {
+            ['event' => $pastEvent, 'odd' => $pastOdd] = $this->seedEventWithOdd(92064 + $index);
+            UserBet::query()->create([
+                'user_id' => $user->id,
+                'event_id' => $pastEvent->id,
+                'odd_id' => $pastOdd->id,
+                'stake' => 10,
+                'odds_at_bet' => 2.0,
+                'potential_return' => 20,
+                'status' => UserBet::STATUS_WON,
+                'resolved_order' => 1,
+            ]);
+        }
+
+        UserBet::query()->create([
+            'user_id' => $won->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.15,
+            'potential_return' => 21.5,
+            'status' => UserBet::STATUS_WON,
+            'resolved_order' => 2,
+        ]);
+        UserBet::query()->create([
+            'user_id' => $void->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.15,
+            'potential_return' => 21.5,
+            'status' => UserBet::STATUS_VOID,
+            'resolved_order' => 2,
+        ]);
+        UserBet::query()->create([
+            'user_id' => $lost->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.15,
+            'potential_return' => 21.5,
+            'status' => UserBet::STATUS_LOST,
+            'resolved_order' => 2,
+        ]);
+
+        $event->update([
+            'status' => Event::STATUS_FINISHED,
+            'score' => '1:0',
+        ]);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('event-tip-card event-tip-card--won', $html);
+        $this->assertStringContainsString('event-tip-card event-tip-card--void', $html);
+        $this->assertStringContainsString('event-tip-card event-tip-card--lost', $html);
+    }
+
     public function test_event_page_shows_user_bets_before_markets(): void
     {
         ['event' => $event] = $this->seedEventWithTipFromPlayer(92001, 'Tipster Alpha');

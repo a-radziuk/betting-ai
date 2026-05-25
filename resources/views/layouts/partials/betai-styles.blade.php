@@ -536,6 +536,21 @@
         padding: 1rem 1.1rem;
     }
 
+    .event-tip-card--won {
+        border-color: rgba(34, 197, 94, 0.7);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(34, 197, 94, 0.18);
+    }
+
+    .event-tip-card--void {
+        border-color: rgba(234, 179, 8, 0.75);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(234, 179, 8, 0.18);
+    }
+
+    .event-tip-card--lost {
+        border-color: rgba(239, 68, 68, 0.72);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(239, 68, 68, 0.18);
+    }
+
     .event-tip-card-head {
         display: flex;
         gap: 0.85rem;

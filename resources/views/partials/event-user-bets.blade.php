@@ -1,7 +1,7 @@
 @if ($eventBets->isNotEmpty())
     @php
-        $canSeeTips = auth()->check()
-            && auth()->user()->hasPrivelege(\App\Models\User::PRIVELEGE_SEE_TIPS);
+        $canSeeTips = ($event?->status === \App\Models\Event::STATUS_FINISHED)
+            || (auth()->check() && auth()->user()->hasPrivelege(\App\Models\User::PRIVELEGE_SEE_TIPS));
     @endphp
     <section class="event-tips-section" aria-labelledby="event-tips-title">
         <h2 id="event-tips-title" class="event-tips-title">Player tips</h2>
@@ -23,8 +23,14 @@
                     $betFormSegments = $user
                         ? \App\Support\UserBetFormIcons::fromBets($user->bets)
                         : [];
+                    $tipCardClass = match ($bet->status) {
+                        \App\Models\UserBet::STATUS_WON => 'event-tip-card--won',
+                        \App\Models\UserBet::STATUS_VOID => 'event-tip-card--void',
+                        \App\Models\UserBet::STATUS_LOST => 'event-tip-card--lost',
+                        default => null,
+                    };
                 @endphp
-                <article class="event-tip-card">
+                <article @class(['event-tip-card', $tipCardClass])>
                     <header class="event-tip-card-head">
                         <div class="event-tip-card-avatar">
                             @if ($avatarUrl)

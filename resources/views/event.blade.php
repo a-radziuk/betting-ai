@@ -27,10 +27,16 @@
             <p class="meta">
                 Kickoff: {{ $event->start_time?->format('Y-m-d H:i') }} |
                 Status: {{ strtoupper($event->status ?? 'unknown') }}
+                @if ($event->status === \App\Models\Event::STATUS_FINISHED && filled($event->score))
+                    | Final score: {{ $event->score }}
+                @endif
             </p>
         </section>
 
-        @include('partials.event-user-bets', ['eventBets' => $eventBets ?? collect()])
+        @include('partials.event-user-bets', [
+            'eventBets' => $eventBets ?? collect(),
+            'event' => $event,
+        ])
 
         @include('partials.event-analysis', ['eventAnalysis' => $eventAnalysis ?? null])
 
