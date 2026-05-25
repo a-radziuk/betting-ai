@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\AdminUploadAnalysisController;
 use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\AdminUploadPredictionsController;
+use App\Http\Controllers\AdminUploadTournamentController;
 use App\Http\Controllers\AdminUserBetsController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
@@ -396,6 +397,11 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
         ->name('admin.upload-events');
     Route::post('/upload-events', [AdminUploadEventsController::class, 'store'])
         ->name('admin.upload-events.store');
+
+    Route::get('/upload-tournament', [AdminUploadTournamentController::class, 'show'])
+        ->name('admin.upload-tournament');
+    Route::post('/upload-tournament', [AdminUploadTournamentController::class, 'store'])
+        ->name('admin.upload-tournament.store');
 
     Route::get('/upload-analysis', [AdminUploadAnalysisController::class, 'show'])
         ->name('admin.upload-analysis');

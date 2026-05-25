@@ -18,6 +18,7 @@
             @foreach ([
                 ['label' => __('User Bets'), 'route' => 'admin.user-bets', 'active' => 'admin.user-bets*'],
                 ['label' => __('Upload Events'), 'route' => 'admin.upload-events', 'active' => 'admin.upload-events*'],
+                ['label' => __('Upload Tournament'), 'route' => 'admin.upload-tournament', 'active' => 'admin.upload-tournament*'],
                 ['label' => __('Upload Analysis'), 'route' => 'admin.upload-analysis', 'active' => 'admin.upload-analysis*'],
                 ['label' => __('Upload Predictions'), 'route' => 'admin.upload-predictions', 'active' => 'admin.upload-predictions*'],
                 ['label' => __('Resolve Event'), 'route' => 'admin.resolve-event', 'active' => 'admin.resolve-event*'],
