@@ -3,13 +3,36 @@
 /**
  * Dump database/database.sqlite as MySQL-compatible SQL.
  *
- * Usage: php database/sqlite_to_mysql_dump.php [output-file]
+ * Usage:
+ *   php database/sqlite_to_mysql_dump.php [output-file]
+ *   php database/sqlite_to_mysql_dump.php [output-file] --data-only --exclude=foo,bar
  */
 
 declare(strict_types=1);
 
 $sqlitePath = __DIR__.'/database.sqlite';
-$outputPath = $argv[1] ?? __DIR__.'/database.mysql.sql';
+$outputPath = __DIR__.'/database.mysql.sql';
+$dataOnly = false;
+$excludedTables = [];
+
+foreach (array_slice($argv, 1) as $arg) {
+    if ($arg === '--data-only') {
+        $dataOnly = true;
+
+        continue;
+    }
+
+    if (str_starts_with($arg, '--exclude=')) {
+        $excludedTables = array_values(array_filter(array_map(
+            static fn (string $table): string => trim($table),
+            explode(',', substr($arg, strlen('--exclude=')))
+        )));
+
+        continue;
+    }
+
+    $outputPath = $arg;
+}
 
 if (! is_readable($sqlitePath)) {
     fwrite(STDERR, "SQLite database not found: {$sqlitePath}\n");
@@ -38,18 +61,24 @@ $tables = $pdo->query(
      WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
      ORDER BY name"
 )->fetchAll(PDO::FETCH_COLUMN);
+$tables = array_values(array_filter(
+    $tables,
+    static fn (string $table): bool => ! in_array($table, $excludedTables, true),
+));
 
 foreach ($tables as $table) {
-    $createSql = $pdo->query(
-        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ".$pdo->quote($table)
-    )->fetchColumn();
+    if (! $dataOnly) {
+        $createSql = $pdo->query(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ".$pdo->quote($table)
+        )->fetchColumn();
 
-    if (! is_string($createSql) || $createSql === '') {
-        continue;
+        if (! is_string($createSql) || $createSql === '') {
+            continue;
+        }
+
+        fwrite($out, "DROP TABLE IF EXISTS `{$table}`;\n");
+        fwrite($out, sqliteCreateToMysql($createSql, $table).";\n\n");
     }
-
-    fwrite($out, "DROP TABLE IF EXISTS `{$table}`;\n");
-    fwrite($out, sqliteCreateToMysql($createSql).";\n\n");
 
     $columns = $pdo->query("PRAGMA table_info({$table})")->fetchAll();
     $columnNames = array_map(static fn (array $col): string => $col['name'], $columns);
@@ -68,7 +97,7 @@ foreach ($tables as $table) {
     while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
         $values = [];
         foreach ($columnNames as $name) {
-            $values[] = mysqlValue($row[$name] ?? null);
+            $values[] = mysqlValue($table, $name, $row[$name] ?? null);
         }
         $batch[] = '('.implode(', ', $values).')';
 
@@ -85,21 +114,23 @@ foreach ($tables as $table) {
     fwrite($out, "\n");
 }
 
-$indexes = $pdo->query(
-    "SELECT sql FROM sqlite_master
-     WHERE type = 'index' AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'
-     ORDER BY name"
-)->fetchAll(PDO::FETCH_COLUMN);
+if (! $dataOnly) {
+    $indexes = $pdo->query(
+        "SELECT sql FROM sqlite_master
+         WHERE type = 'index' AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'
+         ORDER BY name"
+    )->fetchAll(PDO::FETCH_COLUMN);
 
-if ($indexes !== []) {
-    fwrite($out, "-- Indexes\n");
-    foreach ($indexes as $indexSql) {
-        if (! is_string($indexSql) || $indexSql === '') {
-            continue;
+    if ($indexes !== []) {
+        fwrite($out, "-- Indexes\n");
+        foreach ($indexes as $indexSql) {
+            if (! is_string($indexSql) || $indexSql === '') {
+                continue;
+            }
+            fwrite($out, sqliteIndexToMysql($indexSql).";\n");
         }
-        fwrite($out, sqliteIndexToMysql($indexSql).";\n");
+        fwrite($out, "\n");
     }
-    fwrite($out, "\n");
 }
 
 fwrite($out, "SET FOREIGN_KEY_CHECKS = 1;\n");
@@ -107,7 +138,7 @@ fclose($out);
 
 echo "Wrote {$outputPath} (".number_format(filesize($outputPath))." bytes)\n";
 
-function sqliteCreateToMysql(string $sql): string
+function sqliteCreateToMysql(string $sql, string $table): string
 {
     $sql = preg_replace('/^CREATE TABLE IF NOT EXISTS /i', 'CREATE TABLE ', $sql) ?? $sql;
     $sql = str_replace('"', '`', $sql);
@@ -134,6 +165,13 @@ function sqliteCreateToMysql(string $sql): string
     $sql = preg_replace('/\bvarchar\b/i', 'VARCHAR(255)', $sql) ?? $sql;
     $sql = preg_replace('/\bdatetime\b/i', 'DATETIME', $sql) ?? $sql;
     $sql = preg_replace('/\btext\b/i', 'LONGTEXT', $sql) ?? $sql;
+    $sql = preg_replace('/\bBIGINT UNSIGNED\b/i', 'BIGINT', $sql) ?? $sql;
+
+    foreach (unixTimestampColumns($table) as $column) {
+        $pattern = '/`'.preg_quote($column, '/').'`\s+BIGINT\b/i';
+        $replacement = '`'.$column.'` DATETIME';
+        $sql = preg_replace($pattern, $replacement, $sql) ?? $sql;
+    }
 
     if ($hadAutoincrementPk) {
         $sql = preg_replace(
@@ -182,10 +220,14 @@ function writeInsert($out, string $table, array $columns, array $valueRows): voi
     fwrite($out, ";\n");
 }
 
-function mysqlValue(mixed $value): string
+function mysqlValue(string $table, string $column, mixed $value): string
 {
     if ($value === null) {
         return 'NULL';
+    }
+
+    if (isUnixTimestampColumn($table, $column) && is_numeric($value)) {
+        return "'".gmdate('Y-m-d H:i:s', (int) $value)."'";
     }
 
     if (is_bool($value)) {
@@ -209,4 +251,23 @@ function mysqlValue(mixed $value): string
         ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'],
         $string
     )."'";
+}
+
+/**
+ * @return list<string>
+ */
+function unixTimestampColumns(string $table): array
+{
+    return match ($table) {
+        'cache', 'cache_locks' => ['expiration'],
+        'sessions' => ['last_activity'],
+        'jobs' => ['reserved_at', 'available_at', 'created_at'],
+        'job_batches' => ['cancelled_at', 'created_at', 'finished_at'],
+        default => [],
+    };
+}
+
+function isUnixTimestampColumn(string $table, string $column): bool
+{
+    return in_array($column, unixTimestampColumns($table), true);
 }

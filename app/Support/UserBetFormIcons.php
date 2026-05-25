@@ -23,6 +23,11 @@ final class UserBetFormIcons
             ['resolved_order', 'asc'],
             ['id', 'asc'],
         ])->values();
+
+        if ($sorted->count() > 5) {
+            $sorted = $sorted->slice(-5)->values();
+        }
+
         $out = [];
         foreach ($sorted as $bet) {
             $out[] = self::mapBet($bet);

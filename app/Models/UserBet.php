@@ -100,8 +100,7 @@ class UserBet extends Model
             $query
                 ->where('status', '<>', self::STATUS_PENDING)
                 ->orderByDesc('resolved_order')
-                ->orderByDesc('id')
-                ->limit(5);
+                ->orderByDesc('id');
         };
     }
 }

@@ -46,4 +46,20 @@ class UserBetFormIconsTest extends TestCase
         $letters = array_map(fn ($s) => $s['letter'], UserBetFormIcons::fromBets($bets, true));
         $this->assertSame(['W', 'L'], $letters);
     }
+
+    public function test_keeps_only_five_most_recent_resolved_bets(): void
+    {
+        $bets = collect([
+            (new UserBet)->forceFill(['id' => 1, 'resolved_order' => 1, 'status' => UserBet::STATUS_WON, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 2, 'resolved_order' => 2, 'status' => UserBet::STATUS_LOST, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 3, 'resolved_order' => 3, 'status' => UserBet::STATUS_VOID, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 4, 'resolved_order' => 4, 'status' => UserBet::STATUS_WON, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 5, 'resolved_order' => 5, 'status' => UserBet::STATUS_LOST, 'stake' => 1]),
+            (new UserBet)->forceFill(['id' => 6, 'resolved_order' => 6, 'status' => UserBet::STATUS_WON, 'stake' => 1]),
+        ]);
+
+        $letters = array_map(fn ($s) => $s['letter'], UserBetFormIcons::fromBets($bets));
+
+        $this->assertSame(['L', 'D', 'W', 'L', 'W'], $letters);
+    }
 }
