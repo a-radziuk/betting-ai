@@ -216,7 +216,11 @@ class EventShowPageTest extends TestCase
 
     public function test_guest_sees_finished_event_tip_details_without_subscription(): void
     {
-        ['event' => $event] = $this->seedEventWithTipFromPlayer(92053);
+        ['event' => $event, 'player' => $player] = $this->seedEventWithTipFromPlayer(92053);
+        UserWallet::query()->where('user_id', $player->id)->update([
+            'balance' => 1042.5,
+            'start_balance' => 1000,
+        ]);
         UserBet::query()
             ->where('event_id', $event->id)
             ->update([
@@ -236,6 +240,8 @@ class EventShowPageTest extends TestCase
             ->assertSee('MATCH_RESULT · FT', false)
             ->assertSee(Selection::NAME_HOME, false)
             ->assertSee('2.15', false)
+            ->assertSee('+28.75', false)
+            ->assertSee('+4.25%', false)
             ->getContent();
 
         $this->assertStringContainsString('<dl class="event-tip-card-pick">', $html);

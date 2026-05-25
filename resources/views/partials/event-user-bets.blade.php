@@ -2,6 +2,7 @@
     @php
         $canSeeTips = ($event?->status === \App\Models\Event::STATUS_FINISHED)
             || (auth()->check() && auth()->user()->hasPrivelege(\App\Models\User::PRIVELEGE_SEE_TIPS));
+        $isFinishedEvent = $event?->status === \App\Models\Event::STATUS_FINISHED;
     @endphp
     <section class="event-tips-section" aria-labelledby="event-tips-title">
         <h2 id="event-tips-title" class="event-tips-title">Player tips</h2>
@@ -12,6 +13,14 @@
                     $wallet = $user?->wallet;
                     $currency = $wallet?->currency ?? 'EUR';
                     $totalResult = $wallet ? (float) $wallet->total_result : 0.0;
+                    $displayResult = $isFinishedEvent
+                        ? (float) ($bet->real_return ?? 0)
+                        : $totalResult;
+                    $startBalance = $wallet ? (float) $wallet->start_balance : 0.0;
+                    $balance = $wallet ? (float) $wallet->balance : 0.0;
+                    $efficiency = $startBalance > 0
+                        ? (($balance - $startBalance) / $startBalance) * 100
+                        : null;
                     $avatarUrl = $user?->profileAvatarUrl();
                     $nameTrim = trim((string) ($user?->name ?? ''));
                     $initial = mb_strtoupper(mb_substr($nameTrim !== '' ? $nameTrim : '?', 0, 1));
@@ -44,6 +53,19 @@
                             @else
                                 <span class="event-tip-card-avatar-placeholder" aria-hidden="true">{{ $initial }}</span>
                             @endif
+                            @if ($isFinishedEvent)
+                                <div @class([
+                                    'event-tip-card-efficiency',
+                                    'event-tip-card-efficiency--pos' => ($efficiency ?? 0) > 0,
+                                    'event-tip-card-efficiency--neg' => ($efficiency ?? 0) < 0,
+                                ])>
+                                    @if ($efficiency !== null)
+                                        {{ $efficiency > 0 ? '+' : '' }}{{ number_format($efficiency, 2) }}%
+                                    @else
+                                        —
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                         <div class="event-tip-card-user">
                             <div class="event-tip-card-name-row">
@@ -54,10 +76,10 @@
                                 @endif
                                 <span @class([
                                     'event-tip-card-result',
-                                    'event-tip-card-result--pos' => $totalResult >= 0,
-                                    'event-tip-card-result--neg' => $totalResult < 0,
+                                    'event-tip-card-result--pos' => $displayResult > 0,
+                                    'event-tip-card-result--neg' => $displayResult < 0,
                                 ])>
-                                    {{ $totalResult >= 0 ? '+' : '' }}{{ number_format($totalResult, 2) }}
+                                    {{ $displayResult > 0 ? '+' : '' }}{{ number_format($displayResult, 2) }}
                                 </span>
                             </div>
                             @if (count($betFormSegments) > 0)

@@ -562,6 +562,10 @@
 
     .event-tip-card-avatar {
         flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     .event-tip-card-avatar-img {
@@ -586,6 +590,24 @@
         background: rgba(93, 226, 255, 0.1);
         border: 1px solid rgba(93, 226, 255, 0.35);
         line-height: 1;
+    }
+
+    .event-tip-card-efficiency {
+        min-width: 3.5rem;
+        text-align: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+        line-height: 1.2;
+    }
+
+    .event-tip-card-efficiency--pos {
+        color: var(--ok);
+    }
+
+    .event-tip-card-efficiency--neg {
+        color: #ff9a9a;
     }
 
     .event-tip-card-user {
