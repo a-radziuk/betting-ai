@@ -87,6 +87,8 @@ class DashboardBetsTest extends TestCase
         $response->assertOk();
         $response->assertSee('Your bets', false);
         $response->assertSeeInOrder(['44.44', '33.33']);
+        $response->assertSee('Home', false);
+        $response->assertDontSee(Selection::NAME_HOME, false);
         $response->assertSee('Match Result', false);
         $response->assertDontSee(Market::TYPE_MATCH_RESULT, false);
     }

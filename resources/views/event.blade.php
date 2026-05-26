@@ -86,13 +86,13 @@
                                     <div class="row">
                                         @if ($canBet)
                                             <a class="name" href="{{ route('bets.place.show', ['odd' => $odd->id]) }}">
-                                                {{ $selection->name }}
+                                                {{ $selection->displayName($event) }}
                                             </a>
                                             <a class="odds" href="{{ route('bets.place.show', ['odd' => $odd->id]) }}">
                                                 {{ number_format((float) $odd->odds, 2) }}
                                             </a>
                                         @else
-                                            <span class="name">{{ $selection->name }}</span>
+                                            <span class="name">{{ $selection->displayName($event) }}</span>
                                             <span class="odds">
                                                 {{ number_format(optional($odd)->odds ?? 0, 2) }}
                                             </span>

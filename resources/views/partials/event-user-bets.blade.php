@@ -25,7 +25,7 @@
                     $nameTrim = trim((string) ($user?->name ?? ''));
                     $initial = mb_strtoupper(mb_substr($nameTrim !== '' ? $nameTrim : '?', 0, 1));
                     $market = $bet->odd?->selection?->market;
-                    $selectionName = $bet->odd?->selection?->name;
+                    $selectionName = $bet->odd?->selection?->displayName($event);
                     $marketLabel = $market
                         ? trim($market->typeLabel().' · '.$market->period.(! is_null($market->line) ? ' · Line '.$market->line : ''))
                         : '—';

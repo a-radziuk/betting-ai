@@ -125,8 +125,8 @@ class PlayerStatsPageTest extends TestCase
             ->assertDontSee('<th>Resolved</th>', false)
             ->getContent();
 
-        $this->assertStringContainsString('HOME (Match Result)', $html);
-        $this->assertStringNotContainsString('HOME (MATCH_RESULT)', $html);
+        $this->assertStringContainsString('Home (Match Result)', $html);
+        $this->assertStringNotContainsString('H (Match Result)', $html);
 
         $posLate = strpos($html, '2026-06-01 12:00');
         $posEarly = strpos($html, '2026-03-01 12:00');

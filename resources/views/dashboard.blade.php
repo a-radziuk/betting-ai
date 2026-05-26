@@ -75,7 +75,7 @@
                                         @endif
                                     </td>
                                     <td class="text-[#dce7ff]">
-                                        <div>{{ $bet->odd?->selection?->name ?? '—' }}</div>
+                                        <div>{{ $bet->odd?->selection?->displayName($bet->event) ?? '—' }}</div>
                                         <div class="text-xs text-[#9fb0d3] mt-1">
                                             {{ $bet->odd?->selection?->market?->typeLabel() ?? '—' }}
                                         </div>

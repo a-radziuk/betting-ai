@@ -43,7 +43,7 @@
 
             <div class="rows">
                 <div class="row">
-                    <span class="name">{{ $odd->selection?->name ?? 'Selection' }}</span>
+                    <span class="name">{{ $odd->selection?->displayName($event) ?? 'Selection' }}</span>
                     <span class="odds">{{ number_format((float) $odd->odds, 2) }}</span>
                 </div>
             </div>

@@ -24,7 +24,13 @@ class PlaceBetPageTest extends TestCase
         ]);
     }
 
-    private function seedOddChain(int $eventId, string $eventStatus): Odd
+    private function seedOddChain(
+        int $eventId,
+        string $eventStatus,
+        string $marketType = Market::TYPE_MATCH_RESULT,
+        ?string $line = null,
+        string $selectionName = Selection::NAME_HOME,
+    ): Odd
     {
         $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
         $away = Team::query()->create(['name' => 'Away', 'short_name' => 'AWY', 'league' => 'T']);
@@ -40,9 +46,9 @@ class PlaceBetPageTest extends TestCase
         $market = Market::query()->create([
             'id' => $eventId * 100 + 1,
             'event_id' => $event->id,
-            'type' => Market::TYPE_MATCH_RESULT,
+            'type' => $marketType,
             'period' => Market::PERIOD_FULL_TIME,
-            'line' => null,
+            'line' => $line,
             'status' => Market::STATUS_OPEN,
             'is_supported_market' => true,
         ]);
@@ -50,7 +56,7 @@ class PlaceBetPageTest extends TestCase
         $selection = Selection::query()->create([
             'id' => $eventId * 100 + 2,
             'market_id' => $market->id,
-            'name' => Selection::NAME_HOME,
+            'name' => $selectionName,
             'participant_id' => null,
             'handicap' => null,
             'created_at' => now(),
@@ -110,6 +116,36 @@ class PlaceBetPageTest extends TestCase
             ->assertOk()
             ->assertSee('Match Result', false)
             ->assertDontSee(Market::TYPE_MATCH_RESULT, false);
+    }
+
+    public function test_place_bet_page_shows_human_readable_selection_name(): void
+    {
+        $odd = $this->seedOddChain(90107, Event::STATUS_SCHEDULED);
+        $user = $this->userWhoCanPlaceBets();
+
+        $this->actingAs($user)
+            ->get(route('bets.place.show', ['odd' => $odd->id]))
+            ->assertOk()
+            ->assertSee('Home', false)
+            ->assertDontSee(Selection::NAME_HOME, false);
+    }
+
+    public function test_place_bet_page_humanizes_over_under_selection_names(): void
+    {
+        $odd = $this->seedOddChain(
+            90108,
+            Event::STATUS_SCHEDULED,
+            Market::TYPE_OVER_UNDER,
+            '2.5',
+            Selection::NAME_OVER,
+        );
+        $user = $this->userWhoCanPlaceBets();
+
+        $this->actingAs($user)
+            ->get(route('bets.place.show', ['odd' => $odd->id]))
+            ->assertOk()
+            ->assertSee('Over', false)
+            ->assertDontSee(Selection::NAME_OVER, false);
     }
 
     public function test_place_bet_post_validates_wallet_balance(): void

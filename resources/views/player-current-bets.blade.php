@@ -51,7 +51,7 @@
                                 : '—';
                             $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
 
-                            $selection = $bet->odd?->selection?->name ?? '—';
+                            $selection = $bet->odd?->selection?->displayName($event) ?? '—';
                             $market = $bet->odd?->selection?->market?->typeLabel();
                             $betLabel = $market ? "{$selection} ({$market})" : $selection;
                         @endphp
