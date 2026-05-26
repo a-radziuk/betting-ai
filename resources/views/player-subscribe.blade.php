@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Subscribe</title>
+    <title>{{ __('BetAI | Subscribe') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,13 +13,13 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ route('players.show', ['user' => $player->id]) }}">← Back to player</a>
+        <a class="subbar-back" href="{{ route('players.show', ['user' => $player->id]) }}">← {{ __('Back to player') }}</a>
     </div>
 </div>
 
 <main class="container">
     <section class="hero">
-        <h1>Subscribe</h1>
+        <h1>{{ __('Subscribe') }}</h1>
         <p class="meta">{{ $player->name }}</p>
     </section>
 
@@ -32,25 +32,25 @@
     <section class="market-grid" style="grid-template-columns: 1fr;">
         <article class="market">
             <div class="market-head">
-                <span>Subscription</span>
-                <span class="period">Follow this player</span>
+                <span>{{ __('Subscription') }}</span>
+                <span class="period">{{ __('Follow this player') }}</span>
             </div>
             <div class="rows">
                 @if (! $subscription)
                     <div class="row" style="justify-content: flex-end;">
                         <form method="POST" action="{{ route('players.subscribe.store', ['user' => $player->id]) }}">
                             @csrf
-                            <button type="submit" class="btn btn-primary">Subscribe</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Subscribe') }}</button>
                         </form>
                     </div>
                 @else
                     <div class="row" style="justify-content: space-between;">
                         <span class="name">
-                            Subscribed since
+                            {{ __('Subscribed since') }}
                             <strong class="tabular-nums">{{ $subscription->created_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}</strong>
                         </span>
-                        <button type="button" class="btn btn-secondary" disabled title="Not implemented yet">
-                            Unsubscribe
+                        <button type="button" class="btn btn-secondary" disabled title="{{ __('Not implemented yet') }}">
+                            {{ __('Unsubscribe') }}
                         </button>
                     </div>
                 @endif

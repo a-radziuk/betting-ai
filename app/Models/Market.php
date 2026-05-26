@@ -109,11 +109,13 @@ class Market extends Model
     public static function typeLabelFor(?string $type): string
     {
         if ($type === null || $type === '') {
-            return 'Market';
+            return __('Market');
         }
 
-        return self::TYPE_LABELS[$type]
-            ?? str_replace('_', ' ', ucwords(strtolower($type), '_'));
+        return __(
+            self::TYPE_LABELS[$type]
+                ?? str_replace('_', ' ', ucwords(strtolower($type), '_'))
+        );
     }
 
     /**

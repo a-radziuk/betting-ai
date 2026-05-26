@@ -34,7 +34,11 @@ Route::get('/', function () {
 
     if (Schema::hasTable('events')) {
         $events = Event::query()
-            ->with(['homeTeam', 'awayTeam', 'tournament'])
+            ->with([
+                'homeTeam.translations',
+                'awayTeam.translations',
+                'tournament.translations',
+            ])
             ->withCount('userBets')
             ->with([
                 'markets' => function ($query) {
@@ -55,6 +59,7 @@ Route::get('/', function () {
     $topTournaments = collect();
     if (Schema::hasTable('tournaments')) {
         $topTournaments = Tournament::query()
+            ->with('translations')
             ->where('rank', 1)
             ->orderBy('name')
             ->get();
@@ -95,7 +100,7 @@ Route::get('/tournaments/{tournament}/results', function (Tournament $tournament
     if (Schema::hasTable('event_results')) {
         $allEventResults = EventResult::query()
             ->where('tournament_id', $tournament->id)
-            ->with(['homeTeam', 'awayTeam'])
+            ->with(['homeTeam.translations', 'awayTeam.translations'])
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->get();
@@ -111,7 +116,11 @@ Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
     $upcomingEvents = collect();
     if (Schema::hasTable('events') && Schema::hasColumn('events', 'tournament_id')) {
         $upcomingEvents = Event::query()
-            ->with(['homeTeam', 'awayTeam', 'tournament'])
+            ->with([
+                'homeTeam.translations',
+                'awayTeam.translations',
+                'tournament.translations',
+            ])
             ->withCount('userBets')
             ->with([
                 'markets' => function ($query) {
@@ -135,7 +144,7 @@ Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
     if (Schema::hasTable('event_results')) {
         $recentEventResults = EventResult::query()
             ->where('tournament_id', $tournament->id)
-            ->with(['homeTeam', 'awayTeam'])
+            ->with(['homeTeam.translations', 'awayTeam.translations'])
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->limit(5)
@@ -147,7 +156,7 @@ Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
 
     return view('tournament-standings', [
         'tournament' => $tournament,
-        'standingsRows' => is_array($tournament->standings) ? ($tournament->standings['rows'] ?? []) : [],
+        'standingsRows' => $tournament->localizedStandingsRows(),
         'standingsPromrel' => $standingsPromrel,
         'upcomingEvents' => $upcomingEvents,
         'recentEventResults' => $recentEventResults,
@@ -157,9 +166,9 @@ Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
 
 Route::get('/events/{event}', function (Event $event) {
     $event->load([
-        'homeTeam',
-        'awayTeam',
-        'tournament',
+        'homeTeam.translations',
+        'awayTeam.translations',
+        'tournament.translations',
         'markets' => fn ($query) => $query
             ->where('is_supported_market', true)
             ->with([
@@ -212,7 +221,7 @@ Route::get('/events/{event}', function (Event $event) {
     $standingsRows = [];
     $standingsPromrel = [];
     if ($tournament !== null) {
-        $standingsRows = is_array($tournament->standings) ? ($tournament->standings['rows'] ?? []) : [];
+        $standingsRows = $tournament->localizedStandingsRows();
         $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
     }
 

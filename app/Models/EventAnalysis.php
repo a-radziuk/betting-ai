@@ -46,9 +46,9 @@ class EventAnalysis extends Model
     public function likelyOutcomeLabel(): string
     {
         return match ($this->likely_outcome) {
-            self::LIKELY_OUTCOME_HOME_WIN => 'Home win',
-            self::LIKELY_OUTCOME_DRAW => 'Draw',
-            self::LIKELY_OUTCOME_AWAY_WIN => 'Away win',
+            self::LIKELY_OUTCOME_HOME_WIN => __('Home win'),
+            self::LIKELY_OUTCOME_DRAW => __('Draw'),
+            self::LIKELY_OUTCOME_AWAY_WIN => __('Away win'),
             default => $this->likely_outcome,
         };
     }

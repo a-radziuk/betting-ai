@@ -97,7 +97,7 @@
                                             'bet-status--lost' => $bet->status === \App\Models\UserBet::STATUS_LOST,
                                             'bet-status--void' => $bet->status === \App\Models\UserBet::STATUS_VOID,
                                             'bet-status--cancelled' => $bet->status === \App\Models\UserBet::STATUS_CANCELLED,
-                                        ])>{{ $bet->status }}</span>
+                                        ])>{{ $bet->statusLabel() }}</span>
                                     </td>
                                 </tr>
                             @endforeach

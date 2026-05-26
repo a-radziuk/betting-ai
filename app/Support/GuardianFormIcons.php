@@ -24,7 +24,7 @@ final class GuardianFormIcons
         foreach ($matches as $row) {
             $prefix = $row[1];
             $rest = $row[2] ?? '';
-            $tooltip = trim($prefix.$rest);
+            $tooltip = trim(__($prefix).$rest);
             $letter = match ($prefix) {
                 'Won' => 'W',
                 'Lost' => 'L',

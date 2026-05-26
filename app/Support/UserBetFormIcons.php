@@ -48,27 +48,27 @@ final class UserBetFormIcons
             UserBet::STATUS_WON => [
                 'letter' => 'W',
                 'css' => 'w',
-                'tooltip' => 'Bet won — stake '.$stake.' '.$currency,
+                'tooltip' => __('Bet won — stake :stake :currency', ['stake' => $stake, 'currency' => $currency]),
             ],
             UserBet::STATUS_LOST => [
                 'letter' => 'L',
                 'css' => 'l',
-                'tooltip' => 'Bet lost — stake '.$stake.' '.$currency,
+                'tooltip' => __('Bet lost — stake :stake :currency', ['stake' => $stake, 'currency' => $currency]),
             ],
             UserBet::STATUS_VOID => [
                 'letter' => 'D',
                 'css' => 'd',
-                'tooltip' => 'Void — stake '.$stake.' '.$currency.' returned',
+                'tooltip' => __('Void — stake :stake :currency returned', ['stake' => $stake, 'currency' => $currency]),
             ],
             UserBet::STATUS_PENDING => [
                 'letter' => '—',
                 'css' => 'muted',
-                'tooltip' => 'Pending — stake '.$stake.' '.$currency,
+                'tooltip' => __('Pending — stake :stake :currency', ['stake' => $stake, 'currency' => $currency]),
             ],
             UserBet::STATUS_CANCELLED => [
                 'letter' => '—',
                 'css' => 'muted',
-                'tooltip' => 'Cancelled',
+                'tooltip' => __('Cancelled'),
             ],
             default => [
                 'letter' => '—',

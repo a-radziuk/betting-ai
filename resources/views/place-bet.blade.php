@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Place Bet</title>
+    <title>{{ __('BetAI | Place Bet') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,19 +13,19 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ route('events.show', ['event' => $event->id]) }}">← Back to event</a>
+        <a class="subbar-back" href="{{ route('events.show', ['event' => $event->id]) }}">← {{ __('Back to event') }}</a>
     </div>
 </div>
 
 <main class="container">
     <section class="hero">
         <h1>
-            {{ $event->homeTeam?->resolvedDisplayName() ?? ('Team #' . $event->home_team_id) }}
-            vs
-            {{ $event->awayTeam?->resolvedDisplayName() ?? ('Team #' . $event->away_team_id) }}
+            {{ $event->homeTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $event->home_team_id]) }}
+            {{ __('vs') }}
+            {{ $event->awayTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $event->away_team_id]) }}
         </h1>
         <p class="meta">
-            Place your bet
+            {{ __('Place your bet') }}
         </p>
     </section>
 
@@ -36,7 +36,7 @@
                 <span class="period">
                     {{ $odd->selection?->market?->period ?? '' }}
                     @if (! is_null($odd->selection?->market?->line))
-                        | Line: {{ $odd->selection?->market?->line }}
+                        | {{ __('Line') }}: {{ $odd->selection?->market?->line }}
                     @endif
                 </span>
             </div>
@@ -51,7 +51,7 @@
     </section>
 
     <div class="event-empty" style="margin-top: 12px;">
-        Wallet balance: <strong>{{ number_format((float) $wallet->balance, 2) }} {{ $wallet->currency }}</strong>
+        {{ __('Wallet balance') }}: <strong>{{ number_format((float) $wallet->balance, 2) }} {{ $wallet->currency }}</strong>
     </div>
 
     <section style="margin-top: 16px;">
@@ -60,7 +60,7 @@
 
             <div class="rows">
                 <div class="row" style="grid-template-columns: 1fr;">
-                    <label class="name" for="sum">Amount</label>
+                    <label class="name" for="sum">{{ __('Amount') }}</label>
                     <input
                         id="sum"
                         name="sum"
@@ -79,18 +79,18 @@
 
             <div class="bet-kpi" aria-live="polite">
                 <div>
-                    <div class="label">Potential gain</div>
+                    <div class="label">{{ __('Potential gain') }}</div>
                     <div class="value" id="potentialGain">0.00 {{ $wallet->currency }}</div>
                 </div>
                 <div>
-                    <div class="label">Odds</div>
+                    <div class="label">{{ __('Odds') }}</div>
                     <div class="value">{{ number_format((float) $odd->odds, 2) }}</div>
                 </div>
             </div>
 
             <div style="margin-top: 14px; display: flex; gap: 10px; align-items: center;">
-                <button type="submit" class="btn btn-primary">Place bet</button>
-                <a class="btn btn-secondary" href="{{ route('events.show', ['event' => $event->id]) }}">Cancel</a>
+                <button type="submit" class="btn btn-primary">{{ __('Place bet') }}</button>
+                <a class="btn btn-secondary" href="{{ route('events.show', ['event' => $event->id]) }}">{{ __('Cancel') }}</a>
             </div>
         </form>
     </section>

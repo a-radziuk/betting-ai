@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Player stats</title>
+    <title>{{ __('BetAI | Player stats') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,7 +13,7 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ route('players.index') }}">← Back to players</a>
+        <a class="subbar-back" href="{{ route('players.index') }}">← {{ __('Back to players') }}</a>
     </div>
 </div>
 
@@ -36,7 +36,7 @@
 
     <section class="hero">
         <h1>{{ $player->name }}</h1>
-        <p class="meta">Settled bets by settlement order, newest first.</p>
+        <p class="meta">{{ __('Settled bets by settlement order, newest first.') }}</p>
     </section>
 
     @if ($hasProfileDetails)
@@ -108,18 +108,18 @@
     <div class="event-empty user-results" style="margin-bottom: 12px;">
         @include('players.partials.wallet-result-chart', ['resultChart' => $resultChart])
         <span class="user-results-item">
-            <span class="user-results-label">Currently in play</span>
+            <span class="user-results-label">{{ __('Currently in play') }}</span>
             <span class="user-results-value">{{ number_format((float) $player->wallet->amount_in_play, 2) }}</span>
             <span class="user-results-in-play-meta">
                 {{ number_format($pendingBetCount) }} {{ $pendingBetCount === 1 ? __('bet') : __('bets') }}
             </span>
             <a href="{{ route('players.current', ['user' => $player->id]) }}" class="subbar-back" style="margin-top: 6px;">
-                See bets
+                {{ __('See bets') }}
             </a>
         </span>
         <span class="user-results-item user-results-item--metrics">
             <div class="player-result-head">
-                <span class="user-results-label">Result</span>
+                <span class="user-results-label">{{ __('Result') }}</span>
                 <div class="player-result-outcomes" role="group" aria-label="{{ __('Settled bet outcomes') }}">
                     <span class="form-icon form-icon--w" title="{{ __('Won') }}">{{ number_format($wonBetCount) }}</span>
                     <span class="form-icon form-icon--l" title="{{ __('Lost') }}">{{ number_format($lostBetCount) }}</span>
@@ -200,17 +200,17 @@
             </div>
         @endif
         @if ($bets->isEmpty())
-            <div class="empty">No resolved bets yet.</div>
+            <div class="empty">{{ __('No resolved bets yet.') }}</div>
         @else
             <div class="overflow-x-auto">
                 <table>
                     <thead>
                     <tr>
-                        <th>Event</th>
-                        <th>Bet</th>
-                        <th class="text-right">Odd</th>
-                        <th class="text-right">Amount</th>
-                        <th class="text-right">Won / lost</th>
+                        <th>{{ __('Event') }}</th>
+                        <th>{{ __('Bet') }}</th>
+                        <th class="text-right">{{ __('Odd') }}</th>
+                        <th class="text-right">{{ __('Amount') }}</th>
+                        <th class="text-right">{{ __('Won / lost') }}</th>
                     </tr>
                     </thead>
                     <tbody>

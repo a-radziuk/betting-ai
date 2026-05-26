@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Players</title>
+    <title>{{ __('BetAI | Players') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,29 +13,29 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ url('/') }}">← Back to events</a>
+        <a class="subbar-back" href="{{ url('/') }}">← {{ __('Back to events') }}</a>
     </div>
 </div>
 
 <main class="container">
     <section class="hero">
-        <h1>Players</h1>
-        <p class="meta">All registered users and their wallet balances.</p>
+        <h1>{{ __('Players') }}</h1>
+        <p class="meta">{{ __('All registered users and their wallet balances.') }}</p>
     </section>
 
     <section class="card overflow-hidden">
         @if ($players->isEmpty())
-            <div class="empty">No users yet.</div>
+            <div class="empty">{{ __('No users yet.') }}</div>
         @else
             <div class="overflow-x-auto">
                 <table>
                     <thead>
                     <tr>
-                        <th>Username</th>
-                        <th>Recent bets</th>
-                        <th class="text-right">Wallet balance</th>
-                        <th class="text-right">In play</th>
-                        <th class="text-right">Total result</th>
+                        <th>{{ __('Username') }}</th>
+                        <th>{{ __('Recent bets') }}</th>
+                        <th class="text-right">{{ __('Wallet balance') }}</th>
+                        <th class="text-right">{{ __('In play') }}</th>
+                        <th class="text-right">{{ __('Total result') }}</th>
                     </tr>
                     </thead>
                     <tbody>

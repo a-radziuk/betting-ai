@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | {{ $tournament->name }} — Results</title>
+    <title>{{ __('BetAI | :tournament — Results', ['tournament' => $tournament->localizedName()]) }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,20 +13,20 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ route('tournaments.show', $tournament) }}">← Back to {{ $tournament->name }}</a>
+        <a class="subbar-back" href="{{ route('tournaments.show', $tournament) }}">← {{ __('Back to :tournament', ['tournament' => $tournament->localizedName()]) }}</a>
     </div>
 </div>
 
 <main class="container">
     <section class="hero">
-        <h1>{{ $tournament->name }}</h1>
-        <p class="meta">All results</p>
+        <h1>{{ $tournament->localizedName() }}</h1>
+        <p class="meta">{{ __('All results') }}</p>
     </section>
 
-    <section class="card tournament-page-all-results" aria-label="All results">
+    <section class="card tournament-page-all-results" aria-label="{{ __('All results') }}">
         @include('partials.event-results-by-date', [
             'eventResults' => $allEventResults,
-            'emptyMessage' => 'No results recorded for this league yet.',
+            'emptyMessage' => __('No results recorded for this league yet.'),
         ])
     </section>
 </main>

@@ -1,5 +1,5 @@
 @if ($eventResults->isEmpty())
-    <div class="empty">{{ $emptyMessage ?? 'No results recorded yet.' }}</div>
+    <div class="empty">{{ $emptyMessage ?? __('No results recorded yet.') }}</div>
 @else
     @php
         $tz = config('app.timezone');
@@ -10,7 +10,7 @@
         <div class="welcome-events-section">
             <h2 class="welcome-events-section-title">
                 @if ($dayKey === $todayKey)
-                    Today
+                    {{ __('Today') }}
                 @else
                     {{ \Carbon\Carbon::createFromFormat('Y-m-d', $dayKey, $tz)->locale(app()->getLocale())->translatedFormat('l, j F Y') }}
                 @endif
@@ -18,8 +18,8 @@
             <table class="welcome-events-table tournament-results-table">
                 <thead>
                     <tr>
-                        <th class="welcome-match-col">Match</th>
-                        <th class="welcome-result-score-col">Score</th>
+                        <th class="welcome-match-col">{{ __('Match') }}</th>
+                        <th class="welcome-result-score-col">{{ __('Score') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,9 +32,9 @@
                         >
                             <td class="welcome-match-col">
                                 <div class="welcome-match-teams">
-                                    {{ $result->homeTeam?->resolvedDisplayName() ?? ('Team #' . $result->home_team_id) }}
-                                    vs
-                                    {{ $result->awayTeam?->resolvedDisplayName() ?? ('Team #' . $result->away_team_id) }}
+                                    {{ $result->homeTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $result->home_team_id]) }}
+                                    {{ __('vs') }}
+                                    {{ $result->awayTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $result->away_team_id]) }}
                                 </div>
                             </td>
                             <td class="welcome-result-score-col welcome-odds">{{ $result->results }}</td>

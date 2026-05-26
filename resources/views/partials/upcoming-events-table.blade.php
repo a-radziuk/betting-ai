@@ -1,5 +1,5 @@
 @if ($events->isEmpty())
-    <div class="empty">No upcoming events found. Seed more data and refresh.</div>
+    <div class="empty">{{ __('No upcoming events found. Seed more data and refresh.') }}</div>
 @else
     @php
         $tz = config('app.timezone');
@@ -10,7 +10,7 @@
         <div class="welcome-events-section">
             <h2 class="welcome-events-section-title">
                 @if ($dayKey === $todayKey)
-                    Today
+                    {{ __('Today') }}
                 @else
                     {{ \Carbon\Carbon::createFromFormat('Y-m-d', $dayKey, $tz)->locale(app()->getLocale())->translatedFormat('l, j F Y') }}
                 @endif
@@ -18,13 +18,13 @@
             <table class="welcome-events-table">
                 <thead>
                     <tr>
-                        <th class="welcome-time-col">Time</th>
-                        <th class="welcome-tournament-col">Tournament</th>
-                        <th class="welcome-match-col">Match</th>
-                        <th class="welcome-tips-col">Tips</th>
-                        <th class="welcome-1x2-col">Home</th>
-                        <th class="welcome-1x2-col">Draw</th>
-                        <th class="welcome-1x2-col">Away</th>
+                        <th class="welcome-time-col">{{ __('Time') }}</th>
+                        <th class="welcome-tournament-col">{{ __('Tournament') }}</th>
+                        <th class="welcome-match-col">{{ __('Match') }}</th>
+                        <th class="welcome-tips-col">{{ __('Tips') }}</th>
+                        <th class="welcome-1x2-col">{{ __('Home') }}</th>
+                        <th class="welcome-1x2-col">{{ __('Draw') }}</th>
+                        <th class="welcome-1x2-col">{{ __('Away') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,11 +39,11 @@
                                 return $odd !== null ? number_format((float) $odd->odds, 2) : '—';
                             };
                             $kickoffTime = $event->start_time->timezone($tz)->translatedFormat('H:i');
-                            $tournamentName = $event->tournament?->name ?? '—';
+                            $tournamentName = $event->tournament?->localizedName() ?? '—';
                             $tipsCount = (int) ($event->user_bets_count ?? 0);
                             $tipsTooltip = $tipsCount === 1
-                                ? '1 player tip on this match'
-                                : number_format($tipsCount).' player tips on this match';
+                                ? __('1 player tip on this match')
+                                : __(':count player tips on this match', ['count' => number_format($tipsCount)]);
                         @endphp
                         <tr data-clickable onclick="window.location='{{ route('events.show', $event) }}'">
                             <td class="welcome-time-col">
@@ -54,9 +54,9 @@
                             <td class="welcome-tournament-col">{{ $tournamentName }}</td>
                             <td class="welcome-match-col">
                                 <div class="welcome-match-teams">
-                                    {{ $event->homeTeam?->resolvedDisplayName() ?? ('Team #' . $event->home_team_id) }}
-                                    vs
-                                    {{ $event->awayTeam?->resolvedDisplayName() ?? ('Team #' . $event->away_team_id) }}
+                                    {{ $event->homeTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $event->home_team_id]) }}
+                                    {{ __('vs') }}
+                                    {{ $event->awayTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $event->away_team_id]) }}
                                 </div>
                                 <div class="welcome-match-meta">
                                     <time datetime="{{ $event->start_time->toIso8601String() }}" class="welcome-match-meta-time">{{ $kickoffTime }}</time>
@@ -65,7 +65,7 @@
                                     <span class="welcome-match-meta-sep" aria-hidden="true">·</span>
                                     <span class="welcome-match-meta-tips" title="{{ $tipsTooltip }}">
                                         <span class="welcome-tips-badge welcome-tips-badge--compact" aria-hidden="true">{{ number_format($tipsCount) }}</span>
-                                        {{ $tipsCount === 1 ? 'tip' : 'tips' }}
+                                        {{ $tipsCount === 1 ? __('tip') : __('tips') }}
                                     </span>
                                 </div>
                             </td>

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Current bets</title>
+    <title>{{ __('BetAI | Current bets') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,14 +13,14 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ route('players.show', ['user' => $player->id]) }}">← Back to player</a>
+        <a class="subbar-back" href="{{ route('players.show', ['user' => $player->id]) }}">← {{ __('Back to player') }}</a>
     </div>
 </div>
 
 <main class="container">
     <section class="hero">
         <h1>{{ $player->name }}</h1>
-        <p class="meta">Current (unresolved) bets, ordered by nearest event.</p>
+        <p class="meta">{{ __('Current (unresolved) bets, ordered by nearest event.') }}</p>
     </section>
 
     <section class="card overflow-hidden">
@@ -29,17 +29,17 @@
                 <a href="{{ route('subscribe') }}" class="event-tip-card-subscribe-link">{{ __('Subscribe to see the tips') }}</a>
             </div>
         @elseif ($bets->isEmpty())
-            <div class="empty">No current bets.</div>
+            <div class="empty">{{ __('No current bets.') }}</div>
         @else
             <div class="overflow-x-auto">
                 <table>
                     <thead>
                     <tr>
-                        <th>Event</th>
-                        <th>Bet</th>
-                        <th class="text-right">Odd</th>
-                        <th class="text-right">Amount</th>
-                        <th class="text-right">Potential</th>
+                        <th>{{ __('Event') }}</th>
+                        <th>{{ __('Bet') }}</th>
+                        <th class="text-right">{{ __('Odd') }}</th>
+                        <th class="text-right">{{ __('Amount') }}</th>
+                        <th class="text-right">{{ __('Potential') }}</th>
                     </tr>
                     </thead>
                     <tbody>

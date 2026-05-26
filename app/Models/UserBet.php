@@ -103,4 +103,16 @@ class UserBet extends Model
                 ->orderByDesc('id');
         };
     }
+
+    public function statusLabel(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => __('Pending'),
+            self::STATUS_WON => __('Won'),
+            self::STATUS_LOST => __('Lost'),
+            self::STATUS_VOID => __('Void'),
+            self::STATUS_CANCELLED => __('Cancelled'),
+            default => (string) $this->status,
+        };
+    }
 }

@@ -48,7 +48,7 @@ class Selection extends Model
     public static function displayNameFor(?string $name, ?Event $event = null): string
     {
         if ($name === null || trim($name) === '') {
-            return 'Selection';
+            return __('Selection');
         }
 
         $trimmed = trim($name);
@@ -58,16 +58,16 @@ class Selection extends Model
         $awayTeam = 'Away';
 
         return match ($upper) {
-            self::NAME_HOME => $homeTeam,
-            self::NAME_DRAW => 'Draw',
-            self::NAME_AWAY => $awayTeam,
-            self::NAME_OVER => 'Over',
-            self::NAME_UNDER => 'Under',
-            self::NAME_YES => 'Yes',
-            self::NAME_NO => 'No',
-            '1X', '1/X' => $homeTeam.' or Draw',
-            'X2' => 'Draw or '.$awayTeam,
-            '12', '1/2' => $homeTeam.' or '.$awayTeam,
+            self::NAME_HOME => __($homeTeam),
+            self::NAME_DRAW => __('Draw'),
+            self::NAME_AWAY => __($awayTeam),
+            self::NAME_OVER => __('Over'),
+            self::NAME_UNDER => __('Under'),
+            self::NAME_YES => __('Yes'),
+            self::NAME_NO => __('No'),
+            '1X', '1/X' => __(':home or Draw', ['home' => __($homeTeam)]),
+            'X2' => __('Draw or :away', ['away' => __($awayTeam)]),
+            '12', '1/2' => __(':home or :away', ['home' => __($homeTeam), 'away' => __($awayTeam)]),
             default => self::humanizeName($trimmed, $homeTeam, $awayTeam),
         };
     }
@@ -77,13 +77,13 @@ class Selection extends Model
         $normalized = str_replace('_', ' ', strtoupper($name));
         $tokens = preg_split('/(\s+|\/|-)/', $normalized, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$normalized];
         $map = [
-            self::NAME_HOME => $homeTeam,
-            self::NAME_DRAW => 'Draw',
-            self::NAME_AWAY => $awayTeam,
-            self::NAME_OVER => 'Over',
-            self::NAME_UNDER => 'Under',
-            self::NAME_YES => 'Yes',
-            self::NAME_NO => 'No',
+            self::NAME_HOME => __($homeTeam),
+            self::NAME_DRAW => __('Draw'),
+            self::NAME_AWAY => __($awayTeam),
+            self::NAME_OVER => __('Over'),
+            self::NAME_UNDER => __('Under'),
+            self::NAME_YES => __('Yes'),
+            self::NAME_NO => __('No'),
         ];
 
         foreach ($tokens as $index => $token) {
@@ -96,7 +96,9 @@ class Selection extends Model
                 ?? ucwords(strtolower($trimmed));
         }
 
-        return preg_replace('/\s+/', ' ', trim(implode('', $tokens))) ?? $name;
+        return __(
+            preg_replace('/\s+/', ' ', trim(implode('', $tokens))) ?? $name
+        );
     }
 
     /**

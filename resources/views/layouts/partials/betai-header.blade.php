@@ -5,7 +5,7 @@
             <span class="logo-text">BetAI</span>
         </a>
         <div class="header-right">
-            <span class="header-tag">AI-Powered Football Betting Insights</span>
+            <span class="header-tag">{{ __('AI-Powered Football Betting Insights') }}</span>
             @auth
                 <a class="header-link" href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
                 <a class="header-link" href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>

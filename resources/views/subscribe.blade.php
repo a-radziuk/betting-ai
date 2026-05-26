@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Subscribe</title>
+    <title>{{ __('BetAI | Subscribe') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,14 +13,14 @@
 
 <div class="subbar">
     <div class="container subbar-inner">
-        <a class="subbar-back" href="{{ url('/') }}">← Back to events</a>
+        <a class="subbar-back" href="{{ url('/') }}">← {{ __('Back to events') }}</a>
     </div>
 </div>
 
 <main class="container">
     <section class="hero">
-        <h1>Subscribe</h1>
-        <p class="meta">Choose a plan to unlock player tips and current bets across BetAI.</p>
+        <h1>{{ __('Subscribe') }}</h1>
+        <p class="meta">{{ __('Choose a plan to unlock player tips and current bets across BetAI.') }}</p>
     </section>
 
     @if (session('status'))
@@ -44,7 +44,7 @@
         </div>
     @endif
 
-    <section class="subscribe-plans-grid" aria-label="Subscription plans">
+    <section class="subscribe-plans-grid" aria-label="{{ __('Subscription plans') }}">
         @foreach ($plans as $plan)
             @php
                 $isFeatured = $plan['id'] === \App\Support\SubscriptionPlans::FREE_TRIAL;

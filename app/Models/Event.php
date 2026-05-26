@@ -38,6 +38,17 @@ class Event extends Model
 
     public const STATUS_FINISHED = 'finished';
 
+    public function statusLabel(): string
+    {
+        return match ($this->status) {
+            self::STATUS_SCHEDULED => __('Scheduled'),
+            self::STATUS_LIVE => __('Live'),
+            self::STATUS_PROCESSING => __('Processing'),
+            self::STATUS_FINISHED => __('Finished'),
+            default => (string) $this->status,
+        };
+    }
+
     /**
      * @param  Builder<Event>  $query
      * @return Builder<Event>

@@ -5,7 +5,7 @@
         $isFinishedEvent = $event?->status === \App\Models\Event::STATUS_FINISHED;
     @endphp
     <section class="event-tips-section" aria-labelledby="event-tips-title">
-        <h2 id="event-tips-title" class="event-tips-title">Player tips</h2>
+        <h2 id="event-tips-title" class="event-tips-title">{{ __('Player tips') }}</h2>
         <div class="event-tips-grid">
             @foreach ($eventBets as $bet)
                 @php
@@ -27,7 +27,7 @@
                     $market = $bet->odd?->selection?->market;
                     $selectionName = $bet->odd?->selection?->displayName($event);
                     $marketLabel = $market
-                        ? trim($market->typeLabel().' · '.$market->period.(! is_null($market->line) ? ' · Line '.$market->line : ''))
+                        ? trim($market->typeLabel().' · '.$market->period.(! is_null($market->line) ? ' · '.__('Line').' '.$market->line : ''))
                         : '—';
                     $betFormSegments = $user
                         ? \App\Support\UserBetFormIcons::fromBets($user->bets)

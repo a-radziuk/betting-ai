@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Event Odds</title>
+    <title>{{ __('BetAI | Event Odds') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -13,22 +13,22 @@
 
     <div class="subbar">
         <div class="container subbar-inner">
-            <a class="subbar-back" href="{{ url('/') }}">← Back to events</a>
+            <a class="subbar-back" href="{{ url('/') }}">← {{ __('Back to events') }}</a>
         </div>
     </div>
 
     <main class="container">
         <section class="hero">
             <h1>
-                {{ $event->homeTeam?->resolvedDisplayName() ?? ('Team #' . $event->home_team_id) }}
-                vs
-                {{ $event->awayTeam?->resolvedDisplayName() ?? ('Team #' . $event->away_team_id) }}
+                {{ $event->homeTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $event->home_team_id]) }}
+                {{ __('vs') }}
+                {{ $event->awayTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $event->away_team_id]) }}
             </h1>
             <p class="meta">
-                Kickoff: {{ $event->start_time?->format('Y-m-d H:i') }} |
-                Status: {{ strtoupper($event->status ?? 'unknown') }}
+                {{ __('Kickoff') }}: {{ $event->start_time?->format('Y-m-d H:i') }} |
+                {{ __('Status') }}: {{ $event->statusLabel() }}
                 @if ($event->status === \App\Models\Event::STATUS_FINISHED && filled($event->score))
-                    | Final score: {{ $event->score }}
+                    | {{ __('Final score') }}: {{ $event->score }}
                 @endif
             </p>
         </section>
@@ -41,10 +41,10 @@
         @include('partials.event-analysis', ['eventAnalysis' => $eventAnalysis ?? null])
 
         @if ($tournament)
-            <section class="card event-page-standings" aria-label="League standings">
+            <section class="card event-page-standings" aria-label="{{ __('League standings') }}">
                 <div class="tournament-section-head">
-                    <h2 class="tournament-section-title">{{ $tournament->name }}</h2>
-                    <a href="{{ route('tournaments.show', $tournament) }}" class="tournament-see-all-link">Full league page</a>
+                    <h2 class="tournament-section-title">{{ $tournament->localizedName() }}</h2>
+                    <a href="{{ route('tournaments.show', $tournament) }}" class="tournament-see-all-link">{{ __('Full league page') }}</a>
                 </div>
                 @include('partials.tournament-standings-table', [
                     'tournament' => $tournament,
@@ -60,7 +60,7 @@
         @endphp
         @if ($canPlaceBets)
             @if ($event->markets->isEmpty())
-                <div class="event-empty">No markets available for this event yet.</div>
+                <div class="event-empty">{{ __('No markets available for this event yet.') }}</div>
             @else
                 @php
                     $isPending = $event->status === \App\Models\Event::STATUS_SCHEDULED;
@@ -73,7 +73,7 @@
                                 <span class="period">
                                     {{ $market->period }}
                                     @if (! is_null($market->line))
-                                        | Line: {{ $market->line }}
+                                        | {{ __('Line') }}: {{ $market->line }}
                                     @endif
                                 </span>
                             </div>
@@ -100,7 +100,7 @@
                                     </div>
                                 @empty
                                     <div class="row">
-                                        <span class="name">No selections</span>
+                                        <span class="name">{{ __('No selections') }}</span>
                                         <span class="odds">-</span>
                                     </div>
                                 @endforelse

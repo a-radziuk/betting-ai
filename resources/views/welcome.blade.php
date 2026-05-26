@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BetAI | Upcoming Football Events</title>
+    <title>{{ __('BetAI | Upcoming Football Events') }}</title>
             @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
     </head>
@@ -13,18 +13,18 @@
 
     <main class="container">
         <section class="hero">
-            <h1>Nearest 20 Upcoming Events</h1>
-            <p>Real-time lineup of the next football fixtures sorted by kickoff time.</p>
+            <h1>{{ __('Nearest 20 Upcoming Events') }}</h1>
+            <p>{{ __('Real-time lineup of the next football fixtures sorted by kickoff time.') }}</p>
             <p class="meta" style="margin-top: 0.9rem;">
-                <a class="header-link" href="{{ route('players.index') }}">Players</a>
+                <a class="header-link" href="{{ route('players.index') }}">{{ __('Players') }}</a>
             </p>
         </section>
 
         @if (isset($topTournaments) && $topTournaments->isNotEmpty())
-            <section class="card tournament-leagues-line" aria-label="Featured tournaments">
+            <section class="card tournament-leagues-line" aria-label="{{ __('Featured tournaments') }}">
                 <div class="tournament-leagues-line-inner">
                     @foreach ($topTournaments as $t)
-                        <a href="{{ route('tournaments.show', $t) }}" class="tournament-league-link">{{ $t->name }}</a>
+                        <a href="{{ route('tournaments.show', $t) }}" class="tournament-league-link">{{ $t->localizedName() }}</a>
                         @if (! $loop->last)
                             <span class="tournament-league-sep" aria-hidden="true">·</span>
                         @endif
@@ -35,8 +35,8 @@
 
         @if (isset($topBettors) && $topBettors->isNotEmpty())
             <section class="welcome-top-bettors" aria-labelledby="welcome-top-bettors-title">
-                <h2 id="welcome-top-bettors-title" class="welcome-top-bettors-title">Top bettors</h2>
-                <p class="welcome-top-bettors-lead">Players with at least one bet, ranked by lifetime wallet result.</p>
+                <h2 id="welcome-top-bettors-title" class="welcome-top-bettors-title">{{ __('Top bettors') }}</h2>
+                <p class="welcome-top-bettors-lead">{{ __('Players with at least one bet, ranked by lifetime wallet result.') }}</p>
                 <div class="welcome-top-bettors-grid">
                     @foreach ($topBettors as $index => $user)
                         @php
@@ -71,7 +71,7 @@
                             <div class="welcome-bettor-card-body">
                                 <h3 class="welcome-bettor-card-name">{{ $user->name }}</h3>
                                 <p class="welcome-bettor-card-bets-meta">
-                                    <span class="welcome-bettor-card-bets-count">{{ $betCount }} {{ $betCount === 1 ? 'bet' : 'bets' }}</span>
+                                    <span class="welcome-bettor-card-bets-count">{{ $betCount }} {{ $betCount === 1 ? __('bet') : __('bets') }}</span>
                                     <span class="welcome-bettor-card-bets-sep" aria-hidden="true">·</span>
                                     <span class="welcome-bettor-card-bets-stake">{{ number_format($stakeSum, 2) }} {{ $currency }}</span>
                                 </p>

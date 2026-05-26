@@ -1,10 +1,10 @@
 @if (count($standingsRows) === 0)
-    <div class="empty">No standings data yet. Run <code class="tabular-nums">php artisan guardian:standings {{ $tournament->id }}</code> after setting <code>guardian_standings_url</code> on this tournament.</div>
+    <div class="empty">{{ __('No standings data yet. Run') }} <code class="tabular-nums">php artisan guardian:standings {{ $tournament->id }}</code> {{ __('after setting') }} <code>guardian_standings_url</code> {{ __('on this tournament.') }}</div>
 @else
-    <p class="meta">League standings</p>
+    <p class="meta">{{ __('League standings') }}</p>
     @if ($tournament->standings_updated_at)
         <p class="meta" style="margin-top: 0.5rem;">
-            Updated {{ $tournament->standings_updated_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
+            {{ __('Updated') }} {{ $tournament->standings_updated_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
         </p>
     @endif
     <div class="overflow-x-auto">
@@ -12,7 +12,7 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Team</th>
+                    <th>{{ __('Team') }}</th>
                     <th class="text-right">P</th>
                     <th class="text-right">W</th>
                     <th class="text-right">D</th>
@@ -21,7 +21,7 @@
                     <th class="text-right">GA</th>
                     <th class="text-right">GD</th>
                     <th class="text-right">Pts</th>
-                    <th>Form</th>
+                    <th>{{ __('Form') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,13 +77,13 @@
                                 <span
                                     class="standings-movement standings-movement--up"
                                     role="img"
-                                    aria-label="Moved up since last update"
+                                    aria-label="{{ __('Moved up since last update') }}"
                                 >↑</span>
                             @elseif ($movement === 'down')
                                 <span
                                     class="standings-movement standings-movement--down"
                                     role="img"
-                                    aria-label="Moved down since last update"
+                                    aria-label="{{ __('Moved down since last update') }}"
                                 >↓</span>
                             @endif
                         </td>

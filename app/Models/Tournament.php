@@ -38,6 +38,79 @@ class Tournament extends Model
     }
 
     /**
+     * @return HasMany<TournamentTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(TournamentTranslation::class);
+    }
+
+    public function translationForCurrentLocale(): ?TournamentTranslation
+    {
+        $locale = app()->getLocale();
+
+        if ($this->relationLoaded('translations')) {
+            /** @var \Illuminate\Database\Eloquent\Collection<int, TournamentTranslation> $translations */
+            $translations = $this->getRelation('translations');
+
+            return $translations->firstWhere('locale', $locale);
+        }
+
+        return $this->translations()
+            ->where('locale', $locale)
+            ->first();
+    }
+
+    public function localizedName(): string
+    {
+        $translation = $this->translationForCurrentLocale();
+
+        if ($translation !== null && $translation->name !== null && $translation->name !== '') {
+            return (string) $translation->name;
+        }
+
+        return (string) $this->name;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function localizedStandingsRows(): array
+    {
+        $rows = is_array($this->standings) ? ($this->standings['rows'] ?? []) : [];
+        if (! is_array($rows) || $rows === []) {
+            return [];
+        }
+
+        $teams = $this->relationLoaded('teams')
+            ? $this->teams
+            : $this->teams()->with('translations')->get();
+
+        $labelMap = [];
+        foreach ($teams as $team) {
+            $localized = $team->resolvedDisplayName();
+            foreach ([$team->name, $team->display_name, $team->external_name, $team->guardian_name] as $sourceLabel) {
+                if (is_string($sourceLabel) && $sourceLabel !== '') {
+                    $labelMap[$sourceLabel] = $localized;
+                }
+            }
+        }
+
+        return array_map(function (mixed $row) use ($labelMap): array {
+            if (! is_array($row)) {
+                return [];
+            }
+
+            $sourceLabel = $row['team_display_name'] ?? $row['team'] ?? null;
+            if (is_string($sourceLabel) && isset($labelMap[$sourceLabel])) {
+                $row['team_display_name'] = $labelMap[$sourceLabel];
+            }
+
+            return $row;
+        }, $rows);
+    }
+
+    /**
      * @return HasMany<Event, $this>
      */
     public function events(): HasMany
