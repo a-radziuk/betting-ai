@@ -7,25 +7,9 @@
 
     <title>{{ config('app.name', 'BetAI') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('layouts.partials.betai-styles')
 
     <style>
-        :root {
-            --bg: #060b16;
-            --surface: rgba(17, 27, 46, 0.8);
-            --border: rgba(130, 162, 255, 0.22);
-            --text: #eaf0ff;
-            --muted: #9fb0d3;
-        }
-        body {
-            margin: 0;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at 15% 10%, rgba(93, 226, 255, 0.14), transparent 35%),
-                radial-gradient(circle at 80% 0%, rgba(138, 123, 255, 0.14), transparent 30%),
-                linear-gradient(180deg, #050a14 0%, #070f1c 35%, #08101f 100%);
-            min-height: 100vh;
-        }
         .auth-wrap {
             min-height: 100vh;
             display: flex;
@@ -42,7 +26,8 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 1rem;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+            backdrop-filter: blur(10px);
         }
         .auth-subtitle {
             color: var(--muted);
@@ -50,6 +35,125 @@
             margin-top: 0.35rem;
             margin-bottom: 0;
             font-size: 0.9rem;
+        }
+
+        .auth-card label {
+            color: var(--text) !important;
+        }
+
+        .auth-card label.inline-flex span {
+            color: var(--text) !important;
+        }
+
+        .auth-card input[type="text"],
+        .auth-card input[type="email"],
+        .auth-card input[type="password"] {
+            background: var(--bg-soft) !important;
+            color: var(--text) !important;
+            border-color: var(--border) !important;
+        }
+
+        .auth-card input[type="text"]::placeholder,
+        .auth-card input[type="email"]::placeholder,
+        .auth-card input[type="password"]::placeholder {
+            color: var(--muted) !important;
+            opacity: 0.82;
+        }
+
+        .auth-card input[type="text"]:focus,
+        .auth-card input[type="email"]:focus,
+        .auth-card input[type="password"]:focus {
+            border-color: var(--accent) !important;
+            --tw-ring-color: var(--accent) !important;
+        }
+
+        .auth-card input[type="checkbox"] {
+            background: var(--bg-soft) !important;
+            border-color: var(--border) !important;
+            color: var(--accent) !important;
+            accent-color: var(--accent);
+        }
+
+        .auth-card input[type="checkbox"]:focus {
+            --tw-ring-color: var(--accent) !important;
+        }
+
+        .auth-card .relative.flex.justify-center.text-sm span {
+            background: var(--surface) !important;
+            color: var(--muted) !important;
+        }
+
+        .auth-card a.inline-flex {
+            color: var(--text) !important;
+            border-color: var(--border) !important;
+        }
+
+        .auth-card a.inline-flex:hover {
+            background: rgba(58, 167, 255, 0.08) !important;
+        }
+
+        .auth-card a.underline {
+            color: var(--text) !important;
+            text-decoration-color: currentColor;
+            text-underline-offset: 0.18em;
+        }
+
+        .auth-card a.underline:hover,
+        .auth-card a.underline:focus-visible {
+            color: var(--accent) !important;
+            text-decoration-color: currentColor;
+        }
+
+        .auth-wrap .text-\[\\#c7d7fa\\],
+        .auth-wrap .text-\[\\#dce7ff\\],
+        .auth-wrap .text-\[\\#eaf0ff\\] {
+            color: var(--text) !important;
+        }
+
+        .auth-wrap .text-\[\\#9fb0d3\\] {
+            color: var(--muted) !important;
+        }
+
+        .auth-wrap .text-\[\\#8bffcd\\] {
+            color: var(--ok) !important;
+        }
+
+        .auth-wrap .text-red-300 {
+            color: #c45466 !important;
+        }
+
+        .auth-wrap .bg-\[\\#13213b\\],
+        .auth-wrap .bg-\[\\#0f1b31\\] {
+            background: var(--bg-soft) !important;
+        }
+
+        .auth-wrap .border-\[\\#3b4e75\\] {
+            border-color: var(--border) !important;
+        }
+
+        .auth-wrap .placeholder-\[\\#7f93bd\\]::placeholder {
+            color: var(--muted) !important;
+            opacity: 0.82;
+        }
+
+        .auth-wrap .text-\[\\#5de2ff\\] {
+            color: var(--accent) !important;
+        }
+
+        .auth-wrap .focus\:border-\[\\#5de2ff\\]:focus {
+            border-color: var(--accent) !important;
+        }
+
+        .auth-wrap .focus\:ring-\[\\#5de2ff\\]:focus {
+            --tw-ring-color: var(--accent) !important;
+        }
+
+        .auth-wrap .hover\:text-\[\\#eaf0ff\\]:hover {
+            color: var(--text) !important;
+        }
+
+        .auth-wrap .hover\:bg-\[\\#152540\\]:hover {
+            background: rgba(58, 167, 255, 0.08) !important;
         }
     </style>
 </head>

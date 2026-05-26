@@ -1,10 +1,6 @@
 @php
     /** @var \App\Support\PlayerWalletResultChart $resultChart */
     $latest = $resultChart->latest;
-    $latestColor = $latest === null
-        ? '#9fb0d3'
-        : ($latest > 0.000001 ? '#4cff9d' : ($latest < -0.000001 ? '#ff9a9a' : '#9fb0d3'));
-
     $formatChartValue = static function (float $value, bool $isOrigin = false): string {
         if ($isOrigin) {
             return '0.00';
@@ -17,7 +13,14 @@
 <span class="user-results-item user-results-item--chart">
     <span class="user-results-label">{{ __('Result trend') }}</span>
     @if ($resultChart->hasData())
-        <span class="user-results-value user-results-chart-latest" style="color: {{ $latestColor }};">
+        <span @class([
+            'user-results-value',
+            'user-results-chart-latest',
+            'player-stats-result-value',
+            'player-stats-result-value--pos' => ($latest ?? 0) > 0.000001,
+            'player-stats-result-value--neg' => ($latest ?? 0) < -0.000001,
+            'player-stats-result-value--neutral' => $latest === null || abs($latest) <= 0.000001,
+        ])>
             {{ $formatChartValue($latest) }}
         </span>
         <svg

@@ -1,4 +1,13 @@
-<style>
+@php
+    $theme = (string) ($theme ?? config('app.theme', 'default'));
+    $customThemeView = 'themes.'.$theme.'.styles';
+@endphp
+
+{{-- Add custom themes at resources/views/themes/<theme>/styles.blade.php --}}
+@if ($theme !== 'default' && view()->exists($customThemeView))
+    @include($customThemeView)
+@else
+<style data-theme="default">
     :root {
         --bg: #060b16;
         --bg-soft: #0e1627;
@@ -1672,6 +1681,70 @@
         }
     }
 
+    .player-stats-table-primary {
+        color: #dce7ff;
+    }
+
+    .player-stats-table-primary-strong {
+        color: #eaf0ff;
+    }
+
+    .player-stats-table-muted {
+        color: var(--muted);
+    }
+
+    .player-stats-table-accent {
+        color: #8bffcd;
+    }
+
+    .player-stats-result-value {
+        color: var(--muted);
+    }
+
+    .player-stats-result-value--pos {
+        color: var(--ok);
+    }
+
+    .player-stats-result-value--neg {
+        color: #ff9a9a;
+    }
+
+    .player-stats-result-value--neutral {
+        color: var(--muted);
+    }
+
+    .players-table-name {
+        color: #dce7ff;
+    }
+
+    .players-table-value {
+        color: #eaf0ff;
+    }
+
+    .players-table-muted {
+        color: var(--muted);
+    }
+
+    .players-table-muted--small {
+        font-size: 0.875rem;
+    }
+
+    .players-table-result {
+        color: var(--muted);
+    }
+
+    .players-table-result--pos {
+        color: var(--ok);
+    }
+
+    .players-table-result--neg {
+        color: #ff9a9a;
+    }
+
+    .players-table-result--neutral {
+        color: var(--muted);
+    }
+
     /* Buttons + form controls (used by place-bet page) */
     .btn {
         appearance: none;
@@ -2198,3 +2271,4 @@
         color: #c92a2a;
     }
 </style>
+@endif

@@ -98,13 +98,6 @@
         </section>
     @endif
 
-    @php
-        $resultColor = $totalResult > 0.000001 ? '#4cff9d' : ($totalResult < -0.000001 ? '#ff9a9a' : '#9fb0d3');
-        $efficiencyColor = $efficiencyPercent === null
-            ? '#9fb0d3'
-            : ($efficiencyPercent > 0.000001 ? '#4cff9d' : ($efficiencyPercent < -0.000001 ? '#ff9a9a' : '#9fb0d3'));
-    @endphp
-
     <div class="event-empty user-results" style="margin-bottom: 12px;">
         @include('players.partials.wallet-result-chart', ['resultChart' => $resultChart])
         <span class="user-results-item">
@@ -158,7 +151,14 @@
                     'label' => __('Won/Lost'),
                     'hint' => __('Net profit or loss on the wallet from all settled bets.'),
                 ])
-                <span class="user-results-metric-value tabular-nums" style="color: {{ $resultColor }};">
+                <span @class([
+                    'user-results-metric-value',
+                    'tabular-nums',
+                    'player-stats-result-value',
+                    'player-stats-result-value--pos' => $totalResult > 0.000001,
+                    'player-stats-result-value--neg' => $totalResult < -0.000001,
+                    'player-stats-result-value--neutral' => abs($totalResult) <= 0.000001,
+                ])>
                     {{ $totalResult > 0 ? '+' : '' }}{{ number_format($totalResult, 2) }}
                 </span>
             </div>
@@ -167,7 +167,14 @@
                     'label' => __('Relative Efficiency'),
                     'hint' => __('Won/Lost divided by turnover, expressed as a percentage.'),
                 ])
-                <span class="user-results-metric-value tabular-nums" style="color: {{ $efficiencyColor }};">
+                <span @class([
+                    'user-results-metric-value',
+                    'tabular-nums',
+                    'player-stats-result-value',
+                    'player-stats-result-value--pos' => ($efficiencyPercent ?? 0) > 0.000001,
+                    'player-stats-result-value--neg' => ($efficiencyPercent ?? 0) < -0.000001,
+                    'player-stats-result-value--neutral' => $efficiencyPercent === null || abs($efficiencyPercent) <= 0.000001,
+                ])>
                     @if ($efficiencyPercent === null)
                         —
                     @else
@@ -180,7 +187,14 @@
                     'label' => __('Absolute Efficiency'),
                     'hint' => __('Won/Lost divided by starting balance, expressed as a percentage.'),
                 ])
-                <span class="user-results-metric-value tabular-nums" style="color: {{ $efficiencyColor }};">
+                <span @class([
+                    'user-results-metric-value',
+                    'tabular-nums',
+                    'player-stats-result-value',
+                    'player-stats-result-value--pos' => ($efficiencyPercentAbsolute ?? 0) > 0.000001,
+                    'player-stats-result-value--neg' => ($efficiencyPercentAbsolute ?? 0) < -0.000001,
+                    'player-stats-result-value--neutral' => $efficiencyPercentAbsolute === null || abs($efficiencyPercentAbsolute) <= 0.000001,
+                ])>
                     @if ($efficiencyPercentAbsolute === null)
                         —
                     @else
@@ -237,18 +251,22 @@
                                 $delta = -$stake;
                             }
 
-                            $deltaColor = $delta > 0.000001 ? '#4cff9d' : ($delta < -0.000001 ? '#ff9a9a' : '#9fb0d3');
                         @endphp
                         <tr>
                             <td>
-                                <div class="text-[#dce7ff]">{{ $eventName }}</div>
-                                <div class="text-xs text-[#9fb0d3] mt-1 tabular-nums">{{ $eventTime }} · {{ $eventScore }}</div>
+                                <div class="player-stats-table-primary">{{ $eventName }}</div>
+                                <div class="player-stats-table-muted text-xs mt-1 tabular-nums">{{ $eventTime }} · {{ $eventScore }}</div>
                             </td>
-                            <td class="text-[#dce7ff]">{{ $betLabel }}</td>
-                            <td class="text-right tabular-nums text-[#8bffcd]">{{ number_format((float) $bet->odds_at_bet, 2) }}</td>
-                            <td class="text-right tabular-nums text-[#eaf0ff]">{{ number_format($stake, 2) }}</td>
+                            <td class="player-stats-table-primary">{{ $betLabel }}</td>
+                            <td class="text-right tabular-nums player-stats-table-accent">{{ number_format((float) $bet->odds_at_bet, 2) }}</td>
+                            <td class="text-right tabular-nums player-stats-table-primary-strong">{{ number_format($stake, 2) }}</td>
                             <td class="text-right tabular-nums">
-                                <span style="color: {{ $deltaColor }};">
+                                <span @class([
+                                    'player-stats-result-value',
+                                    'player-stats-result-value--pos' => $delta > 0.000001,
+                                    'player-stats-result-value--neg' => $delta < -0.000001,
+                                    'player-stats-result-value--neutral' => abs($delta) <= 0.000001,
+                                ])>
                                     {{ $delta > 0 ? '+' : '' }}{{ number_format($delta, 2) }}
                                 </span>
                             </td>

@@ -84,6 +84,8 @@ return [
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
+    'theme' => env('APP_THEME', 'default'),
+
     /*
     |--------------------------------------------------------------------------
     | Encryption Key
