@@ -224,7 +224,7 @@
                             $eventScore = filled($event?->score) ? $event->score : '—';
 
                             $selection = $bet->odd?->selection?->name ?? '—';
-                            $market = $bet->odd?->selection?->market?->type;
+                            $market = $bet->odd?->selection?->market?->typeLabel();
                             $betLabel = $market ? "{$selection} ({$market})" : $selection;
 
                             $stake = (float) $bet->stake;

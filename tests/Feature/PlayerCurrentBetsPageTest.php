@@ -159,6 +159,8 @@ class PlayerCurrentBetsPageTest extends TestCase
             ->get(route('players.current', ['user' => $user->id]))
             ->assertOk()
             ->assertSee('Home — Away', false)
+            ->assertSee('HOME (Match Result)', false)
+            ->assertDontSee('HOME (MATCH_RESULT)', false)
             ->assertDontSee('Subscribe to see the tips', false);
     }
 

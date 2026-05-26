@@ -77,7 +77,7 @@
                                     <td class="text-[#dce7ff]">
                                         <div>{{ $bet->odd?->selection?->name ?? '—' }}</div>
                                         <div class="text-xs text-[#9fb0d3] mt-1">
-                                            {{ $bet->odd?->selection?->market?->type ?? '—' }}
+                                            {{ $bet->odd?->selection?->market?->typeLabel() ?? '—' }}
                                         </div>
                                     </td>
                                     <td class="text-right tabular-nums text-[#eaf0ff]">

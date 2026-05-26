@@ -69,7 +69,7 @@
                     @foreach ($event->markets as $market)
                         <article class="market">
                             <div class="market-head">
-                                <span>{{ $market->type }}</span>
+                                <span>{{ $market->typeLabel() }}</span>
                                 <span class="period">
                                     {{ $market->period }}
                                     @if (! is_null($market->line))

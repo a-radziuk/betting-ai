@@ -87,6 +87,8 @@ class DashboardBetsTest extends TestCase
         $response->assertOk();
         $response->assertSee('Your bets', false);
         $response->assertSeeInOrder(['44.44', '33.33']);
+        $response->assertSee('Match Result', false);
+        $response->assertDontSee(Market::TYPE_MATCH_RESULT, false);
     }
 
     public function test_dashboard_shows_score_when_event_not_scheduled(): void

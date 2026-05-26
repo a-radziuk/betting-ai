@@ -52,7 +52,7 @@
                             $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
 
                             $selection = $bet->odd?->selection?->name ?? '—';
-                            $market = $bet->odd?->selection?->market?->type;
+                            $market = $bet->odd?->selection?->market?->typeLabel();
                             $betLabel = $market ? "{$selection} ({$market})" : $selection;
                         @endphp
                         <tr>

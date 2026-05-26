@@ -63,6 +63,24 @@ class Market extends Model
     ];
 
     /**
+     * @var array<string, string>
+     */
+    private const TYPE_LABELS = [
+        self::TYPE_MATCH_RESULT => 'Match Result',
+        self::TYPE_OVER_UNDER => 'Over/Under',
+        self::TYPE_BTTS => 'Both Teams To Score',
+        self::TYPE_HANDICAP => 'Handicap',
+        self::TYPE_CORRECT_SCORE => 'Correct Score',
+        self::TYPE_GOALSCORER => 'Goalscorer',
+        self::TYPE_DOUBLE_CHANCE => 'Double Chance',
+        self::TYPE_OVER_UNDER_TOTAL_GOALS => 'Over/Under Total Goals',
+        self::TYPE_OVER_UNDER_TOTAL_GOALS_EXTRA => 'Over/Under Total Goals',
+        self::TYPE_HOME_OVER_UNDER_TOTAL_GOALS => 'Home Over/Under Total Goals',
+        self::TYPE_AWAY_OVER_UNDER_TOTAL_GOALS => 'Away Over/Under Total Goals',
+        self::TYPE_DRAW_NO_BET => 'Draw No Bet',
+    ];
+
+    /**
      * @return array<string, array<int, string>>
      */
     public static function availableSelectionsByType(): array
@@ -81,6 +99,21 @@ class Market extends Model
             ],
             self::TYPE_GOALSCORER => [],
         ];
+    }
+
+    public function typeLabel(): string
+    {
+        return self::typeLabelFor($this->type);
+    }
+
+    public static function typeLabelFor(?string $type): string
+    {
+        if ($type === null || $type === '') {
+            return 'Market';
+        }
+
+        return self::TYPE_LABELS[$type]
+            ?? str_replace('_', ' ', ucwords(strtolower($type), '_'));
     }
 
     /**

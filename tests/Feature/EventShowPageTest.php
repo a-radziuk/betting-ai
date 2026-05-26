@@ -205,7 +205,7 @@ class EventShowPageTest extends TestCase
         ]))
             ->get(route('events.show', $event))
             ->assertOk()
-            ->assertSee('MATCH_RESULT · FT', false)
+            ->assertSee('Match Result · FT', false)
             ->assertSee(Selection::NAME_HOME, false)
             ->assertSee('2.15', false)
             ->getContent();
@@ -237,7 +237,7 @@ class EventShowPageTest extends TestCase
         $html = $this->get(route('events.show', $event))
             ->assertOk()
             ->assertSee('Final score: 2:1', false)
-            ->assertSee('MATCH_RESULT · FT', false)
+            ->assertSee('Match Result · FT', false)
             ->assertSee(Selection::NAME_HOME, false)
             ->assertSee('2.15', false)
             ->assertSee('+28.75', false)
@@ -330,11 +330,12 @@ class EventShowPageTest extends TestCase
             ->assertSee('event-tip-card-avatar-placeholder', false)
             ->assertSee('+42.50', false)
             ->assertDontSee('Total result', false)
-            ->assertSee('MATCH_RESULT · FT', false)
+            ->assertSee('Match Result · FT', false)
             ->assertSee(Selection::NAME_HOME, false)
             ->assertSee('2.15', false)
             ->assertSee('25.00 EUR', false)
-            ->assertSee('MATCH_RESULT', false)
+            ->assertSee('Match Result', false)
+            ->assertDontSee(Market::TYPE_MATCH_RESULT, false)
             ->getContent();
 
         $this->assertStringContainsString('form-icon--w', $html);

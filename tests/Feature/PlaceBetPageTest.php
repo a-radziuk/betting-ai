@@ -100,6 +100,18 @@ class PlaceBetPageTest extends TestCase
             ->assertStatus(400);
     }
 
+    public function test_place_bet_page_shows_human_readable_market_type(): void
+    {
+        $odd = $this->seedOddChain(90106, Event::STATUS_SCHEDULED);
+        $user = $this->userWhoCanPlaceBets();
+
+        $this->actingAs($user)
+            ->get(route('bets.place.show', ['odd' => $odd->id]))
+            ->assertOk()
+            ->assertSee('Match Result', false)
+            ->assertDontSee(Market::TYPE_MATCH_RESULT, false);
+    }
+
     public function test_place_bet_post_validates_wallet_balance(): void
     {
         $odd = $this->seedOddChain(90103, Event::STATUS_SCHEDULED);

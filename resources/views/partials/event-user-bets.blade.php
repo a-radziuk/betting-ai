@@ -27,7 +27,7 @@
                     $market = $bet->odd?->selection?->market;
                     $selectionName = $bet->odd?->selection?->name;
                     $marketLabel = $market
-                        ? trim($market->type.' · '.$market->period.(! is_null($market->line) ? ' · Line '.$market->line : ''))
+                        ? trim($market->typeLabel().' · '.$market->period.(! is_null($market->line) ? ' · Line '.$market->line : ''))
                         : '—';
                     $betFormSegments = $user
                         ? \App\Support\UserBetFormIcons::fromBets($user->bets)

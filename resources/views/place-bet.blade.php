@@ -32,7 +32,7 @@
     <section class="market-grid" style="grid-template-columns: 1fr;">
         <article class="market">
             <div class="market-head">
-                <span>{{ $odd->selection?->market?->type ?? 'Market' }}</span>
+                <span>{{ $odd->selection?->market?->typeLabel() ?? 'Market' }}</span>
                 <span class="period">
                     {{ $odd->selection?->market?->period ?? '' }}
                     @if (! is_null($odd->selection?->market?->line))
