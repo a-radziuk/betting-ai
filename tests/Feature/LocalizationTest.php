@@ -32,6 +32,21 @@ class LocalizationTest extends TestCase
             ->assertDontSee($tournament->name, false);
     }
 
+    public function test_home_page_uses_georgian_locale_and_translation_tables(): void
+    {
+        $this->useLocale('ge');
+
+        [$tournament] = $this->seedLocalizedEventGe();
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('20 უახლესი მომდევნი მატჩი', false)
+            ->assertSee('პრემიერ ლიგა', false)
+            ->assertSee('არსენალი', false)
+            ->assertSee('ჩელსი', false)
+            ->assertDontSee($tournament->name, false);
+    }
+
     public function test_home_page_falls_back_to_existing_database_values_when_translation_missing(): void
     {
         $this->useLocale('ru');
@@ -145,6 +160,94 @@ class LocalizationTest extends TestCase
             [98021, Selection::NAME_HOME, 1.95],
             [98022, Selection::NAME_DRAW, 3.40],
             [98023, Selection::NAME_AWAY, 4.10],
+        ] as [$selectionId, $name, $odds]) {
+            $selection = Selection::query()->create([
+                'id' => $selectionId,
+                'market_id' => $market->id,
+                'name' => $name,
+                'participant_id' => null,
+                'handicap' => null,
+                'created_at' => now(),
+            ]);
+
+            Odd::query()->create([
+                'id' => $selectionId + 100,
+                'selection_id' => $selection->id,
+                'odds' => $odds,
+                'probability' => null,
+                'is_active' => true,
+                'created_at' => now(),
+            ]);
+        }
+
+        return [$tournament, $home, $away];
+    }
+
+    /**
+     * @return array{0: Tournament, 1: Team, 2: Team}
+     */
+    private function seedLocalizedEventGe(bool $withTranslations = true): array
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'Premier League',
+            'rank' => 1,
+        ]);
+        $home = Team::query()->create([
+            'name' => 'Arsenal',
+            'short_name' => 'ARS',
+            'league' => 'Premier League',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'Chelsea',
+            'short_name' => 'CHE',
+            'league' => 'Premier League',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        if ($withTranslations) {
+            TournamentTranslation::query()->create([
+                'tournament_id' => $tournament->id,
+                'locale' => 'ge',
+                'name' => 'პრემიერ ლიგა',
+            ]);
+            TeamTranslation::query()->create([
+                'team_id' => $home->id,
+                'locale' => 'ge',
+                'name' => 'არსენალი',
+                'display_name' => 'არსენალი',
+            ]);
+            TeamTranslation::query()->create([
+                'team_id' => $away->id,
+                'locale' => 'ge',
+                'name' => 'ჩელსი',
+                'display_name' => 'ჩელსი',
+            ]);
+        }
+
+        $event = Event::query()->create([
+            'id' => 98002,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 98012,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_MATCH_RESULT,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        foreach ([
+            [98024, Selection::NAME_HOME, 1.95],
+            [98025, Selection::NAME_DRAW, 3.40],
+            [98026, Selection::NAME_AWAY, 4.10],
         ] as [$selectionId, $name, $odds]) {
             $selection = Selection::query()->create([
                 'id' => $selectionId,

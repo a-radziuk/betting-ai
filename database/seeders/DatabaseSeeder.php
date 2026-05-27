@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RussianTournamentTranslationsSeeder::class,
             RussianTeamTranslationsSeeder::class,
+            GeorgianTournamentTranslationsSeeder::class,
+            GeorgianTeamTranslationsSeeder::class,
         ]);
     }
 }
