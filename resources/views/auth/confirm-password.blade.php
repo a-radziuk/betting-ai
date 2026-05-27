@@ -1,4 +1,5 @@
-<x-guest-layout>
+<x-guest-layout :page-title="__('BetAI | Confirm password')">
+    <x-slot name="subtitle">{{ __('Confirm your password to continue.') }}</x-slot>
     <div class="mb-4 text-sm text-[#9fb0d3]">
         {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
     </div>

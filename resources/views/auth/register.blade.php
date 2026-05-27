@@ -1,4 +1,5 @@
-<x-guest-layout>
+<x-guest-layout :page-title="__('BetAI | Register')">
+    <x-slot name="subtitle">{{ __('Create an account to continue with BetAI.') }}</x-slot>
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -56,19 +57,19 @@
                 <div class="w-full border-t border-[#3b4e75]"></div>
             </div>
             <div class="relative flex justify-center text-sm">
-                <span class="bg-[#13213b] px-2 text-[#9fb0d3]">or sign up with</span>
+                <span class="bg-[#13213b] px-2 text-[#9fb0d3]">{{ __('or sign up with') }}</span>
             </div>
         </div>
 
         <div class="mt-4 grid grid-cols-1 gap-2">
             <a href="{{ route('social.redirect', 'google') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                Sign up with Google
+                {{ __('Sign up with Google') }}
             </a>
             <a href="{{ route('social.redirect', 'facebook') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                Sign up with Facebook
+                {{ __('Sign up with Facebook') }}
             </a>
             <a href="{{ route('social.redirect', 'github') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                Sign up with GitHub
+                {{ __('Sign up with GitHub') }}
             </a>
         </div>
     </div>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'BetAI') }}</title>
+    <title>{{ $pageTitle ?? config('app.name', 'BetAI') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 
@@ -163,7 +163,7 @@
             <a href="/">
                 <x-application-logo class="w-40 h-auto" />
             </a>
-            <p class="auth-subtitle">Sign in to continue with BetAI</p>
+            <p class="auth-subtitle">{{ $subtitle ?? __('Sign in to continue with BetAI') }}</p>
         </div>
 
         <div class="auth-card">

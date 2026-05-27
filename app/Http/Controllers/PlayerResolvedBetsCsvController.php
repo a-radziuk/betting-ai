@@ -12,6 +12,10 @@ class PlayerResolvedBetsCsvController extends Controller
 {
     public function __invoke(User $user): StreamedResponse|RedirectResponse
     {
+        if (! feature('player_stats_csv_download')) {
+            abort(404);
+        }
+
         $viewer = Auth::user();
         if ($viewer === null || ! $viewer->hasPrivelege(User::PRIVELEGE_SEE_TIPS)) {
             return redirect()->route('subscribe');

@@ -18,6 +18,13 @@ class PlayerResolvedBetsCsvTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['features.player_stats_csv_download' => true]);
+    }
+
     public function test_download_omits_admin_columns_for_non_superadmin(): void
     {
         $tz = config('app.timezone');
@@ -159,6 +166,36 @@ class PlayerResolvedBetsCsvTest extends TestCase
             ->getContent();
 
         $this->assertStringNotContainsString('Download CSV', $html);
+    }
+
+    public function test_player_page_hides_csv_download_when_feature_disabled(): void
+    {
+        config(['features.player_stats_csv_download' => false]);
+
+        $player = User::factory()->create();
+        $this->seedResolvedBetForPlayer($player);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('Download CSV', $html);
+        $this->assertStringNotContainsString(route('players.bets.csv', $player), $html);
+    }
+
+    public function test_csv_endpoint_returns_not_found_when_feature_disabled(): void
+    {
+        config(['features.player_stats_csv_download' => false]);
+
+        $player = User::factory()->create();
+        $viewer = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+        $this->seedTwoResolvedBets($player, config('app.timezone'));
+
+        $this->actingAs($viewer)
+            ->get(route('players.bets.csv', $player))
+            ->assertNotFound();
     }
 
     private function seedResolvedBetForPlayer(User $player): void

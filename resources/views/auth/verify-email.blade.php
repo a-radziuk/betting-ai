@@ -1,4 +1,5 @@
-<x-guest-layout>
+<x-guest-layout :page-title="__('BetAI | Verify email')">
+    <x-slot name="subtitle">{{ __('Confirm your email address to continue.') }}</x-slot>
     <div class="mb-4 text-sm text-[#9fb0d3]">
         {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
     </div>

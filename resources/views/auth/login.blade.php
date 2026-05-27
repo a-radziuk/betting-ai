@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :page-title="__('BetAI | Login')">
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -51,19 +51,19 @@
                 <div class="w-full border-t border-[#3b4e75]"></div>
             </div>
             <div class="relative flex justify-center text-sm">
-                <span class="bg-[#13213b] px-2 text-[#9fb0d3]">or continue with</span>
+                <span class="bg-[#13213b] px-2 text-[#9fb0d3]">{{ __('or continue with') }}</span>
             </div>
         </div>
 
         <div class="mt-4 grid grid-cols-1 gap-2">
             <a href="{{ route('social.redirect', 'google') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                Continue with Google
+                {{ __('Continue with Google') }}
             </a>
             <a href="{{ route('social.redirect', 'facebook') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                Continue with Facebook
+                {{ __('Continue with Facebook') }}
             </a>
             <a href="{{ route('social.redirect', 'github') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                Continue with GitHub
+                {{ __('Continue with GitHub') }}
             </a>
         </div>
     </div>

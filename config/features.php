@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * Feature flags (boolean). Each entry reads from .env using FEATURE_<SCREAMING_SNAKE>.
+ *
+ * Add a line here and a matching env key, then use:
+ * - PHP: feature('your_flag')
+ * - Blade: @feature('your_flag') … @endfeature
+ *
+ * Unknown flag names resolve to false.
+ */
+return [
+    'example_widget' => filter_var(env('FEATURE_EXAMPLE_WIDGET', false), FILTER_VALIDATE_BOOLEAN),
+    'player_stats_csv_download' => filter_var(env('FEATURE_PLAYER_STATS_CSV_DOWNLOAD', false), FILTER_VALIDATE_BOOLEAN),
+];

@@ -1,4 +1,5 @@
-<x-guest-layout>
+<x-guest-layout :page-title="__('BetAI | Reset password')">
+    <x-slot name="subtitle">{{ __('Choose a new password for your account.') }}</x-slot>
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 
