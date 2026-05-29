@@ -45,4 +45,20 @@ class ClearPagesCacheCommandTest extends TestCase
 
         $this->assertFalse(Cache::store('array')->has('custom-key'));
     }
+
+    public function test_it_refuses_flush_when_session_and_cache_share_redis_database(): void
+    {
+        config([
+            'session.driver' => 'redis',
+            'session.connection' => 'session',
+            'database.redis.session.database' => '1',
+            'database.redis.cache.database' => '1',
+            'page_cache.cache_store' => 'redis',
+            'page_cache.cache_enabled' => true,
+        ]);
+
+        $exitCode = Artisan::call('pages:cache-clear');
+
+        $this->assertSame(1, $exitCode);
+    }
 }

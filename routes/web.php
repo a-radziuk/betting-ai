@@ -5,6 +5,7 @@ use App\Http\Controllers\EventShowController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\SubscribeTermsController;
 use App\Http\Controllers\SubscriptionPaymentCompleteController;
 use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\SubscriptionStripePaymentIntentController;
@@ -179,17 +180,21 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');
 
-Route::get('/subscribe/payment/{plan}', SubscriptionPaymentController::class)
-    ->middleware('auth')
-    ->name('subscribe.payment');
+Route::middleware('auth')->group(function (): void {
+    Route::get('/subscribe/terms/{plan}', [SubscribeTermsController::class, 'show'])
+        ->name('subscribe.terms');
+    Route::post('/subscribe/terms/{plan}', [SubscribeTermsController::class, 'store'])
+        ->name('subscribe.terms.accept');
 
-Route::post('/subscribe/payment/{plan}/stripe-intent', SubscriptionStripePaymentIntentController::class)
-    ->middleware('auth')
-    ->name('subscribe.payment.stripe-intent');
+    Route::get('/subscribe/payment/{plan}', SubscriptionPaymentController::class)
+        ->name('subscribe.payment');
 
-Route::get('/subscribe/payment/{plan}/complete', SubscriptionPaymentCompleteController::class)
-    ->middleware('auth')
-    ->name('subscribe.payment.complete');
+    Route::post('/subscribe/payment/{plan}/stripe-intent', SubscriptionStripePaymentIntentController::class)
+        ->name('subscribe.payment.stripe-intent');
+
+    Route::get('/subscribe/payment/{plan}/complete', SubscriptionPaymentCompleteController::class)
+        ->name('subscribe.payment.complete');
+});
 
 Route::post('/stripe/webhook', StripeWebhookController::class)
     ->name('stripe.webhook');

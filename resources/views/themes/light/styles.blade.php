@@ -344,6 +344,18 @@
         color: #b42318 !important;
     }
 
+    .subscribe-terms-body {
+        color: #1c3954 !important;
+    }
+
+    .subscribe-terms-body h2 {
+        color: #0f2740 !important;
+    }
+
+    .subscribe-terms-checkbox {
+        color: #1c3954 !important;
+    }
+
     .subscribe-plan-features li {
         color: #1c3954 !important;
     }

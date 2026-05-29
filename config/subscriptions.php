@@ -2,6 +2,10 @@
 
 return [
 
+    'terms' => [
+        'version' => env('SUBSCRIPTION_TERMS_VERSION', '1'),
+    ],
+
     'currency' => env('SUBSCRIPTION_CURRENCY', 'EUR'),
 
     'plans' => [

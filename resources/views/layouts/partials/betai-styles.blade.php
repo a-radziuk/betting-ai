@@ -1884,6 +1884,57 @@
         display: none;
     }
 
+    .subscribe-terms-card {
+        padding: 1.25rem 1.5rem 1.5rem;
+    }
+
+    .subscribe-terms-body {
+        max-height: 22rem;
+        overflow-y: auto;
+        margin-bottom: 1.25rem;
+        padding-right: 0.5rem;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        color: #c8d6f5;
+    }
+
+    .subscribe-terms-body h2 {
+        margin: 1.25rem 0 0.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #eaf0ff;
+    }
+
+    .subscribe-terms-body h2:first-child {
+        margin-top: 0;
+    }
+
+    .subscribe-terms-body p {
+        margin: 0 0 0.75rem;
+    }
+
+    .subscribe-terms-checkbox {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+        font-size: 0.92rem;
+        color: #dce7ff;
+        cursor: pointer;
+    }
+
+    .subscribe-terms-checkbox input {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .subscribe-terms-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
     .subscribe-plan-features {
         margin: 0 0 1.25rem;
         padding: 0;

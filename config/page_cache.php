@@ -9,8 +9,8 @@ return [
     |
     | Caches rendered HTML for everything inside <main> on /, /tournaments/{id},
     | /events/{id}, /players, and /players/{id}. Header, subbar, and footer are
-    | always fresh. Keys include entity id, locale, page (where relevant), and
-    | viewer capabilities on event pages (guest vs tips/place-bets privileges).
+    | always fresh. Uses the redis cache connection (REDIS_CACHE_DB), not sessions
+    | (REDIS_SESSION_DB). Clear with: php artisan pages:cache-clear
     |
     */
 

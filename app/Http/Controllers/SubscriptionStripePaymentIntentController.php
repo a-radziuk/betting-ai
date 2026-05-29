@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\StripeSubscriptionPaymentService;
 use App\Support\StripeConfig;
 use App\Support\SubscriptionPlans;
+use App\Support\SubscriptionTerms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use RuntimeException;
@@ -26,6 +27,10 @@ class SubscriptionStripePaymentIntentController extends Controller
         $planDetails = SubscriptionPlans::find($plan);
         if ($planDetails === null) {
             abort(404);
+        }
+
+        if (! SubscriptionTerms::acceptedForPlan($plan)) {
+            abort(403);
         }
 
         $user = Auth::user();

@@ -64,7 +64,7 @@
                             </button>
                         @else
                             <a
-                                href="{{ route('subscribe.payment', ['plan' => $plan['id']]) }}"
+                                href="{{ route('subscribe.terms', ['plan' => $plan['id']]) }}"
                                 class="btn btn-primary"
                             >
                                 {{ auth()->check() ? __('Subscribe') : __('Sign in to subscribe') }}

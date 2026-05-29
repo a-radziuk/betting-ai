@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\StripeConfig;
 use App\Support\SubscriptionPlans;
+use App\Support\SubscriptionTerms;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -24,6 +25,10 @@ class SubscriptionPaymentController extends Controller
             return redirect()
                 ->route('subscribe')
                 ->with('status', __('You already have access to tips.'));
+        }
+
+        if (! SubscriptionTerms::acceptedForPlan($plan)) {
+            return redirect()->route('subscribe.terms', ['plan' => $plan]);
         }
 
         $stripeFeatureEnabled = feature('subscription_stripe_payments');

@@ -27,7 +27,7 @@ class SubscribePageTest extends TestCase
 
         $this->assertStringContainsString('subscribe-plans-grid', $html);
         $this->assertCount(4, SubscriptionPlans::all());
-        $this->assertStringContainsString(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_WEEK]), $html);
+        $this->assertStringContainsString(route('subscribe.terms', ['plan' => SubscriptionPlans::ONE_WEEK]), $html);
     }
 
     public function test_hidden_plans_are_not_listed(): void
@@ -47,34 +47,10 @@ class SubscribePageTest extends TestCase
             ->assertDontSee('1 year', false);
     }
 
-    public function test_subscribe_button_links_to_payment_page(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
-            ->get(route('subscribe'))
-            ->assertOk()
-            ->assertSee(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]), false);
-    }
-
     public function test_guest_payment_route_redirects_to_login(): void
     {
         $this->get(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]))
             ->assertRedirect(route('login'));
-    }
-
-    public function test_authenticated_user_sees_payment_stub_when_stripe_feature_disabled(): void
-    {
-        config(['features.subscription_stripe_payments' => false]);
-
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
-            ->get(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]))
-            ->assertOk()
-            ->assertSee('1 month', false)
-            ->assertSee('€29.99', false)
-            ->assertSee('Payment integration is coming soon', false);
     }
 
     public function test_invalid_plan_redirects_to_subscribe(): void

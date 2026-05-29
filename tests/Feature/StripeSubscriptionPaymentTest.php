@@ -22,9 +22,18 @@ class StripeSubscriptionPaymentTest extends TestCase
         ]);
     }
 
+    private function acceptTerms(User $user, string $plan): void
+    {
+        $this->actingAs($user)
+            ->post(route('subscribe.terms.accept', ['plan' => $plan]), [
+                'accept_terms' => '1',
+            ]);
+    }
+
     public function test_payment_page_shows_stripe_form_when_feature_and_keys_configured(): void
     {
         $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
 
         $this->actingAs($user)
             ->get(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]))
@@ -42,6 +51,7 @@ class StripeSubscriptionPaymentTest extends TestCase
         ]);
 
         $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
 
         $this->actingAs($user)
             ->get(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]))
@@ -75,15 +85,26 @@ class StripeSubscriptionPaymentTest extends TestCase
         ]);
 
         $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
 
         $this->actingAs($user)
             ->postJson(route('subscribe.payment.stripe-intent', ['plan' => SubscriptionPlans::ONE_MONTH]))
             ->assertStatus(503);
     }
 
+    public function test_stripe_intent_requires_terms_acceptance(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson(route('subscribe.payment.stripe-intent', ['plan' => SubscriptionPlans::ONE_MONTH]))
+            ->assertForbidden();
+    }
+
     public function test_payment_complete_redirects_with_status_message(): void
     {
         $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
 
         $this->actingAs($user)
             ->get(route('subscribe.payment.complete', [
