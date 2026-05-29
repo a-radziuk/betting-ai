@@ -332,6 +332,14 @@
         color: #3f5d79 !important;
     }
 
+    .subscribe-plan-price {
+        color: #0f2740 !important;
+    }
+
+    .subscribe-payment-stub {
+        color: #3f5d79 !important;
+    }
+
     .subscribe-plan-features li {
         color: #1c3954 !important;
     }

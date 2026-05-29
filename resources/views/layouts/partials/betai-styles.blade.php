@@ -1840,8 +1840,25 @@
     }
 
     .subscribe-plan-duration {
-        margin: 0 0 1rem;
+        margin: 0 0 0.5rem;
         font-size: 0.9rem;
+        color: #9fb0d3;
+    }
+
+    .subscribe-plan-price {
+        margin: 0 0 1rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #e8f0ff;
+    }
+
+    .subscribe-payment-card {
+        max-width: 420px;
+    }
+
+    .subscribe-payment-stub {
+        margin: 1rem 0 0;
+        font-size: 0.95rem;
         color: #9fb0d3;
     }
 

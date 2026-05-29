@@ -4,41 +4,60 @@ namespace App\Support;
 
 final class SubscriptionPlans
 {
-    public const FREE_TRIAL = 'free_trial';
+    public const ONE_WEEK = 'one_week';
+
+    public const ONE_MONTH = 'one_month';
 
     public const THREE_MONTHS = 'three_months';
 
     public const ONE_YEAR = 'one_year';
 
     /**
-     * @return list<array{id: string, name: string, duration_label: string, enabled: bool}>
+     * Visible plans only; each returned plan is enabled (subscribable).
+     *
+     * @return list<array{
+     *     id: string,
+     *     name: string,
+     *     duration_label: string,
+     *     price: string,
+     *     price_label: string,
+     *     enabled: bool
+     * }>
      */
     public static function all(): array
     {
-        return [
-            [
-                'id' => self::FREE_TRIAL,
-                'name' => 'Free trial',
-                'duration_label' => '1 month',
+        $currency = (string) config('subscriptions.currency', 'EUR');
+        $plans = [];
+
+        foreach (config('subscriptions.plans', []) as $id => $plan) {
+            if (! ($plan['visible'] ?? false)) {
+                continue;
+            }
+
+            $price = (string) ($plan['price'] ?? '0');
+
+            $plans[] = [
+                'id' => (string) $id,
+                'name' => (string) $plan['name'],
+                'duration_label' => (string) $plan['duration_label'],
+                'price' => $price,
+                'price_label' => self::formatPrice($price, $currency),
                 'enabled' => true,
-            ],
-            [
-                'id' => self::THREE_MONTHS,
-                'name' => '3 months',
-                'duration_label' => '3 months',
-                'enabled' => false,
-            ],
-            [
-                'id' => self::ONE_YEAR,
-                'name' => '1 year',
-                'duration_label' => '1 year',
-                'enabled' => false,
-            ],
-        ];
+            ];
+        }
+
+        return $plans;
     }
 
     /**
-     * @return array{id: string, name: string, duration_label: string, enabled: bool}|null
+     * @return array{
+     *     id: string,
+     *     name: string,
+     *     duration_label: string,
+     *     price: string,
+     *     price_label: string,
+     *     enabled: bool
+     * }|null
      */
     public static function find(string $id): ?array
     {
@@ -53,8 +72,18 @@ final class SubscriptionPlans
 
     public static function isEnabled(string $id): bool
     {
-        $plan = self::find($id);
+        return self::find($id) !== null;
+    }
 
-        return $plan !== null && $plan['enabled'];
+    public static function formatPrice(string $price, string $currency): string
+    {
+        $amount = number_format((float) $price, 2);
+
+        return match (strtoupper($currency)) {
+            'EUR' => '€'.$amount,
+            'USD' => '$'.$amount,
+            'GBP' => '£'.$amount,
+            default => $amount.' '.$currency,
+        };
     }
 }
