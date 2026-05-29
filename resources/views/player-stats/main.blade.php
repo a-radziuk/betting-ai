@@ -1,0 +1,269 @@
+<main class="container">
+    @php
+        $avatarUrl = $player->profileAvatarUrl();
+        $wallet = $player->wallet;
+        $walletCurrency = $wallet?->currency ?? 'EUR';
+        $walletStartBalance = $wallet !== null ? (float) $wallet->start_balance : null;
+        $walletTotalResult = $wallet !== null ? (float) $wallet->total_result : null;
+        $walletAmountInPlay = $wallet !== null ? (float) $wallet->amount_in_play : null;
+        $absoluteBankValue = $wallet !== null ? (float) $wallet->balance : null;
+        $hasProfileDetails = $absoluteBankValue !== null
+            || $avatarUrl !== null
+            || filled($player->tagline)
+            || filled($player->bio)
+            || filled($player->city)
+            || filled($player->country);
+    @endphp
+
+    <section class="hero">
+        <h1>{{ $player->name }}</h1>
+        <p class="meta">{{ __('Settled bets by settlement order, newest first.') }}</p>
+    </section>
+
+    @if ($hasProfileDetails)
+        <section class="card card-pad player-profile" style="margin-bottom: 12px;">
+            <dl class="player-profile-dl">
+                @if ($avatarUrl)
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Photo') }}</dt>
+                        <dd class="player-profile-value">
+                            <img
+                                src="{{ $avatarUrl }}"
+                                alt=""
+                                class="player-profile-avatar"
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </dd>
+                    </div>
+                @endif
+                @if (filled($player->tagline))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Tagline') }}</dt>
+                        <dd class="player-profile-value player-profile-tagline">{{ $player->tagline }}</dd>
+                    </div>
+                @endif
+                @if (filled($player->bio))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Bio') }}</dt>
+                        <dd class="player-profile-value player-profile-bio">{{ $player->bio }}</dd>
+                    </div>
+                @endif
+                @if (filled($player->city))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('City') }}</dt>
+                        <dd class="player-profile-value">{{ $player->city }}</dd>
+                    </div>
+                @endif
+                @if (filled($player->country))
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Country') }}</dt>
+                        <dd class="player-profile-value">{{ $player->country }}</dd>
+                    </div>
+                @endif
+                @if ($absoluteBankValue !== null)
+                    <div class="player-profile-row">
+                        <dt class="player-profile-label">{{ __('Absolute Bank Value') }}</dt>
+                        <dd class="player-profile-value player-profile-bank tabular-nums">
+                            @include('players.partials.bank-formula', [
+                                'walletStartBalance' => $walletStartBalance,
+                                'walletTotalResult' => $walletTotalResult,
+                                'walletAmountInPlay' => $walletAmountInPlay,
+                                'absoluteBankValue' => $absoluteBankValue,
+                                'walletCurrency' => $walletCurrency,
+                            ])
+                        </dd>
+                    </div>
+                @endif
+            </dl>
+        </section>
+    @endif
+
+    <div class="event-empty user-results" style="margin-bottom: 12px;">
+        @include('players.partials.wallet-result-chart', ['resultChart' => $resultChart])
+        <span class="user-results-item">
+            <span class="user-results-label">{{ __('Currently in play') }}</span>
+            <span class="user-results-value">{{ number_format((float) $player->wallet->amount_in_play, 2) }}</span>
+            <span class="user-results-in-play-meta">
+                {{ number_format($pendingBetCount) }} {{ $pendingBetCount === 1 ? __('bet') : __('bets') }}
+            </span>
+            <a href="{{ route('players.current', ['user' => $player->id]) }}" class="subbar-back" style="margin-top: 6px;">
+                {{ __('See bets') }}
+            </a>
+        </span>
+        <span class="user-results-item user-results-item--metrics">
+            <div class="player-result-head">
+                <span class="user-results-label">{{ __('Result') }}</span>
+                <div class="player-result-outcomes" role="group" aria-label="{{ __('Settled bet outcomes') }}">
+                    <span class="form-icon form-icon--w" title="{{ __('Won') }}">{{ number_format($wonBetCount) }}</span>
+                    <span class="form-icon form-icon--l" title="{{ __('Lost') }}">{{ number_format($lostBetCount) }}</span>
+                    <span class="form-icon form-icon--d" title="{{ __('Void') }}">{{ number_format($voidBetCount) }}</span>
+                </div>
+            </div>
+            <div class="user-results-metric user-results-metric--duo">
+                <div class="user-results-metric-duo-item">
+                    @include('players.partials.metric-label', [
+                        'label' => __('Bets'),
+                        'hint' => __('Number of settled bets (won, lost, void, or cancelled).'),
+                    ])
+                    <span class="user-results-metric-value tabular-nums">{{ number_format($resolvedBetCount) }}</span>
+                    @include('players.partials.metric-label', [
+                        'label' => __('Turnover'),
+                        'hint' => __('Total stake staked on all settled bets.'),
+                    ])
+                    <span class="user-results-metric-value tabular-nums">{{ number_format($turnover, 2) }}</span>
+                </div>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Average stake'),
+                    'hint' => __('Turnover divided by the number of settled bets.'),
+                ])
+                <span class="user-results-metric-value tabular-nums">
+                    @if ($averageStake === null)
+                        —
+                    @else
+                        {{ number_format($averageStake, 2) }}
+                    @endif
+                </span>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Won/Lost'),
+                    'hint' => __('Net profit or loss on the wallet from all settled bets.'),
+                ])
+                <span @class([
+                    'user-results-metric-value',
+                    'tabular-nums',
+                    'player-stats-result-value',
+                    'player-stats-result-value--pos' => $totalResult > 0.000001,
+                    'player-stats-result-value--neg' => $totalResult < -0.000001,
+                    'player-stats-result-value--neutral' => abs($totalResult) <= 0.000001,
+                ])>
+                    {{ $totalResult > 0 ? '+' : '' }}{{ number_format($totalResult, 2) }}
+                </span>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Relative Efficiency'),
+                    'hint' => __('Won/Lost divided by turnover, expressed as a percentage.'),
+                ])
+                <span @class([
+                    'user-results-metric-value',
+                    'tabular-nums',
+                    'player-stats-result-value',
+                    'player-stats-result-value--pos' => ($efficiencyPercent ?? 0) > 0.000001,
+                    'player-stats-result-value--neg' => ($efficiencyPercent ?? 0) < -0.000001,
+                    'player-stats-result-value--neutral' => $efficiencyPercent === null || abs($efficiencyPercent) <= 0.000001,
+                ])>
+                    @if ($efficiencyPercent === null)
+                        —
+                    @else
+                        {{ $efficiencyPercent > 0 ? '+' : '' }}{{ number_format($efficiencyPercent, 1) }}%
+                    @endif
+                </span>
+            </div>
+            <div class="user-results-metric">
+                @include('players.partials.metric-label', [
+                    'label' => __('Absolute Efficiency'),
+                    'hint' => __('Won/Lost divided by starting balance, expressed as a percentage.'),
+                ])
+                <span @class([
+                    'user-results-metric-value',
+                    'tabular-nums',
+                    'player-stats-result-value',
+                    'player-stats-result-value--pos' => ($efficiencyPercentAbsolute ?? 0) > 0.000001,
+                    'player-stats-result-value--neg' => ($efficiencyPercentAbsolute ?? 0) < -0.000001,
+                    'player-stats-result-value--neutral' => $efficiencyPercentAbsolute === null || abs($efficiencyPercentAbsolute) <= 0.000001,
+                ])>
+                    @if ($efficiencyPercentAbsolute === null)
+                        —
+                    @else
+                        {{ $efficiencyPercentAbsolute > 0 ? '+' : '' }}{{ $efficiencyPercentAbsolute }}%
+                    @endif
+                </span>
+            </div>
+        </span>
+    </div>
+
+    <section class="card overflow-hidden">
+        @if ($bets->isNotEmpty())
+            @feature('player_stats_csv_download')
+                <div class="card-pad player-stats-download-bar">
+                    <a href="{{ route('players.bets.csv', ['user' => $player->id]) }}" class="subbar-back">
+                        {{ __('Download CSV') }}
+                    </a>
+                </div>
+            @endfeature
+        @endif
+        @if ($bets->isEmpty())
+            <div class="empty">{{ __('No resolved bets yet.') }}</div>
+        @else
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>{{ __('Event') }}</th>
+                        <th>{{ __('Bet') }}</th>
+                        <th class="text-right">{{ __('Odd') }}</th>
+                        <th class="text-right">{{ __('Amount') }}</th>
+                        <th class="text-right">{{ __('Won / lost') }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach ($bets as $bet)
+                        @php
+                            $event = $bet->event;
+                            $eventName = $event && $event->homeTeam && $event->awayTeam
+                                ? $event->homeTeam->resolvedDisplayName() . ' — ' . $event->awayTeam->resolvedDisplayName()
+                                : '—';
+                            $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
+                            $eventScore = filled($event?->score) ? $event->score : '—';
+
+                            $selection = $bet->odd?->selection?->displayName($event) ?? '—';
+                            $market = $bet->odd?->selection?->market?->typeLabel();
+                            $betLabel = $market ? "{$selection} ({$market})" : $selection;
+
+                            $stake = (float) $bet->stake;
+                            $potential = (float) $bet->potential_return;
+
+                            $delta = 0.0;
+                            if ($bet->status === \App\Models\UserBet::STATUS_WON) {
+                                $delta = $potential - $stake;
+                            } elseif ($bet->status === \App\Models\UserBet::STATUS_LOST) {
+                                $delta = -$stake;
+                            }
+
+                        @endphp
+                        <tr>
+                            <td>
+                                <div class="player-stats-table-primary">{{ $eventName }}</div>
+                                <div class="player-stats-table-muted text-xs mt-1 tabular-nums">{{ $eventTime }} · {{ $eventScore }}</div>
+                            </td>
+                            <td class="player-stats-table-primary">{{ $betLabel }}</td>
+                            <td class="text-right tabular-nums player-stats-table-accent">{{ number_format((float) $bet->odds_at_bet, 2) }}</td>
+                            <td class="text-right tabular-nums player-stats-table-primary-strong">{{ number_format($stake, 2) }}</td>
+                            <td class="text-right tabular-nums">
+                                <span @class([
+                                    'player-stats-result-value',
+                                    'player-stats-result-value--pos' => $delta > 0.000001,
+                                    'player-stats-result-value--neg' => $delta < -0.000001,
+                                    'player-stats-result-value--neutral' => abs($delta) <= 0.000001,
+                                ])>
+                                    {{ $delta > 0 ? '+' : '' }}{{ number_format($delta, 2) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($bets->hasPages())
+                <div class="dashboard-pagination card-pad border-t border-[rgba(130,162,255,0.2)]">
+                    {{ $bets->links('vendor.pagination.tailwind') }}
+                </div>
+            @endif
+        @endif
+    </section>
+</main>

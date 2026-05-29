@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\AdminResolveEventController;
+use App\Http\Controllers\EventShowController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PlayerShowController;
+use App\Http\Controllers\PlayersIndexController;
+use App\Http\Controllers\TournamentShowController;
 use App\Http\Controllers\AdminUploadAnalysisController;
 use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\AdminUploadPredictionsController;
@@ -28,71 +33,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
-Route::get('/', function () {
-    /** @var Collection<int, Event> $events */
-    $events = collect();
-
-    if (Schema::hasTable('events')) {
-        $events = Event::query()
-            ->with([
-                'homeTeam.translations',
-                'awayTeam.translations',
-                'tournament.translations',
-            ])
-            ->withCount('userBets')
-            ->with([
-                'markets' => function ($query) {
-                    $query->where('type', Market::TYPE_MATCH_RESULT)
-                        ->where('is_supported_market', true)
-                        ->with([
-                            'selections.odds' => fn ($oddsQuery) => $oddsQuery->orderByDesc('created_at'),
-                        ]);
-                },
-            ])
-            ->where('start_time', '>=', now())
-            ->orderBy('start_time')
-            ->limit(20)
-            ->get();
-    }
-
-    /** @var Collection<int, Tournament> $topTournaments */
-    $topTournaments = collect();
-    if (Schema::hasTable('tournaments')) {
-        $topTournaments = Tournament::query()
-            ->with('translations')
-            ->where('rank', 1)
-            ->orderBy('name')
-            ->get();
-    }
-
-    /** @var Collection<int, User> $topBettors */
-    $topBettors = collect();
-    if (
-        Schema::hasTable('users')
-        && Schema::hasTable('user_bets')
-        && Schema::hasTable('user_wallets')
-        && Schema::hasColumn('user_wallets', 'total_result')
-    ) {
-        $topBettors = User::query()
-            ->whereHas('bets', function ($q): void {
-                $q->where('status', '<>', UserBet::STATUS_PENDING);
-            })
-            ->join('user_wallets', 'user_wallets.user_id', '=', 'users.id')
-            ->orderByDesc('user_wallets.total_result')
-            ->orderBy('users.id')
-            ->select('users.*')
-            ->withCount('bets')
-            ->withSum('bets', 'stake')
-            ->limit(3)
-            ->with([
-                'wallet',
-                'bets' => UserBet::eagerLoadRecentResolved(),
-            ])
-            ->get();
-    }
-
-    return view('welcome', compact('events', 'topTournaments', 'topBettors'));
-});
+Route::get('/', HomeController::class);
 
 Route::get('/tournaments/{tournament}/results', function (Tournament $tournament) {
     /** @var Collection<int, EventResult> $allEventResults */
@@ -109,225 +50,13 @@ Route::get('/tournaments/{tournament}/results', function (Tournament $tournament
     return view('tournament-results', compact('tournament', 'allEventResults'));
 })->name('tournaments.results');
 
-Route::get('/tournaments/{tournament}', function (Tournament $tournament) {
-    $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
+Route::get('/tournaments/{tournament}', TournamentShowController::class)->name('tournaments.show');
 
-    /** @var Collection<int, Event> $upcomingEvents */
-    $upcomingEvents = collect();
-    if (Schema::hasTable('events') && Schema::hasColumn('events', 'tournament_id')) {
-        $upcomingEvents = Event::query()
-            ->with([
-                'homeTeam.translations',
-                'awayTeam.translations',
-                'tournament.translations',
-            ])
-            ->withCount('userBets')
-            ->with([
-                'markets' => function ($query) {
-                    $query->where('type', Market::TYPE_MATCH_RESULT)
-                        ->where('is_supported_market', true)
-                        ->with([
-                            'selections.odds' => fn ($oddsQuery) => $oddsQuery->orderByDesc('created_at'),
-                        ]);
-                },
-            ])
-            ->where('tournament_id', $tournament->id)
-            ->where('start_time', '>=', now())
-            ->orderBy('start_time')
-            ->limit(20)
-            ->get();
-    }
+Route::get('/events/{event}', EventShowController::class)->name('events.show');
 
-    /** @var Collection<int, EventResult> $recentEventResults */
-    $recentEventResults = collect();
-    $eventResultsTotal = 0;
-    if (Schema::hasTable('event_results')) {
-        $recentEventResults = EventResult::query()
-            ->where('tournament_id', $tournament->id)
-            ->with(['homeTeam.translations', 'awayTeam.translations'])
-            ->orderByDesc('date')
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get();
-        $eventResultsTotal = EventResult::query()
-            ->where('tournament_id', $tournament->id)
-            ->count();
-    }
+Route::get('/players', PlayersIndexController::class)->name('players.index');
 
-    return view('tournament-standings', [
-        'tournament' => $tournament,
-        'standingsRows' => $tournament->localizedStandingsRows(),
-        'standingsPromrel' => $standingsPromrel,
-        'upcomingEvents' => $upcomingEvents,
-        'recentEventResults' => $recentEventResults,
-        'eventResultsTotal' => $eventResultsTotal,
-    ]);
-})->name('tournaments.show');
-
-Route::get('/events/{event}', function (Event $event) {
-    $event->load([
-        'homeTeam.translations',
-        'awayTeam.translations',
-        'tournament.translations',
-        'markets' => fn ($query) => $query
-            ->where('is_supported_market', true)
-            ->with([
-                'selections.odds' => fn ($oddsQuery) => $oddsQuery->orderByDesc('created_at'),
-            ]),
-    ]);
-
-    /** @var Collection<int, UserBet> $eventBets */
-    $eventBets = collect();
-    if (Schema::hasTable('user_bets')) {
-        $eventBetsQuery = UserBet::query()
-            ->where('user_bets.event_id', $event->id)
-            ->whereHas('user', function ($q): void {
-                $q->whereHas('bets', function ($bq): void {
-                    $bq->where('status', '<>', UserBet::STATUS_PENDING);
-                });
-            })
-            ->with([
-                'user.wallet',
-                'user.bets' => UserBet::eagerLoadRecentResolved(),
-                'odd.selection.market',
-            ]);
-
-        if (Schema::hasTable('user_wallets')) {
-            $eventBets = $eventBetsQuery
-                ->join('users', 'users.id', '=', 'user_bets.user_id')
-                ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
-                ->select('user_bets.*')
-                ->orderByDesc(DB::raw('COALESCE(user_wallets.total_result, 0)'))
-                ->orderBy('users.id')
-                ->orderByDesc('user_bets.id')
-                ->get();
-        } else {
-            $eventBets = $eventBetsQuery
-                ->orderByDesc('user_bets.id')
-                ->get();
-        }
-    }
-
-    $eventAnalysis = null;
-    if (Schema::hasTable('event_analyses')) {
-        $eventAnalysis = EventAnalysis::query()
-            ->where('event_id', $event->id)
-            ->orderByDesc('strength')
-            ->orderByDesc('id')
-            ->first();
-    }
-
-    $tournament = $event->tournament;
-    $standingsRows = [];
-    $standingsPromrel = [];
-    if ($tournament !== null) {
-        $standingsRows = $tournament->localizedStandingsRows();
-        $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
-    }
-
-    return view('event', compact('event', 'eventBets', 'eventAnalysis', 'tournament', 'standingsRows', 'standingsPromrel'));
-})->name('events.show');
-
-Route::get('/players', function () {
-    $players = User::query()
-        ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
-        ->whereExists(function ($q): void {
-            $q->selectRaw('1')
-                ->from('user_bets')
-                ->whereColumn('user_bets.user_id', 'users.id');
-        })
-        ->orderByDesc(DB::raw('COALESCE(user_wallets.total_result, 0)'))
-        ->select([
-            'users.id',
-            'users.name',
-            DB::raw('COALESCE(user_wallets.balance, 0) as wallet_balance'),
-            DB::raw('COALESCE(user_wallets.amount_in_play, 0) as wallet_amount_in_play'),
-            DB::raw('COALESCE(user_wallets.total_result, 0) as wallet_total_result'),
-            DB::raw("COALESCE(user_wallets.currency, 'EUR') as wallet_currency"),
-        ])
-        ->with([
-            'bets' => UserBet::eagerLoadRecentResolved(),
-        ])
-        ->paginate(20)
-        ->withQueryString();
-
-    return view('players', [
-        'players' => $players,
-    ]);
-})->name('players.index');
-
-Route::get('/players/{user}', function (User $user) {
-    $chartValues = UserBet::query()
-        ->where('user_bets.user_id', $user->id)
-        ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
-        ->orderByDesc('user_bets.resolved_order')
-        ->orderByDesc('user_bets.id')
-        ->limit(30)
-        ->get(['user_bets.wallet_total_result', 'user_bets.resolved_order', 'user_bets.id'])
-        ->sortBy([
-            ['resolved_order', 'asc'],
-            ['id', 'asc'],
-        ])
-        ->pluck('wallet_total_result')
-        ->values()
-        ->all();
-
-    $resultChart = PlayerWalletResultChart::fromValues($chartValues);
-
-    $resolvedAggregate = UserBet::query()
-        ->where('user_id', $user->id)
-        ->where('status', '!=', UserBet::STATUS_PENDING)
-        ->selectRaw(
-            'COUNT(*) as bet_count,
-            COALESCE(SUM(stake), 0) as turnover,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as won_count,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as lost_count,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as void_count',
-            [UserBet::STATUS_WON, UserBet::STATUS_LOST, UserBet::STATUS_VOID],
-        )
-        ->first();
-
-    $resolvedBetCount = (int) ($resolvedAggregate->bet_count ?? 0);
-    $wonBetCount = (int) ($resolvedAggregate->won_count ?? 0);
-    $lostBetCount = (int) ($resolvedAggregate->lost_count ?? 0);
-    $voidBetCount = (int) ($resolvedAggregate->void_count ?? 0);
-    $turnover = (float) ($resolvedAggregate->turnover ?? 0);
-    $averageStake = $resolvedBetCount > 0 ? $turnover / $resolvedBetCount : null;
-    $totalResult = (float) $user->wallet->total_result;
-    $efficiencyPercent = $turnover > 0.000001
-        ? ($totalResult / $turnover) * 100
-        : null;
-
-    $startBalance = (float) $user->wallet->start_balance;
-    $efficiencyPercentAbsolute = $startBalance > 0.000001
-        ? ($totalResult / $startBalance) * 100
-        : null;
-
-    $pendingBetCount = UserBet::query()
-        ->where('user_id', $user->id)
-        ->where('status', UserBet::STATUS_PENDING)
-        ->count();
-
-    $bets = PlayerResolvedBets::listingQuery($user)
-        ->paginate(20)
-        ->withQueryString();
-
-    return view('player-stats', [
-        'player' => $user,
-        'bets' => $bets,
-        'resultChart' => $resultChart,
-        'resolvedBetCount' => $resolvedBetCount,
-        'wonBetCount' => $wonBetCount,
-        'lostBetCount' => $lostBetCount,
-        'voidBetCount' => $voidBetCount,
-        'turnover' => $turnover,
-        'averageStake' => $averageStake,
-        'totalResult' => $totalResult,
-        'efficiencyPercent' => $efficiencyPercent,
-        'efficiencyPercentAbsolute' => $efficiencyPercentAbsolute,
-        'pendingBetCount' => $pendingBetCount,
-    ]);
-})->name('players.show');
+Route::get('/players/{user}', PlayerShowController::class)->name('players.show');
 
 Route::get('/players/{user}/bets.csv', PlayerResolvedBetsCsvController::class)
     ->name('players.bets.csv');
