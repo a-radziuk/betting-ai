@@ -3,8 +3,11 @@
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\EventShowController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\SubscriptionPaymentCompleteController;
 use App\Http\Controllers\SubscriptionPaymentController;
+use App\Http\Controllers\SubscriptionStripePaymentIntentController;
 use App\Http\Controllers\PlayerShowController;
 use App\Http\Controllers\PlayersIndexController;
 use App\Http\Controllers\TournamentShowController;
@@ -97,28 +100,40 @@ Route::get('/players/{user}/current', function (User $user) {
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    $user->loadMissing('wallet');
-    if (! $user->wallet) {
-        $user->wallet()->create([
-            'balance' => 0,
-            'currency' => 'EUR',
-        ]);
-        $user->load('wallet');
+    $canPlaceBets = $user->hasPrivelege(User::PRIVELEGE_PLACE_BETS);
+
+    $wallet = null;
+    $bets = null;
+
+    if ($canPlaceBets) {
+        $user->loadMissing('wallet');
+        if (! $user->wallet) {
+            $user->wallet()->create([
+                'balance' => 0,
+                'currency' => 'EUR',
+            ]);
+            $user->load('wallet');
+        }
+
+        $bets = $user->bets()
+            ->with([
+                'event.homeTeam',
+                'event.awayTeam',
+                'odd.selection.market',
+            ])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $wallet = $user->wallet;
     }
 
-    $bets = $user->bets()
-        ->with([
-            'event.homeTeam',
-            'event.awayTeam',
-            'odd.selection.market',
-        ])
-        ->latest()
-        ->paginate(20)
-        ->withQueryString();
-
     return view('dashboard', [
-        'wallet' => $user->wallet,
+        'canPlaceBets' => $canPlaceBets,
+        'wallet' => $wallet,
         'bets' => $bets,
+        'hasActiveSeeTips' => $user->hasActiveSeeTipsAccess(),
+        'seeTipsExpiresAt' => $user->see_tips_expires_at,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -167,6 +182,17 @@ Route::get('/subscribe', SubscribeController::class)->name('subscribe');
 Route::get('/subscribe/payment/{plan}', SubscriptionPaymentController::class)
     ->middleware('auth')
     ->name('subscribe.payment');
+
+Route::post('/subscribe/payment/{plan}/stripe-intent', SubscriptionStripePaymentIntentController::class)
+    ->middleware('auth')
+    ->name('subscribe.payment.stripe-intent');
+
+Route::get('/subscribe/payment/{plan}/complete', SubscriptionPaymentCompleteController::class)
+    ->middleware('auth')
+    ->name('subscribe.payment.complete');
+
+Route::post('/stripe/webhook', StripeWebhookController::class)
+    ->name('stripe.webhook');
 
 Route::middleware('auth')->group(function () {
     Route::get('/players/{user}/subscribe', function (User $user) {

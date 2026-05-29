@@ -1862,6 +1862,28 @@
         color: #9fb0d3;
     }
 
+    .subscribe-stripe-payment {
+        margin-top: 1.25rem;
+    }
+
+    .subscribe-stripe-element {
+        margin-bottom: 1rem;
+    }
+
+    .subscribe-stripe-submit {
+        width: 100%;
+    }
+
+    .subscribe-payment-message {
+        margin: 0 0 0.75rem;
+        font-size: 0.9rem;
+        color: #ff8b9a;
+    }
+
+    .subscribe-payment-message[hidden] {
+        display: none;
+    }
+
     .subscribe-plan-features {
         margin: 0 0 1.25rem;
         padding: 0;

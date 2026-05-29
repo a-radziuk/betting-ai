@@ -40,4 +40,15 @@ class SubscriptionPlansTest extends TestCase
         $this->assertSame('$9.00', SubscriptionPlans::formatPrice('9', 'USD'));
         $this->assertSame('10.00 CHF', SubscriptionPlans::formatPrice('10', 'CHF'));
     }
+
+    public function test_amount_in_minor_units_and_access_extension(): void
+    {
+        config(['subscriptions.plans.one_week.price' => '9.99']);
+
+        $this->assertSame(999, SubscriptionPlans::amountInMinorUnits(SubscriptionPlans::ONE_WEEK));
+
+        $from = now();
+        $expires = SubscriptionPlans::accessExpiresAtFrom($from, SubscriptionPlans::THREE_MONTHS);
+        $this->assertSame($from->copy()->addMonths(3)->toDateString(), $expires->toDateString());
+    }
 }

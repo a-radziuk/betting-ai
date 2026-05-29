@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use Carbon\CarbonInterface;
+use InvalidArgumentException;
+
 final class SubscriptionPlans
 {
     public const ONE_WEEK = 'one_week';
@@ -84,6 +87,32 @@ final class SubscriptionPlans
             'USD' => '$'.$amount,
             'GBP' => '£'.$amount,
             default => $amount.' '.$currency,
+        };
+    }
+
+    public static function currency(): string
+    {
+        return strtoupper((string) config('subscriptions.currency', 'EUR'));
+    }
+
+    public static function amountInMinorUnits(string $planId): int
+    {
+        $plan = config('subscriptions.plans.'.$planId);
+        if (! is_array($plan)) {
+            throw new InvalidArgumentException("Unknown subscription plan [{$planId}].");
+        }
+
+        return (int) round((float) ($plan['price'] ?? 0) * 100);
+    }
+
+    public static function accessExpiresAtFrom(CarbonInterface $from, string $planId): CarbonInterface
+    {
+        return match ($planId) {
+            self::ONE_WEEK => $from->copy()->addWeek(),
+            self::ONE_MONTH => $from->copy()->addMonth(),
+            self::THREE_MONTHS => $from->copy()->addMonths(3),
+            self::ONE_YEAR => $from->copy()->addYear(),
+            default => throw new InvalidArgumentException("Unknown subscription plan [{$planId}]."),
         };
     }
 }

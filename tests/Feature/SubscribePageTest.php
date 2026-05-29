@@ -63,8 +63,10 @@ class SubscribePageTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_user_sees_payment_stub(): void
+    public function test_authenticated_user_sees_payment_stub_when_stripe_feature_disabled(): void
     {
+        config(['features.subscription_stripe_payments' => false]);
+
         $user = User::factory()->create();
 
         $this->actingAs($user)

@@ -19,7 +19,9 @@ class DashboardBetsTest extends TestCase
 
     public function test_dashboard_shows_user_bets_newest_first(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_PLACE_BETS,
+        ]);
         UserWallet::query()->where('user_id', $user->id)->update(['balance' => 1000]);
 
         $home = Team::query()->create(['name' => 'Alpha', 'short_name' => 'ALP', 'league' => 'T']);
@@ -95,7 +97,9 @@ class DashboardBetsTest extends TestCase
 
     public function test_dashboard_shows_score_when_event_not_scheduled(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_PLACE_BETS,
+        ]);
         UserWallet::query()->where('user_id', $user->id)->update(['balance' => 1000]);
 
         $home = Team::query()->create(['name' => 'ShowSc', 'short_name' => 'S1', 'league' => 'T']);
@@ -151,5 +155,50 @@ class DashboardBetsTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('2:1', false);
+    }
+
+    public function test_dashboard_hides_wallet_and_bets_without_place_bets_privilege(): void
+    {
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+        UserWallet::query()->where('user_id', $user->id)->update(['balance' => 500]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Wallet', false)
+            ->assertDontSee('Your bets', false)
+            ->assertDontSee('500.00', false)
+            ->assertSee('Browse upcoming events', false);
+    }
+
+    public function test_dashboard_shows_subscription_expiration_when_tips_access_is_active(): void
+    {
+        $expiresAt = now()->addMonth();
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+            'see_tips_expires_at' => $expiresAt,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Subscription', false)
+            ->assertSee('active tips subscription', false)
+            ->assertSee($expiresAt->timezone(config('app.timezone'))->format('Y-m-d H:i'), false);
+    }
+
+    public function test_dashboard_hides_subscription_when_tips_access_expired(): void
+    {
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+            'see_tips_expires_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('active tips subscription', false);
     }
 }

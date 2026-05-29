@@ -12,4 +12,5 @@
 return [
     'example_widget' => filter_var(env('FEATURE_EXAMPLE_WIDGET', false), FILTER_VALIDATE_BOOLEAN),
     'player_stats_csv_download' => filter_var(env('FEATURE_PLAYER_STATS_CSV_DOWNLOAD', false), FILTER_VALIDATE_BOOLEAN),
+    'subscription_stripe_payments' => filter_var(env('FEATURE_SUBSCRIPTION_STRIPE_PAYMENTS', false), FILTER_VALIDATE_BOOLEAN),
 ];

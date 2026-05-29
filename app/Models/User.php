@@ -66,6 +66,18 @@ class User extends Authenticatable
         $this->save();
     }
 
+    public function extendSeeTipsAccessForPlan(string $planId): void
+    {
+        $this->grantPrivelege(self::PRIVELEGE_SEE_TIPS);
+
+        $startsAt = ($this->see_tips_expires_at !== null && $this->see_tips_expires_at->isFuture())
+            ? $this->see_tips_expires_at
+            : now();
+
+        $this->see_tips_expires_at = \App\Support\SubscriptionPlans::accessExpiresAtFrom($startsAt, $planId);
+        $this->save();
+    }
+
     public function grantPrivelege(string $privelege): void
     {
         if ($this->priveleges === null || $this->priveleges === '') {

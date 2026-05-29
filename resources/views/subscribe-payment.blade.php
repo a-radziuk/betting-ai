@@ -27,7 +27,31 @@
         <h2 class="subscribe-plan-name">{{ $plan['name'] }}</h2>
         <p class="subscribe-plan-duration">{{ $plan['duration_label'] }}</p>
         <p class="subscribe-plan-price">{{ $plan['price_label'] }}</p>
-        <p class="subscribe-payment-stub">{{ __('Payment integration is coming soon. No charge has been made.') }}</p>
+
+        @feature('subscription_stripe_payments')
+            @if ($stripeReady)
+                <div
+                    id="subscribe-stripe-payment"
+                    class="subscribe-stripe-payment"
+                    data-publishable-key="{{ $stripePublishableKey }}"
+                    data-intent-url="{{ route('subscribe.payment.stripe-intent', ['plan' => $plan['id']]) }}"
+                    data-return-url="{{ route('subscribe.payment.complete', ['plan' => $plan['id']]) }}"
+                >
+                    <div id="payment-element" class="subscribe-stripe-element"></div>
+                    <p id="payment-message" class="subscribe-payment-message" role="alert" hidden></p>
+                    <button type="button" id="submit-payment" class="btn btn-primary subscribe-stripe-submit">
+                        {{ __('Pay with card') }}
+                    </button>
+                </div>
+                @vite(['resources/js/subscribe-payment-stripe.js'])
+            @else
+                <p class="subscribe-payment-stub">
+                    {{ __('Card payments are not configured. Set STRIPE_KEY and STRIPE_SECRET in your environment.') }}
+                </p>
+            @endif
+        @else
+            <p class="subscribe-payment-stub">{{ __('Payment integration is coming soon. No charge has been made.') }}</p>
+        @endfeature
     </section>
 </main>
 

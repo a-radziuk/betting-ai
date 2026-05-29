@@ -340,6 +340,10 @@
         color: #3f5d79 !important;
     }
 
+    .subscribe-payment-message {
+        color: #b42318 !important;
+    }
+
     .subscribe-plan-features li {
         color: #1c3954 !important;
     }
