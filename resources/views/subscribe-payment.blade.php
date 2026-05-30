@@ -28,8 +28,29 @@
         <p class="subscribe-plan-duration">{{ $plan['duration_label'] }}</p>
         <p class="subscribe-plan-price">{{ $plan['price_label'] }}</p>
 
+        @if ($cryptoPaymentEnabled && count($cryptoWallets) > 0)
+            <section class="subscribe-payment-methods" aria-label="{{ __('Crypto payment') }}">
+                <h3 class="subscribe-payment-methods-title">{{ __('Pay with crypto') }}</h3>
+                <ul class="subscribe-crypto-wallet-list">
+                    @foreach ($cryptoWallets as $cryptoWallet)
+                        <li>
+                            <a
+                                href="{{ route('subscribe.payment.crypto', ['plan' => $plan['id'], 'wallet' => $cryptoWallet['key']]) }}"
+                                class="btn btn-secondary subscribe-crypto-wallet-link"
+                            >
+                                {{ $cryptoWallet['label'] }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
         @feature('subscription_stripe_payments')
             @if ($stripeReady)
+                @if ($cryptoPaymentEnabled && count($cryptoWallets) > 0)
+                    <h3 class="subscribe-payment-methods-title">{{ __('Pay with card') }}</h3>
+                @endif
                 <div
                     id="subscribe-stripe-payment"
                     class="subscribe-stripe-payment"

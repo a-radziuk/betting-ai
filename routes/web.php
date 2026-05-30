@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\EventShowController;
 use App\Http\Controllers\HomeController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\SubscribeTermsController;
 use App\Http\Controllers\SubscriptionPaymentCompleteController;
+use App\Http\Controllers\SubscriptionCryptoPaymentController;
 use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\SubscriptionStripePaymentIntentController;
 use App\Http\Controllers\PlayerShowController;
@@ -176,6 +178,11 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
         ->name('admin.resolve-event.store');
     Route::post('/resolve-event/{event}/abandon', [AdminResolveEventController::class, 'abandon'])
         ->name('admin.resolve-event.abandon');
+
+    Route::get('/simple-crypto-payments', [AdminSimpleCryptoPaymentsController::class, 'index'])
+        ->name('admin.simple-crypto-payments');
+    Route::post('/simple-crypto-payments/{payment}/approve', [AdminSimpleCryptoPaymentsController::class, 'approve'])
+        ->name('admin.simple-crypto-payments.approve');
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');
@@ -194,6 +201,11 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('/subscribe/payment/{plan}/complete', SubscriptionPaymentCompleteController::class)
         ->name('subscribe.payment.complete');
+
+    Route::get('/subscribe/payment/{plan}/crypto/{wallet}', [SubscriptionCryptoPaymentController::class, 'show'])
+        ->name('subscribe.payment.crypto');
+    Route::post('/subscribe/payment/{plan}/crypto/{wallet}/paid', [SubscriptionCryptoPaymentController::class, 'markPaid'])
+        ->name('subscribe.payment.crypto.paid');
 });
 
 Route::post('/stripe/webhook', StripeWebhookController::class)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\SimpleCryptoWallets;
 use App\Support\StripeConfig;
 use App\Support\SubscriptionPlans;
 use App\Support\SubscriptionTerms;
@@ -33,12 +34,15 @@ class SubscriptionPaymentController extends Controller
 
         $stripeFeatureEnabled = feature('subscription_stripe_payments');
         $stripeReady = $stripeFeatureEnabled && StripeConfig::isConfigured();
+        $cryptoWallets = SimpleCryptoWallets::visible();
 
         return view('subscribe-payment', [
             'plan' => $planDetails,
             'stripeFeatureEnabled' => $stripeFeatureEnabled,
             'stripeReady' => $stripeReady,
             'stripePublishableKey' => config('stripe.key'),
+            'cryptoPaymentEnabled' => feature('simple_crypto_payment'),
+            'cryptoWallets' => $cryptoWallets,
         ]);
     }
 }

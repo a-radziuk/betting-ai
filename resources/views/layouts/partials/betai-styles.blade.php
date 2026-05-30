@@ -1935,6 +1935,94 @@
         justify-content: flex-end;
     }
 
+    .subscribe-payment-methods {
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid rgba(130, 162, 255, 0.2);
+    }
+
+    .subscribe-payment-methods-title {
+        margin: 0 0 0.75rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #c7d7fa;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .subscribe-crypto-wallet-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .subscribe-crypto-wallet-link {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .subscribe-crypto-details {
+        margin: 1rem 0;
+    }
+
+    .subscribe-crypto-detail-row {
+        margin-bottom: 0.85rem;
+    }
+
+    .subscribe-crypto-detail-row dt {
+        margin: 0 0 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #9fb0d3;
+    }
+
+    .subscribe-crypto-detail-row dd {
+        margin: 0;
+        color: #eaf0ff;
+    }
+
+    .subscribe-crypto-code {
+        display: inline-block;
+        padding: 0.35rem 0.55rem;
+        border-radius: 0.4rem;
+        background: rgba(6, 11, 22, 0.65);
+        border: 1px solid rgba(130, 162, 255, 0.25);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.88rem;
+        word-break: break-all;
+    }
+
+    .subscribe-crypto-code--emphasis {
+        color: #8bffcd;
+        font-weight: 700;
+    }
+
+    .subscribe-crypto-instructions {
+        margin: 0 0 1rem;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: #c8d6f5;
+    }
+
+    .subscribe-crypto-status {
+        margin: 0;
+        font-size: 0.92rem;
+        color: #ffd666;
+    }
+
+    .subscribe-crypto-status--ok {
+        color: var(--ok);
+    }
+
+    .subscribe-crypto-paid-form {
+        margin-top: 0.5rem;
+    }
+
     .subscribe-plan-features {
         margin: 0 0 1.25rem;
         padding: 0;

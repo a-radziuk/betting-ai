@@ -15,14 +15,15 @@
     <nav class="admin-sidebar card" aria-label="{{ __('Admin navigation') }}">
         <p class="admin-sidebar-title">{{ __('Admin') }}</p>
         <ul class="admin-sidebar-nav">
-            @foreach ([
+            @foreach (array_filter([
                 ['label' => __('User Bets'), 'route' => 'admin.user-bets', 'active' => 'admin.user-bets*'],
+                ['label' => __('Simple Crypto Payments'), 'route' => 'admin.simple-crypto-payments', 'active' => 'admin.simple-crypto-payments*', 'feature' => 'simple_crypto_payment'],
                 ['label' => __('Upload Events'), 'route' => 'admin.upload-events', 'active' => 'admin.upload-events*'],
                 ['label' => __('Upload Tournament'), 'route' => 'admin.upload-tournament', 'active' => 'admin.upload-tournament*'],
                 ['label' => __('Upload Analysis'), 'route' => 'admin.upload-analysis', 'active' => 'admin.upload-analysis*'],
                 ['label' => __('Upload Predictions'), 'route' => 'admin.upload-predictions', 'active' => 'admin.upload-predictions*'],
                 ['label' => __('Resolve Event'), 'route' => 'admin.resolve-event', 'active' => 'admin.resolve-event*'],
-            ] as $item)
+            ], fn (array $item): bool => ! isset($item['feature']) || feature($item['feature'])) as $item)
                 <li>
                     <a
                         href="{{ route($item['route']) }}"
