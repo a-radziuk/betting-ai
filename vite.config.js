@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/subscribe-payment-stripe.js',
+                'resources/js/subscribe-payment-metamask.js',
             ],
             refresh: true,
         }),

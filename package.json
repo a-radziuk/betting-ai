@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@stripe/stripe-js": "^9.7.0",
-        "axios": "^1.15.2"
+        "axios": "^1.15.2",
+        "viem": "^2.51.3"
     }
 }

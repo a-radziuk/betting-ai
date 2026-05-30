@@ -11,6 +11,7 @@ use App\Http\Controllers\SubscribeTermsController;
 use App\Http\Controllers\SubscriptionPaymentCompleteController;
 use App\Http\Controllers\SubscriptionCryptoPaymentController;
 use App\Http\Controllers\SubscriptionPaymentController;
+use App\PayWithMetamask\Http\Controllers\RecordTransactionController;
 use App\Http\Controllers\SubscriptionStripePaymentIntentController;
 use App\Http\Controllers\PlayerShowController;
 use App\Http\Controllers\PlayersIndexController;
@@ -199,6 +200,9 @@ Route::middleware('auth')->group(function (): void {
 
     Route::post('/subscribe/payment/{plan}/stripe-intent', SubscriptionStripePaymentIntentController::class)
         ->name('subscribe.payment.stripe-intent');
+
+    Route::post('/subscribe/payment/{plan}/metamask', RecordTransactionController::class)
+        ->name('subscribe.payment.metamask');
 
     Route::get('/subscribe/payment/{plan}/complete', SubscriptionPaymentCompleteController::class)
         ->name('subscribe.payment.complete');

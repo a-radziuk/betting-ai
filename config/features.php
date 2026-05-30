@@ -14,4 +14,5 @@ return [
     'player_stats_csv_download' => filter_var(env('FEATURE_PLAYER_STATS_CSV_DOWNLOAD', false), FILTER_VALIDATE_BOOLEAN),
     'subscription_stripe_payments' => filter_var(env('FEATURE_SUBSCRIPTION_STRIPE_PAYMENTS', false), FILTER_VALIDATE_BOOLEAN),
     'simple_crypto_payment' => filter_var(env('FEATURE_SIMPLE_CRYPTO_PAYMENT', false), FILTER_VALIDATE_BOOLEAN),
+    'pay_with_metamask' => filter_var(env('FEATURE_PAY_WITH_METAMASK', false), FILTER_VALIDATE_BOOLEAN),
 ];

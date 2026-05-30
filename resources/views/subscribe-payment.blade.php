@@ -28,6 +28,59 @@
         <p class="subscribe-plan-duration">{{ $plan['duration_label'] }}</p>
         <p class="subscribe-plan-price">{{ $plan['price_label'] }}</p>
 
+        @if ($metamaskPayment !== null)
+            <section class="subscribe-payment-methods" aria-label="{{ __('MetaMask payment') }}">
+                <h3 class="subscribe-payment-methods-title">{{ __('Pay with MetaMask') }}</h3>
+                <p class="subscribe-payment-metamask-meta">
+                    {{ __('Send :amount in USDT or USDC to our wallet using MetaMask.', ['amount' => $metamaskPayment['price_label']]) }}
+                </p>
+                <p class="subscribe-payment-metamask-meta">
+                    {{ __('Destination wallet') }}:
+                    <code class="subscribe-crypto-code">{{ $metamaskPayment['recipient'] }}</code>
+                </p>
+                <p class="subscribe-payment-metamask-hint">
+                    {{ __('MetaMask may show the token contract address and 0 ETH — that is normal. Expand the transaction details to confirm the USDT/USDC transfer goes to the destination wallet above.') }}
+                </p>
+                <div
+                    id="subscribe-metamask-payment"
+                    class="subscribe-metamask-payment"
+                    data-recipient="{{ $metamaskPayment['recipient'] }}"
+                    @if ($metamaskPayment['usdt_contract'] !== null)
+                        data-usdt-contract="{{ $metamaskPayment['usdt_contract'] }}"
+                    @endif
+                    @if ($metamaskPayment['usdc_contract'] !== null)
+                        data-usdc-contract="{{ $metamaskPayment['usdc_contract'] }}"
+                    @endif
+                    data-chain-id="{{ $metamaskPayment['chain_id'] }}"
+                    data-stablecoin-amount="{{ $metamaskPayment['stablecoin_amount'] }}"
+                    @if ($metamaskPayment['eth_amount_wei'] !== null)
+                        data-eth-amount-wei="{{ $metamaskPayment['eth_amount_wei'] }}"
+                    @endif
+                    data-record-url="{{ $metamaskPayment['record_url'] }}"
+                >
+                    <div class="subscribe-metamask-actions">
+                        @if ($metamaskPayment['usdt_contract'] !== null)
+                            <button type="button" id="metamask-pay-usdt" class="btn btn-secondary">
+                                {{ __('Pay USDT with MetaMask') }}
+                            </button>
+                        @endif
+                        @if ($metamaskPayment['usdc_contract'] !== null)
+                            <button type="button" id="metamask-pay-usdc" class="btn btn-secondary">
+                                {{ __('Pay USDC with MetaMask') }}
+                            </button>
+                        @endif
+                        @if ($metamaskPayment['eth_amount_wei'] !== null)
+                            <button type="button" id="metamask-pay-eth" class="btn btn-secondary">
+                                {{ __('Pay ETH with MetaMask') }}
+                            </button>
+                        @endif
+                    </div>
+                    <p id="metamask-payment-message" class="subscribe-payment-message" role="alert" hidden></p>
+                </div>
+                @vite(['resources/js/subscribe-payment-metamask.js'])
+            </section>
+        @endif
+
         @if ($cryptoPaymentEnabled && count($cryptoWallets) > 0)
             <section class="subscribe-payment-methods" aria-label="{{ __('Crypto payment') }}">
                 <h3 class="subscribe-payment-methods-title">{{ __('Pay with crypto') }}</h3>

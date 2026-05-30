@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\PayWithMetamask\Support\PlanPayment as MetamaskPlanPayment;
 use App\Support\SimpleCryptoWallets;
 use App\Support\StripeConfig;
 use App\Support\SubscriptionPlans;
@@ -43,6 +44,7 @@ class SubscriptionPaymentController extends Controller
             'stripePublishableKey' => config('stripe.key'),
             'cryptoPaymentEnabled' => feature('simple_crypto_payment'),
             'cryptoWallets' => $cryptoWallets,
+            'metamaskPayment' => MetamaskPlanPayment::presentationForPlan($plan),
         ]);
     }
 }
