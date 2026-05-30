@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\NotifyCryptoWatcherOfPayment;
+use App\Jobs\NotifySimpleCryptoPaymentPaid;
 use App\Models\SimpleCryptoPayment;
 use App\Services\SimpleCryptoPaymentService;
 use App\Support\SimpleCryptoWallets;
@@ -44,6 +46,7 @@ class SubscriptionCryptoPaymentController extends Controller
             ->whereIn('status', [
                 SimpleCryptoPayment::STATUS_AWAITING_PAYMENT,
                 SimpleCryptoPayment::STATUS_PENDING_APPROVAL,
+                SimpleCryptoPayment::STATUS_PENDING_ADMIN_REVIEW,
             ])
             ->latest('id')
             ->first();
@@ -54,17 +57,33 @@ class SubscriptionCryptoPaymentController extends Controller
                 ->withErrors(['payment' => __('Payment not found.')]);
         }
 
-        if ($payment->isPendingApproval()) {
+        if ($payment->isPendingApproval() || $payment->isPendingAdminReview()) {
             return redirect()
                 ->route('subscribe.payment.crypto', ['plan' => $plan, 'wallet' => $wallet])
                 ->with('status', __('Your payment is already awaiting admin approval.'));
         }
 
-        $this->cryptoPayments->markPaid($payment);
+        if ($this->cryptoPayments->markPaid($payment)) {
+            $this->dispatchPaymentPaidJobs($payment->id);
+        }
 
         return redirect()
             ->route('subscribe.payment.crypto', ['plan' => $plan, 'wallet' => $wallet])
             ->with('status', __('Thank you. We will verify your transfer and activate your subscription.'));
+    }
+
+    private function dispatchPaymentPaidJobs(int $paymentId): void
+    {
+        NotifyCryptoWatcherOfPayment::dispatch($paymentId);
+
+        $telegram = NotifySimpleCryptoPaymentPaid::dispatch($paymentId);
+
+        $queueConnection = config('telegram.queue_connection');
+        if (is_string($queueConnection) && $queueConnection !== '') {
+            $telegram->onConnection($queueConnection);
+        }
+
+        $telegram->onQueue((string) config('telegram.queue', 'default'));
     }
 
     private function renderWalletPage(string $plan, string $wallet): View|RedirectResponse

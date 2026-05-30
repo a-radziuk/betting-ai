@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\EventShowController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CryptoWebhookController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\SubscribeTermsController;
@@ -207,6 +208,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/subscribe/payment/{plan}/crypto/{wallet}/paid', [SubscriptionCryptoPaymentController::class, 'markPaid'])
         ->name('subscribe.payment.crypto.paid');
 });
+
+Route::post('/crypto/webhook', CryptoWebhookController::class)
+    ->name('crypto.webhook');
 
 Route::post('/stripe/webhook', StripeWebhookController::class)
     ->name('stripe.webhook');

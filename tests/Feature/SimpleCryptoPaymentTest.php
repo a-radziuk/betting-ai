@@ -7,6 +7,9 @@ use App\Models\User;
 use App\Support\SubscriptionPlans;
 use App\Support\SubscriptionTerms;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Jobs\NotifyCryptoWatcherOfPayment;
+use App\Jobs\NotifySimpleCryptoPaymentPaid;
+use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class SimpleCryptoPaymentTest extends TestCase
@@ -92,6 +95,56 @@ class SimpleCryptoPaymentTest extends TestCase
         $payment->refresh();
         $this->assertSame(SimpleCryptoPayment::STATUS_PENDING_APPROVAL, $payment->status);
         $this->assertNotNull($payment->paid_at);
+    }
+
+    public function test_i_have_paid_dispatches_telegram_notification_job(): void
+    {
+        Bus::fake();
+
+        $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
+
+        $this->get(route('subscribe.payment.crypto', [
+            'plan' => SubscriptionPlans::ONE_MONTH,
+            'wallet' => 'ethereum_usdt',
+        ]))->assertOk();
+
+        $payment = SimpleCryptoPayment::query()->where('user_id', $user->id)->first();
+        $this->assertNotNull($payment);
+
+        $this->post(route('subscribe.payment.crypto.paid', [
+            'plan' => SubscriptionPlans::ONE_MONTH,
+            'wallet' => 'ethereum_usdt',
+        ]))->assertRedirect();
+
+        Bus::assertDispatched(NotifySimpleCryptoPaymentPaid::class, function (NotifySimpleCryptoPaymentPaid $job) use ($payment): bool {
+            return $job->simpleCryptoPaymentId === $payment->id;
+        });
+    }
+
+    public function test_i_have_paid_dispatches_crypto_watcher_job(): void
+    {
+        Bus::fake();
+
+        $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
+
+        $this->get(route('subscribe.payment.crypto', [
+            'plan' => SubscriptionPlans::ONE_MONTH,
+            'wallet' => 'tron_usdt',
+        ]))->assertOk();
+
+        $payment = SimpleCryptoPayment::query()->where('user_id', $user->id)->first();
+        $this->assertNotNull($payment);
+
+        $this->post(route('subscribe.payment.crypto.paid', [
+            'plan' => SubscriptionPlans::ONE_MONTH,
+            'wallet' => 'tron_usdt',
+        ]))->assertRedirect();
+
+        Bus::assertDispatched(NotifyCryptoWatcherOfPayment::class, function (NotifyCryptoWatcherOfPayment $job) use ($payment): bool {
+            return $job->simpleCryptoPaymentId === $payment->id;
+        });
     }
 
     public function test_admin_can_approve_pending_payment_and_activate_subscription(): void

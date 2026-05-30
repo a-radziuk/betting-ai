@@ -43,7 +43,7 @@ class AdminSimpleCryptoPaymentsController extends Controller
             abort(403);
         }
 
-        if (! $payment->isPendingApproval()) {
+        if (! $payment->isApprovableByAdmin()) {
             return redirect()
                 ->route('admin.simple-crypto-payments')
                 ->with('status', __('Only payments awaiting approval can be approved.'));

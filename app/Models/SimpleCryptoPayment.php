@@ -11,6 +11,8 @@ class SimpleCryptoPayment extends Model
 
     public const STATUS_PENDING_APPROVAL = 'pending_approval';
 
+    public const STATUS_PENDING_ADMIN_REVIEW = 'pending_admin_review';
+
     public const STATUS_APPROVED = 'approved';
 
     protected $fillable = [
@@ -23,6 +25,7 @@ class SimpleCryptoPayment extends Model
         'amount_cents',
         'currency',
         'status',
+        'payment_payload',
         'paid_at',
         'approved_at',
         'approved_by_user_id',
@@ -34,6 +37,7 @@ class SimpleCryptoPayment extends Model
     protected function casts(): array
     {
         return [
+            'payment_payload' => 'array',
             'paid_at' => 'datetime',
             'approved_at' => 'datetime',
         ];
@@ -57,6 +61,16 @@ class SimpleCryptoPayment extends Model
     public function isPendingApproval(): bool
     {
         return $this->status === self::STATUS_PENDING_APPROVAL;
+    }
+
+    public function isPendingAdminReview(): bool
+    {
+        return $this->status === self::STATUS_PENDING_ADMIN_REVIEW;
+    }
+
+    public function isApprovableByAdmin(): bool
+    {
+        return $this->isPendingApproval() || $this->isPendingAdminReview();
     }
 
     public function isApproved(): bool

@@ -31,6 +31,7 @@ class SimpleCryptoPaymentService
             ->whereIn('status', [
                 SimpleCryptoPayment::STATUS_AWAITING_PAYMENT,
                 SimpleCryptoPayment::STATUS_PENDING_APPROVAL,
+                SimpleCryptoPayment::STATUS_PENDING_ADMIN_REVIEW,
             ])
             ->latest('id')
             ->first();
@@ -74,24 +75,79 @@ class SimpleCryptoPaymentService
                 ->lockForUpdate()
                 ->first();
 
+            if ($locked === null || ! $locked->isApprovableByAdmin()) {
+                return false;
+            }
+
+            return $this->activateSubscription($locked, $admin->id);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentPayload
+     */
+    public function approveFromWebhook(SimpleCryptoPayment $payment, array $paymentPayload): bool
+    {
+        return (bool) DB::transaction(function () use ($payment, $paymentPayload): bool {
+            $locked = SimpleCryptoPayment::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->first();
+
             if ($locked === null || ! $locked->isPendingApproval()) {
                 return false;
             }
 
-            $user = User::query()->whereKey($locked->user_id)->lockForUpdate()->first();
-            if ($user === null) {
-                return false;
-            }
-
-            $user->extendSeeTipsAccessForPlan($locked->plan_id);
-
-            $locked->update([
-                'status' => SimpleCryptoPayment::STATUS_APPROVED,
-                'approved_at' => now(),
-                'approved_by_user_id' => $admin->id,
-            ]);
-
-            return true;
+            return $this->activateSubscription($locked, null, $paymentPayload);
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentPayload
+     */
+    public function markPendingAdminReview(SimpleCryptoPayment $payment, array $paymentPayload): bool
+    {
+        if (! $payment->isPendingApproval()) {
+            return false;
+        }
+
+        $payment->update([
+            'status' => SimpleCryptoPayment::STATUS_PENDING_ADMIN_REVIEW,
+            'paid_at' => $payment->paid_at ?? now(),
+            'payment_payload' => $paymentPayload,
+        ]);
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $paymentPayload
+     */
+    private function activateSubscription(
+        SimpleCryptoPayment $payment,
+        ?int $approvedByUserId,
+        ?array $paymentPayload = null,
+    ): bool {
+        $user = User::query()->whereKey($payment->user_id)->lockForUpdate()->first();
+        if ($user === null) {
+            return false;
+        }
+
+        $user->extendSeeTipsAccessForPlan($payment->plan_id);
+
+        $attributes = [
+            'status' => SimpleCryptoPayment::STATUS_APPROVED,
+            'approved_at' => now(),
+            'approved_by_user_id' => $approvedByUserId,
+            'paid_at' => $payment->paid_at ?? now(),
+        ];
+
+        if ($paymentPayload !== null) {
+            $attributes['payment_payload'] = $paymentPayload;
+        }
+
+        $payment->update($attributes);
+
+        return true;
     }
 }

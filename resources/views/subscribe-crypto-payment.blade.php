@@ -59,7 +59,7 @@
             {{ __('Send the exact amount in USDT to the wallet address above. You must include the payment code in the transfer memo or note so we can match your payment.') }}
         </p>
 
-        @if ($payment->isPendingApproval())
+        @if ($payment->isPendingApproval() || $payment->isPendingAdminReview())
             <p class="subscribe-crypto-status">{{ __('Status: awaiting admin approval.') }}</p>
         @elseif ($payment->isApproved())
             <p class="subscribe-crypto-status subscribe-crypto-status--ok">{{ __('Status: approved. Your subscription is active.') }}</p>

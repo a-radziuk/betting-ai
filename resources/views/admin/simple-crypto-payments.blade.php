@@ -47,7 +47,7 @@
                                     {{ $payment->paid_at?->timezone($timezone)->format('Y-m-d H:i') ?? '—' }}
                                 </td>
                                 <td class="admin-table-actions">
-                                    @if ($payment->isPendingApproval())
+                                    @if ($payment->isApprovableByAdmin())
                                         <form method="POST" action="{{ route('admin.simple-crypto-payments.approve', $payment) }}" style="display: inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-primary btn-sm">{{ __('Approve') }}</button>
