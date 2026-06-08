@@ -2,6 +2,13 @@
 
 return [
 
+    /*
+    | POST when a MetaMask payment is recorded. JSON:
+    | {"tx_hash":"0x…","token":"USDT","amount_cents":2999}
+    | Processed asynchronously via NotifyMetamaskTransactionWatcher (queue worker required).
+    */
+    'transaction_watcher_url' => env('METAMASK_TRANSACTION_WATCHER'),
+
     'ethereum_wallet' => env('PAY_WITH_METAMASK_ETHEREUM_WALLET'),
 
     'usdt_contract_address' => env('PAY_WITH_METAMASK_USDT_CONTRACT', '0xdAC17F958D2ee523a2206206994597C13D832831'),

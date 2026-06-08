@@ -4,6 +4,7 @@ namespace App\PayWithMetamask\Services;
 
 use App\Models\MetamaskPayment;
 use App\Models\User;
+use App\PayWithMetamask\Jobs\NotifyMetamaskTransactionWatcher;
 use App\PayWithMetamask\Support\Config;
 use App\PayWithMetamask\Support\PlanPayment;
 use InvalidArgumentException;
@@ -38,7 +39,7 @@ class PaymentRecorder
             throw new InvalidArgumentException('USDC payment is not configured.');
         }
 
-        return MetamaskPayment::query()->create([
+        $payment = MetamaskPayment::query()->create([
             'user_id' => $user->id,
             'plan_id' => $planId,
             'tx_hash' => $txHash,
@@ -47,5 +48,9 @@ class PaymentRecorder
             'recipient_address' => Config::ethereumWallet(),
             'status' => MetamaskPayment::STATUS_PENDING,
         ]);
+
+        NotifyMetamaskTransactionWatcher::dispatch($payment->id);
+
+        return $payment;
     }
 }

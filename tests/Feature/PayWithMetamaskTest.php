@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\MetamaskPayment;
 use App\Models\User;
+use App\PayWithMetamask\Jobs\NotifyMetamaskTransactionWatcher;
 use App\PayWithMetamask\Support\Config;
 use App\Support\SubscriptionPlans;
 use App\Support\SubscriptionTerms;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class PayWithMetamaskTest extends TestCase
@@ -74,6 +76,26 @@ class PayWithMetamaskTest extends TestCase
         $this->get(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]))
             ->assertOk()
             ->assertDontSee('Pay with MetaMask', false);
+    }
+
+    public function test_recording_metamask_payment_dispatches_transaction_watcher_job(): void
+    {
+        Bus::fake();
+
+        $user = User::factory()->create();
+        $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
+
+        $this->postJson(route('subscribe.payment.metamask', ['plan' => SubscriptionPlans::ONE_MONTH]), [
+            'tx_hash' => self::TX_HASH,
+            'token' => MetamaskPayment::TOKEN_USDT,
+        ])->assertOk();
+
+        $payment = MetamaskPayment::query()->where('user_id', $user->id)->first();
+        $this->assertNotNull($payment);
+
+        Bus::assertDispatched(NotifyMetamaskTransactionWatcher::class, function (NotifyMetamaskTransactionWatcher $job) use ($payment): bool {
+            return $job->metamaskPaymentId === $payment->id;
+        });
     }
 
     public function test_authenticated_user_can_record_usdt_transaction(): void
