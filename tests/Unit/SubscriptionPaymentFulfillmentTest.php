@@ -2,11 +2,13 @@
 
 namespace Tests\Unit;
 
+use App\Jobs\NotifySubscriptionPaymentFulfilled;
 use App\Models\SubscriptionPayment;
 use App\Models\User;
 use App\Services\SubscriptionPaymentFulfillmentService;
 use App\Support\SubscriptionPlans;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class SubscriptionPaymentFulfillmentTest extends TestCase
@@ -15,8 +17,10 @@ class SubscriptionPaymentFulfillmentTest extends TestCase
 
     public function test_webhook_fulfillment_grants_see_tips_access(): void
     {
+        Bus::fake();
+
         $user = User::factory()->create();
-        SubscriptionPayment::query()->create([
+        $payment = SubscriptionPayment::query()->create([
             'user_id' => $user->id,
             'plan_id' => SubscriptionPlans::ONE_WEEK,
             'stripe_payment_intent_id' => 'pi_test_123',
@@ -40,10 +44,16 @@ class SubscriptionPaymentFulfillmentTest extends TestCase
         $user->refresh();
         $this->assertTrue($user->hasActiveSeeTipsAccess());
         $this->assertNotNull($user->see_tips_expires_at);
+
+        Bus::assertDispatched(NotifySubscriptionPaymentFulfilled::class, function (NotifySubscriptionPaymentFulfilled $job) use ($payment): bool {
+            return $job->subscriptionPaymentId === $payment->id;
+        });
     }
 
     public function test_webhook_fulfillment_rejects_metadata_mismatch(): void
     {
+        Bus::fake();
+
         $user = User::factory()->create();
         SubscriptionPayment::query()->create([
             'user_id' => $user->id,
@@ -68,6 +78,8 @@ class SubscriptionPaymentFulfillmentTest extends TestCase
 
         $user->refresh();
         $this->assertFalse($user->hasActiveSeeTipsAccess());
+
+        Bus::assertNotDispatched(NotifySubscriptionPaymentFulfilled::class);
     }
 
     public function test_webhook_fulfillment_is_idempotent(): void

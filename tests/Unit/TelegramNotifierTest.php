@@ -3,8 +3,10 @@
 namespace Tests\Unit;
 
 use App\Models\SimpleCryptoPayment;
+use App\Models\SubscriptionPayment;
 use App\Models\User;
 use App\Services\SimpleCryptoPaymentTelegramMessage;
+use App\Services\SubscriptionPaymentTelegramMessage;
 use App\Services\TelegramNotifier;
 use App\Support\SubscriptionPlans;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,5 +69,36 @@ class TelegramNotifierTest extends TestCase
 
         Http::assertSent(fn ($request) => str_contains($request['text'], 'BETAI-JOBTEST')
             && str_contains($request['text'], 'job@example.com'));
+    }
+
+    public function test_stripe_fulfillment_job_sends_payment_details_via_telegram(): void
+    {
+        config([
+            'telegram.api_key' => 'job-token',
+            'telegram.chat_id' => '-100',
+        ]);
+
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        $user = User::factory()->create(['email' => 'stripe@example.com']);
+        $payment = SubscriptionPayment::query()->create([
+            'user_id' => $user->id,
+            'plan_id' => SubscriptionPlans::ONE_WEEK,
+            'stripe_payment_intent_id' => 'pi_job_test',
+            'amount_cents' => 999,
+            'currency' => 'eur',
+            'status' => SubscriptionPayment::STATUS_FULFILLED,
+            'fulfilled_at' => now(),
+        ]);
+
+        (new \App\Jobs\NotifySubscriptionPaymentFulfilled($payment->id))->handle(
+            app(TelegramNotifier::class),
+            app(SubscriptionPaymentTelegramMessage::class),
+        );
+
+        Http::assertSent(fn ($request) => str_contains($request['text'], 'pi_job_test')
+            && str_contains($request['text'], 'stripe@example.com'));
     }
 }

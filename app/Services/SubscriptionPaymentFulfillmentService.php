@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\NotifySubscriptionPaymentFulfilled;
 use App\Models\SubscriptionPayment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,8 @@ class SubscriptionPaymentFulfillmentService
         $fulfilled = $this->fulfillRecord($record);
 
         if ($fulfilled) {
+            $this->dispatchFulfilledNotification($record->id);
+
             Log::info('Stripe fulfillment completed', [
                 'payment_intent_id' => $paymentIntentId,
                 'subscription_payment_id' => $record->id,
@@ -123,5 +126,17 @@ class SubscriptionPaymentFulfillmentService
 
             return true;
         });
+    }
+
+    private function dispatchFulfilledNotification(int $subscriptionPaymentId): void
+    {
+        $job = NotifySubscriptionPaymentFulfilled::dispatch($subscriptionPaymentId);
+
+        $queueConnection = config('telegram.queue_connection');
+        if (is_string($queueConnection) && $queueConnection !== '') {
+            $job->onConnection($queueConnection);
+        }
+
+        $job->onQueue((string) config('telegram.queue', 'default'));
     }
 }
