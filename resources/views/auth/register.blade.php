@@ -1,7 +1,8 @@
 <x-guest-layout :page-title="__('BetAI | Register')">
     <x-slot name="subtitle">{{ __('Create an account to continue with BetAI.') }}</x-slot>
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register') }}" class="relative">
         @csrf
+        <x-honeypot />
 
         <!-- Name -->
         <div>

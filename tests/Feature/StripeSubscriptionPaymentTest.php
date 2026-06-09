@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\SubscriptionPayment;
 use App\Models\User;
 use App\Support\SubscriptionPlans;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -101,17 +102,33 @@ class StripeSubscriptionPaymentTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_payment_complete_redirects_with_status_message(): void
+    public function test_payment_complete_does_not_fulfill_without_webhook(): void
     {
         $user = User::factory()->create();
         $this->acceptTerms($user, SubscriptionPlans::ONE_MONTH);
 
+        SubscriptionPayment::query()->create([
+            'user_id' => $user->id,
+            'plan_id' => SubscriptionPlans::ONE_MONTH,
+            'stripe_payment_intent_id' => 'pi_test_complete',
+            'amount_cents' => 2999,
+            'currency' => 'eur',
+            'status' => SubscriptionPayment::STATUS_PENDING,
+        ]);
+
         $this->actingAs($user)
             ->get(route('subscribe.payment.complete', [
                 'plan' => SubscriptionPlans::ONE_MONTH,
-                'payment_intent' => 'pi_nonexistent',
+                'payment_intent' => 'pi_test_complete',
             ]))
             ->assertRedirect(route('subscribe'))
             ->assertSessionHas('status');
+
+        $user->refresh();
+        $this->assertFalse($user->hasActiveSeeTipsAccess());
+        $this->assertSame(
+            SubscriptionPayment::STATUS_PENDING,
+            SubscriptionPayment::query()->where('stripe_payment_intent_id', 'pi_test_complete')->value('status')
+        );
     }
 }
