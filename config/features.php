@@ -15,4 +15,7 @@ return [
     'subscription_stripe_payments' => filter_var(env('FEATURE_SUBSCRIPTION_STRIPE_PAYMENTS', false), FILTER_VALIDATE_BOOLEAN),
     'simple_crypto_payment' => filter_var(env('FEATURE_SIMPLE_CRYPTO_PAYMENT', false), FILTER_VALIDATE_BOOLEAN),
     'pay_with_metamask' => filter_var(env('FEATURE_PAY_WITH_METAMASK', false), FILTER_VALIDATE_BOOLEAN),
+    'login_google' => filter_var(env('FEATURE_LOGIN_GOOGLE', false), FILTER_VALIDATE_BOOLEAN),
+    'login_facebook' => filter_var(env('FEATURE_LOGIN_FACEBOOK', false), FILTER_VALIDATE_BOOLEAN),
+    'login_github' => filter_var(env('FEATURE_LOGIN_GITHUB', false), FILTER_VALIDATE_BOOLEAN),
 ];

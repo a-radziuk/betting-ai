@@ -51,26 +51,34 @@
         </div>
     </form>
 
-    <div class="mt-6">
-        <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-[#3b4e75]"></div>
+    @if (feature('login_google') || feature('login_facebook') || feature('login_github'))
+        <div class="mt-6">
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-[#3b4e75]"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="bg-[#13213b] px-2 text-[#9fb0d3]">{{ __('or sign up with') }}</span>
+                </div>
             </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="bg-[#13213b] px-2 text-[#9fb0d3]">{{ __('or sign up with') }}</span>
-            </div>
-        </div>
 
-        <div class="mt-4 grid grid-cols-1 gap-2">
-            <a href="{{ route('social.redirect', 'google') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                {{ __('Sign up with Google') }}
-            </a>
-            <a href="{{ route('social.redirect', 'facebook') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                {{ __('Sign up with Facebook') }}
-            </a>
-            <a href="{{ route('social.redirect', 'github') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                {{ __('Sign up with GitHub') }}
-            </a>
+            <div class="mt-4 grid grid-cols-1 gap-2">
+                @feature('login_google')
+                    <a href="{{ route('social.redirect', 'google') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
+                        {{ __('Sign up with Google') }}
+                    </a>
+                @endfeature
+                @feature('login_facebook')
+                    <a href="{{ route('social.redirect', 'facebook') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
+                        {{ __('Sign up with Facebook') }}
+                    </a>
+                @endfeature
+                @feature('login_github')
+                    <a href="{{ route('social.redirect', 'github') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
+                        {{ __('Sign up with GitHub') }}
+                    </a>
+                @endfeature
+            </div>
         </div>
-    </div>
+    @endif
 </x-guest-layout>

@@ -32,39 +32,54 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-[#9fb0d3] hover:text-[#eaf0ff] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5de2ff]" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+        <div class="flex items-center justify-between mt-4">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                @if (Route::has('register'))
+                    <a class="underline text-sm text-[#9fb0d3] hover:text-[#eaf0ff] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5de2ff]" href="{{ route('register') }}">
+                        {{ __("Don't have an account?") }}
+                    </a>
+                @endif
+                @if (Route::has('password.request'))
+                    <a class="underline text-sm text-[#9fb0d3] hover:text-[#eaf0ff] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5de2ff]" href="{{ route('password.request') }}">
+                        {{ __('Forgot your password?') }}
+                    </a>
+                @endif
+            </div>
 
-            <x-primary-button class="ms-3">
+            <x-primary-button>
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
     </form>
 
-    <div class="mt-6">
-        <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-[#3b4e75]"></div>
+    @if (feature('login_google') || feature('login_facebook') || feature('login_github'))
+        <div class="mt-6">
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-[#3b4e75]"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="bg-[#13213b] px-2 text-[#9fb0d3]">{{ __('or continue with') }}</span>
+                </div>
             </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="bg-[#13213b] px-2 text-[#9fb0d3]">{{ __('or continue with') }}</span>
-            </div>
-        </div>
 
-        <div class="mt-4 grid grid-cols-1 gap-2">
-            <a href="{{ route('social.redirect', 'google') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                {{ __('Continue with Google') }}
-            </a>
-            <a href="{{ route('social.redirect', 'facebook') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                {{ __('Continue with Facebook') }}
-            </a>
-            <a href="{{ route('social.redirect', 'github') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
-                {{ __('Continue with GitHub') }}
-            </a>
+            <div class="mt-4 grid grid-cols-1 gap-2">
+                @feature('login_google')
+                    <a href="{{ route('social.redirect', 'google') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
+                        {{ __('Continue with Google') }}
+                    </a>
+                @endfeature
+                @feature('login_facebook')
+                    <a href="{{ route('social.redirect', 'facebook') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
+                        {{ __('Continue with Facebook') }}
+                    </a>
+                @endfeature
+                @feature('login_github')
+                    <a href="{{ route('social.redirect', 'github') }}" class="inline-flex justify-center rounded-md border border-[#3b4e75] px-4 py-2 text-sm font-medium text-[#dce7ff] hover:bg-[#152540]">
+                        {{ __('Continue with GitHub') }}
+                    </a>
+                @endfeature
+            </div>
         </div>
-    </div>
+    @endif
 </x-guest-layout>

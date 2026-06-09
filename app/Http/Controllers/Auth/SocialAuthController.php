@@ -66,5 +66,6 @@ class SocialAuthController extends Controller
     private function validateProvider(string $provider): void
     {
         abort_unless(in_array($provider, ['google', 'facebook', 'github'], true), 404);
+        abort_unless(feature("login_{$provider}"), 404);
     }
 }
