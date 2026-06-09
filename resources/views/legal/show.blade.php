@@ -27,7 +27,7 @@
 
     <section class="card legal-page-card">
         <div class="legal-page-body">
-            {!! $page->content !!}
+            {!! $renderedContent !!}
         </div>
     </section>
 </main>

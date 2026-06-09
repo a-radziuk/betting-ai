@@ -25,6 +25,9 @@
 <p class="admin-upload-hint">{{ __('Lowercase letters, numbers, and hyphens only. Used in the URL: /legal/your-slug') }}</p>
 
 <label class="admin-upload-label" for="content">{{ __('Content (HTML)') }}</label>
+<p class="admin-upload-hint">
+    {{ __('Supported parameters: [DATE], [WEBSITE NAME], [CONTACT EMAIL], [WEBSITE URL]') }}
+</p>
 <textarea
     id="content"
     name="content"

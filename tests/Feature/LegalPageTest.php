@@ -28,6 +28,26 @@ class LegalPageTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_legal_page_content_replaces_env_parameters(): void
+    {
+        config([
+            'legal.date' => '2026-05-27',
+            'legal.contact_email' => 'legal@example.com',
+            'app.name' => 'BetAI Pro',
+            'app.url' => 'https://betai.example',
+        ]);
+
+        LegalPage::query()
+            ->where('slug', 'privacy-policy')
+            ->update([
+                'content' => '<p>Contact [WEBSITE NAME] at [CONTACT EMAIL]. Updated [DATE]. Visit [WEBSITE URL].</p>',
+            ]);
+
+        $this->get(route('legal.show', 'privacy-policy'))
+            ->assertOk()
+            ->assertSee('Contact BetAI Pro at legal@example.com. Updated 2026-05-27. Visit https://betai.example.', false);
+    }
+
     public function test_footer_lists_seeded_legal_pages(): void
     {
         $this->get('/')

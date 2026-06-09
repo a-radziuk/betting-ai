@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LegalPage;
+use App\Support\LegalPageContent;
 use Illuminate\View\View;
 
 class LegalPageController extends Controller
@@ -15,6 +16,7 @@ class LegalPageController extends Controller
 
         return view('legal.show', [
             'page' => $page,
+            'renderedContent' => LegalPageContent::render($page->content),
         ]);
     }
 }
