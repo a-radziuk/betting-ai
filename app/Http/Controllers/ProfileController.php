@@ -32,7 +32,9 @@ class ProfileController extends Controller
 
         $user->fill($request->safe()->only(['name', 'email', 'tagline', 'bio', 'city', 'country']));
 
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
@@ -43,6 +45,10 @@ class ProfileController extends Controller
         }
 
         $user->save();
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
