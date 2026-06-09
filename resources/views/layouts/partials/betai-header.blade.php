@@ -1,8 +1,7 @@
 <header class="header">
     <div class="container header-inner">
-        <a href="{{ url('/') }}" class="logo">
-            <span class="logo-badge">B</span>
-            <span class="logo-text">BetAI</span>
+        <a href="{{ url('/') }}" class="logo logo--{{ strtolower(config('app.logo')) }}">
+            @include('layouts.partials.app-logo')
         </a>
         <div class="header-right">
             <span class="header-tag">{{ __('AI-Powered Football Betting Insights') }}</span>

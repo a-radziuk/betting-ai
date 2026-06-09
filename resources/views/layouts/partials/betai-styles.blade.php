@@ -86,6 +86,28 @@
         color: transparent;
     }
 
+    .logo--b .logo-badge--outline,
+    .app-logo--b .logo-badge--outline {
+        background: transparent;
+        border: 2px solid var(--accent);
+        box-shadow: none;
+        color: var(--accent);
+    }
+
+    .logo--b .logo-text--solid,
+    .app-logo--b .logo-text--solid {
+        background: none;
+        -webkit-background-clip: unset;
+        background-clip: unset;
+        color: var(--text);
+    }
+
+    .app-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
     .header-tag {
         color: var(--muted);
         font-size: 0.9rem;
@@ -516,6 +538,24 @@
         padding: 1rem 0 1.6rem;
         font-size: 0.88rem;
         flex-wrap: wrap;
+    }
+
+    .footer-legal {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 1rem;
+        justify-content: center;
+        flex: 1 1 100%;
+    }
+
+    .footer-legal a {
+        color: var(--muted);
+        text-decoration: none;
+    }
+
+    .footer-legal a:hover {
+        color: var(--text);
+        text-decoration: underline;
     }
 
     /* Event page — player tips */
@@ -1351,6 +1391,48 @@
         margin-top: 0.25rem;
     }
 
+    .admin-upload-input {
+        width: 100%;
+        font-size: 0.95rem;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--surface);
+        color: var(--text);
+    }
+
+    .admin-upload-input:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+    }
+
+    .admin-upload-hint {
+        margin: -0.35rem 0 0;
+        font-size: 0.82rem;
+        color: var(--muted);
+    }
+
+    .admin-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-form-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 0.25rem;
+    }
+
+    .admin-delete-form {
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+    }
+
     .admin-flash {
         margin: 0.75rem 0 0;
         padding: 0.65rem 0.85rem;
@@ -1911,6 +1993,37 @@
 
     .subscribe-terms-body p {
         margin: 0 0 0.75rem;
+    }
+
+    .legal-page-card {
+        padding: 1.25rem 1.5rem 1.5rem;
+    }
+
+    .legal-page-body {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #c8d6f5;
+    }
+
+    .legal-page-body h2 {
+        margin: 1.5rem 0 0.65rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #eaf0ff;
+    }
+
+    .legal-page-body h2:first-child {
+        margin-top: 0;
+    }
+
+    .legal-page-body p {
+        margin: 0 0 0.85rem;
+    }
+
+    .legal-page-body ul,
+    .legal-page-body ol {
+        margin: 0 0 0.85rem 1.25rem;
+        padding: 0;
     }
 
     .subscribe-terms-checkbox {

@@ -41,7 +41,8 @@ class AdminPageTest extends TestCase
             ->assertSee('Upload Events', false)
             ->assertSee('Upload Analysis', false)
             ->assertSee('Upload Predictions', false)
-            ->assertSee('Resolve Event', false);
+            ->assertSee('Resolve Event', false)
+            ->assertSee('Legal Pages', false);
     }
 
     public function test_superadmin_can_access_admin_stub_pages(): void

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminLegalPagesController;
 use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
+use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\EventShowController;
 use App\Http\Controllers\HomeController;
@@ -43,6 +45,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 Route::get('/', HomeController::class);
+
+Route::get('/legal/{slug}', [LegalPageController::class, 'show'])
+    ->name('legal.show');
 
 Route::get('/tournaments/{tournament}/results', function (Tournament $tournament) {
     /** @var Collection<int, EventResult> $allEventResults */
@@ -185,6 +190,19 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): v
         ->name('admin.simple-crypto-payments');
     Route::post('/simple-crypto-payments/{payment}/approve', [AdminSimpleCryptoPaymentsController::class, 'approve'])
         ->name('admin.simple-crypto-payments.approve');
+
+    Route::get('/legal-pages', [AdminLegalPagesController::class, 'index'])
+        ->name('admin.legal-pages');
+    Route::get('/legal-pages/create', [AdminLegalPagesController::class, 'create'])
+        ->name('admin.legal-pages.create');
+    Route::post('/legal-pages', [AdminLegalPagesController::class, 'store'])
+        ->name('admin.legal-pages.store');
+    Route::get('/legal-pages/{legalPage}/edit', [AdminLegalPagesController::class, 'edit'])
+        ->name('admin.legal-pages.edit');
+    Route::put('/legal-pages/{legalPage}', [AdminLegalPagesController::class, 'update'])
+        ->name('admin.legal-pages.update');
+    Route::delete('/legal-pages/{legalPage}', [AdminLegalPagesController::class, 'destroy'])
+        ->name('admin.legal-pages.destroy');
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');
