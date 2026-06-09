@@ -33,6 +33,7 @@ class LegalPageTest extends TestCase
         config([
             'legal.date' => '2026-05-27',
             'legal.contact_email' => 'legal@example.com',
+            'legal.country' => 'United Kingdom',
             'app.name' => 'BetAI Pro',
             'app.url' => 'https://betai.example',
         ]);
@@ -40,12 +41,12 @@ class LegalPageTest extends TestCase
         LegalPage::query()
             ->where('slug', 'privacy-policy')
             ->update([
-                'content' => '<p>Contact [WEBSITE NAME] at [CONTACT EMAIL]. Updated [DATE]. Visit [WEBSITE URL].</p>',
+                'content' => '<p>Contact [WEBSITE NAME] at [CONTACT EMAIL]. Updated [DATE]. Visit [WEBSITE URL]. Governed by [COUNTRY/STATE].</p>',
             ]);
 
         $this->get(route('legal.show', 'privacy-policy'))
             ->assertOk()
-            ->assertSee('Contact BetAI Pro at legal@example.com. Updated 2026-05-27. Visit https://betai.example.', false);
+            ->assertSee('Contact BetAI Pro at legal@example.com. Updated 2026-05-27. Visit https://betai.example. Governed by United Kingdom.', false);
     }
 
     public function test_footer_lists_seeded_legal_pages(): void

@@ -26,7 +26,7 @@
 
 <label class="admin-upload-label" for="content">{{ __('Content (HTML)') }}</label>
 <p class="admin-upload-hint">
-    {{ __('Supported parameters: [DATE], [WEBSITE NAME], [CONTACT EMAIL], [WEBSITE URL]') }}
+    {{ __('Supported parameters: [DATE], [WEBSITE NAME], [CONTACT EMAIL], [WEBSITE URL], [COUNTRY/STATE]') }}
 </p>
 <textarea
     id="content"

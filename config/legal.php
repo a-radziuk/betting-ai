@@ -8,12 +8,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | Placeholders in legal page HTML are replaced on the public site:
-    | [DATE], [WEBSITE NAME], [CONTACT EMAIL], [WEBSITE URL]
+    | [DATE], [WEBSITE NAME], [CONTACT EMAIL], [WEBSITE URL], [COUNTRY/STATE]
     |
     */
 
     'date' => env('LEGAL_DATE', ''),
 
     'contact_email' => env('CONTACT_EMAIL', ''),
+
+    'country' => env('LEGAL_COUNTRY', ''),
 
 ];

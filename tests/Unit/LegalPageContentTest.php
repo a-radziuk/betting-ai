@@ -12,14 +12,15 @@ class LegalPageContentTest extends TestCase
         config([
             'legal.date' => '2026-05-27',
             'legal.contact_email' => 'legal@example.com',
+            'legal.country' => 'Georgia',
             'app.name' => 'BetAI',
             'app.url' => 'https://betai.example',
         ]);
 
-        $content = '<p>[DATE] · [WEBSITE NAME] · [CONTACT EMAIL] · [WEBSITE URL]</p>';
+        $content = '<p>[DATE] · [WEBSITE NAME] · [CONTACT EMAIL] · [WEBSITE URL] · [COUNTRY/STATE]</p>';
 
         $this->assertSame(
-            '<p>2026-05-27 · BetAI · legal@example.com · https://betai.example</p>',
+            '<p>2026-05-27 · BetAI · legal@example.com · https://betai.example · Georgia</p>',
             LegalPageContent::render($content),
         );
     }

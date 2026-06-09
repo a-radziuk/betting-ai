@@ -14,6 +14,7 @@ final class LegalPageContent
             '[WEBSITE NAME]' => (string) config('app.name', ''),
             '[CONTACT EMAIL]' => (string) config('legal.contact_email', ''),
             '[WEBSITE URL]' => (string) config('app.url', ''),
+            '[COUNTRY/STATE]' => (string) config('legal.country', ''),
         ];
     }
 
