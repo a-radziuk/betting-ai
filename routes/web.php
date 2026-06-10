@@ -147,7 +147,7 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'superadmin'])->prefix('admin')->group(function (): void {
+Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
     Route::get('/', function () {
         return view('admin.index');
     })->name('admin');

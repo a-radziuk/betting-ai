@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAdminAccess;
 use App\Http\Middleware\EnsureCanPlaceBets;
 use App\Http\Middleware\EnsureSuperadmin;
 use App\Http\Middleware\RejectBots;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'admin.access' => EnsureAdminAccess::class,
             'can.place.bets' => EnsureCanPlaceBets::class,
             'reject.bots' => RejectBots::class,
             'superadmin' => EnsureSuperadmin::class,
