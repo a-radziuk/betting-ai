@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/subscribe-payment-stripe.js',
                 'resources/js/subscribe-payment-metamask.js',
+                'resources/js/cookie-consent.js',
             ],
             refresh: true,
         }),

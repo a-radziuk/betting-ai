@@ -155,6 +155,11 @@
         .auth-wrap .hover\:bg-\[\\#152540\\]:hover {
             background: rgba(58, 167, 255, 0.08) !important;
         }
+
+        .auth-cookie-settings {
+            margin-top: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -170,5 +175,15 @@
             {{ $slot }}
         </div>
     </div>
+
+    @feature('cookie_consent')
+        <div class="auth-cookie-settings">
+            <button type="button" class="footer-cookie-settings-link" data-cookie-settings-open>
+                {{ __('Cookie settings') }}
+            </button>
+        </div>
+    @endfeature
+
+    @include('layouts.partials.cookie-consent')
  </body>
 </html>

@@ -12,3 +12,13 @@
         <span>{{ now()->format('Y') }}</span>
     </div>
 </footer>
+
+@feature('cookie_consent')
+    <div class="container footer-cookie-settings">
+        <button type="button" class="footer-cookie-settings-link" data-cookie-settings-open>
+            {{ __('Cookie settings') }}
+        </button>
+    </div>
+@endfeature
+
+@include('layouts.partials.cookie-consent')

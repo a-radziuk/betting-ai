@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminLegalPagesController;
+use App\Http\Controllers\CookieConsentController;
 use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\AdminResolveEventController;
@@ -48,6 +49,9 @@ Route::get('/', HomeController::class);
 
 Route::get('/legal/{slug}', [LegalPageController::class, 'show'])
     ->name('legal.show');
+
+Route::post('/cookie-consent', [CookieConsentController::class, 'store'])
+    ->name('cookie-consent.store');
 
 Route::get('/tournaments/{tournament}/results', function (Tournament $tournament) {
     /** @var Collection<int, EventResult> $allEventResults */

@@ -11,6 +11,7 @@
         --accent: #2f98f1;
         --accent2: #7a8cff;
         --ok: #14895d;
+        --cookie-consent-bg: #f7fbff;
     }
 
     body {
