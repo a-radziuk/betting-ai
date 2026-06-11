@@ -1434,6 +1434,33 @@
         border-top: 1px solid var(--border);
     }
 
+    .admin-upload-checkbox {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        font-size: 0.92rem;
+        color: #dce7ff;
+        cursor: pointer;
+    }
+
+    .admin-upload-checkbox input {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .admin-upload-fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .admin-upload-textarea--compact {
+        min-height: 8rem;
+    }
+
     .admin-flash {
         margin: 0.75rem 0 0;
         padding: 0.65rem 0.85rem;

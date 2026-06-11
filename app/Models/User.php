@@ -15,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'is_superadmin', 'priveleges', 'provider', 'provider_id', 'avatar', 'tagline', 'bio', 'city', 'country'])]
+#[Fillable(['name', 'email', 'password', 'email_verified_at', 'is_superadmin', 'priveleges', 'see_tips_expires_at', 'provider', 'provider_id', 'avatar', 'tagline', 'bio', 'city', 'country'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {

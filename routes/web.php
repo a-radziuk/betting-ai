@@ -24,6 +24,7 @@ use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\AdminUploadPredictionsController;
 use App\Http\Controllers\AdminUploadTournamentController;
 use App\Http\Controllers\AdminUserBetsController;
+use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Event;
@@ -155,6 +156,19 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
     Route::get('/', function () {
         return view('admin.index');
     })->name('admin');
+
+    Route::get('/users', [AdminUsersController::class, 'index'])
+        ->name('admin.users');
+    Route::get('/users/create', [AdminUsersController::class, 'create'])
+        ->name('admin.users.create');
+    Route::post('/users', [AdminUsersController::class, 'store'])
+        ->name('admin.users.store');
+    Route::get('/users/{user}/edit', [AdminUsersController::class, 'edit'])
+        ->name('admin.users.edit');
+    Route::put('/users/{user}', [AdminUsersController::class, 'update'])
+        ->name('admin.users.update');
+    Route::delete('/users/{user}', [AdminUsersController::class, 'destroy'])
+        ->name('admin.users.destroy');
 
     Route::get('/user-bets', [AdminUserBetsController::class, 'index'])
         ->name('admin.user-bets');

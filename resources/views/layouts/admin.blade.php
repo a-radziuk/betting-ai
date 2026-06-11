@@ -16,6 +16,7 @@
         <p class="admin-sidebar-title">{{ __('Admin') }}</p>
         <ul class="admin-sidebar-nav">
             @foreach (array_filter([
+                ['label' => __('Users'), 'route' => 'admin.users', 'active' => 'admin.users*'],
                 ['label' => __('User Bets'), 'route' => 'admin.user-bets', 'active' => 'admin.user-bets*'],
                 ['label' => __('Simple Crypto Payments'), 'route' => 'admin.simple-crypto-payments', 'active' => 'admin.simple-crypto-payments*', 'feature' => 'simple_crypto_payment'],
                 ['label' => __('Upload Events'), 'route' => 'admin.upload-events', 'active' => 'admin.upload-events*'],

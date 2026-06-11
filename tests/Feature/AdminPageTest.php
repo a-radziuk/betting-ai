@@ -37,6 +37,7 @@ class AdminPageTest extends TestCase
             ->get(route('admin'))
             ->assertOk()
             ->assertSee('hello superadmin', false)
+            ->assertSee('Users', false)
             ->assertSee('User Bets', false)
             ->assertSee('Upload Events', false)
             ->assertSee('Upload Analysis', false)
