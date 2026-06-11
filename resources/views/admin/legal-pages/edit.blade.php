@@ -23,15 +23,17 @@
             </div>
         </form>
 
-        <form
-            method="post"
-            action="{{ route('admin.legal-pages.destroy', $page) }}"
-            class="admin-delete-form"
-            onsubmit="return confirm(@json(__('Delete this legal page?')))"
-        >
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-secondary">{{ __('Delete') }}</button>
-        </form>
+        @if ($page->slug !== config('subscriptions.terms.slug'))
+            <form
+                method="post"
+                action="{{ route('admin.legal-pages.destroy', $page) }}"
+                class="admin-delete-form"
+                onsubmit="return confirm(@json(__('Delete this legal page?')))"
+            >
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-secondary">{{ __('Delete') }}</button>
+            </form>
+        @endif
     </section>
 @endsection

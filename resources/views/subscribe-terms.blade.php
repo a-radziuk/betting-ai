@@ -33,7 +33,7 @@
 
     <section class="card subscribe-terms-card">
         <div class="subscribe-terms-body">
-            @include('legal.subscription-terms-content')
+            {!! $termsContent !!}
         </div>
 
         <form method="POST" action="{{ route('subscribe.terms.accept', ['plan' => $plan['id']]) }}" class="subscribe-terms-form">

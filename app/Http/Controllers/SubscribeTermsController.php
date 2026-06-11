@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\SubscriptionPlans;
 use App\Support\SubscriptionTerms;
+use App\Support\SubscriptionTermsContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,7 @@ class SubscribeTermsController extends Controller
 
         return view('subscribe-terms', [
             'plan' => $planDetails,
+            'termsContent' => SubscriptionTermsContent::renderedContent(),
         ]);
     }
 

@@ -115,6 +115,26 @@ class AdminLegalPagesTest extends TestCase
         ]);
     }
 
+    public function test_superadmin_cannot_delete_subscription_terms_page(): void
+    {
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $page = LegalPage::query()
+            ->where('slug', 'subscription-terms')
+            ->firstOrFail();
+
+        $this->actingAs($admin)
+            ->delete(route('admin.legal-pages.destroy', $page))
+            ->assertRedirect(route('admin.legal-pages'));
+
+        $this->assertDatabaseHas('legal_pages', [
+            'id' => $page->id,
+            'slug' => 'subscription-terms',
+        ]);
+    }
+
     public function test_slug_must_be_unique_and_valid(): void
     {
         $admin = User::factory()->create([

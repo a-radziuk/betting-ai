@@ -1,5 +1,6 @@
 @php
     $page = $page ?? null;
+    $isSubscriptionTerms = ($page?->slug ?? '') === config('subscriptions.terms.slug');
 @endphp
 
 <label class="admin-upload-label" for="title">{{ __('Title') }}</label>
@@ -20,9 +21,14 @@
     class="admin-upload-input"
     value="{{ old('slug', $page?->slug) }}"
     pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+    @readonly($isSubscriptionTerms)
     required
 >
-<p class="admin-upload-hint">{{ __('Lowercase letters, numbers, and hyphens only. Used in the URL: /legal/your-slug') }}</p>
+@if ($isSubscriptionTerms)
+    <p class="admin-upload-hint">{{ __('This page is shown on the subscription checkout terms step (/subscribe/terms). The slug cannot be changed.') }}</p>
+@else
+    <p class="admin-upload-hint">{{ __('Lowercase letters, numbers, and hyphens only. Used in the URL: /legal/your-slug') }}</p>
+@endif
 
 <label class="admin-upload-label" for="content">{{ __('Content (HTML)') }}</label>
 <p class="admin-upload-hint">

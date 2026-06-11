@@ -3,6 +3,7 @@
 return [
 
     'terms' => [
+        'slug' => 'subscription-terms',
         'version' => env('SUBSCRIPTION_TERMS_VERSION', '1'),
     ],
 

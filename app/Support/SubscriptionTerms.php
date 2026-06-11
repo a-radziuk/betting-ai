@@ -8,7 +8,7 @@ final class SubscriptionTerms
 
     public static function version(): string
     {
-        return (string) config('subscriptions.terms.version', '1');
+        return SubscriptionTermsContent::version();
     }
 
     public static function accept(string $planId): void

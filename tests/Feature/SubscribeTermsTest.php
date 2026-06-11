@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\LegalPage;
 use App\Models\User;
 use App\Support\SubscriptionPlans;
 use App\Support\SubscriptionTerms;
@@ -72,6 +73,49 @@ class SubscribeTermsTest extends TestCase
             ->assertSessionHasErrors('accept_terms');
 
         $this->assertFalse(SubscriptionTerms::acceptedForPlan(SubscriptionPlans::ONE_MONTH));
+    }
+
+    public function test_terms_page_renders_content_from_admin_legal_page(): void
+    {
+        $user = User::factory()->create();
+
+        LegalPage::query()
+            ->where('slug', 'subscription-terms')
+            ->update([
+                'content' => '<p>Custom subscription terms from admin.</p>',
+            ]);
+
+        $this->actingAs($user)
+            ->get(route('subscribe.terms', ['plan' => SubscriptionPlans::ONE_MONTH]))
+            ->assertOk()
+            ->assertSee('Custom subscription terms from admin.', false);
+    }
+
+    public function test_terms_acceptance_is_invalidated_when_admin_updates_terms(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('subscribe.terms.accept', ['plan' => SubscriptionPlans::ONE_MONTH]), [
+                'accept_terms' => '1',
+            ])
+            ->assertRedirect(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]));
+
+        $this->assertTrue(SubscriptionTerms::acceptedForPlan(SubscriptionPlans::ONE_MONTH));
+
+        $this->travel(2)->seconds();
+
+        LegalPage::query()
+            ->where('slug', 'subscription-terms')
+            ->update([
+                'content' => '<p>Updated subscription terms.</p>',
+            ]);
+
+        $this->assertFalse(SubscriptionTerms::acceptedForPlan(SubscriptionPlans::ONE_MONTH));
+
+        $this->actingAs($user)
+            ->get(route('subscribe.payment', ['plan' => SubscriptionPlans::ONE_MONTH]))
+            ->assertRedirect(route('subscribe.terms', ['plan' => SubscriptionPlans::ONE_MONTH]));
     }
 
     public function test_terms_acceptance_does_not_apply_to_different_plan(): void

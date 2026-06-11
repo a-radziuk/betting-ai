@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LegalPage;
+use App\Support\SubscriptionTermsContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -48,6 +49,10 @@ class AdminLegalPagesController extends Controller
     {
         $validated = $request->validate($this->rules($legalPage));
 
+        if (SubscriptionTermsContent::isManagedPage($legalPage)) {
+            $validated['slug'] = SubscriptionTermsContent::slug();
+        }
+
         $legalPage->update($validated);
 
         return redirect()
@@ -57,6 +62,12 @@ class AdminLegalPagesController extends Controller
 
     public function destroy(LegalPage $legalPage): RedirectResponse
     {
+        if (SubscriptionTermsContent::isManagedPage($legalPage)) {
+            return redirect()
+                ->route('admin.legal-pages')
+                ->with('status', __('Subscription terms cannot be deleted. Edit the page content instead.'));
+        }
+
         $legalPage->delete();
 
         return redirect()
