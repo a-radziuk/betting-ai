@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Console\Commands\Concerns;
+
+use App\Models\Event;
+use App\Models\EventPrediction;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
+
+trait RunsPredictionsForScheduledDate
+{
+    abstract protected function predictionDate(Carbon $now): string;
+
+    abstract protected function scheduleDayWord(): string;
+
+    public function handleScheduledPredictions(): int
+    {
+        $predictionTypeKey = (int) $this->argument('predictionType');
+
+        if (EventPrediction::predictionTypeFor($predictionTypeKey) === null) {
+            $this->components->error('predictionType must be 1, 2, or 3.');
+
+            return self::FAILURE;
+        }
+
+        $tz = config('app.timezone');
+        $date = $this->predictionDate(Carbon::now($tz));
+        $dayWord = $this->scheduleDayWord();
+
+        $events = Event::query()
+            ->whereNull('score')
+            ->where('start_time', '>', now())
+            ->whereDate('start_time', $date)
+            ->orderBy('start_time')
+            ->orderBy('id')
+            ->get(['id']);
+
+        if ($events->isEmpty()) {
+            $this->components->info("No unresolved upcoming events for {$dayWord}.");
+
+            return self::SUCCESS;
+        }
+
+        $failed = 0;
+
+        foreach ($events as $event) {
+            $this->components->info("Running predictions:for-event for event {$event->id}...");
+
+            $exitCode = Artisan::call('predictions:for-event', [
+                'eventId' => $event->id,
+                'predictionType' => $predictionTypeKey,
+            ]);
+
+            if ($exitCode !== self::SUCCESS) {
+                $failed++;
+                $output = trim(Artisan::output());
+                if ($output !== '') {
+                    $this->components->warn($output);
+                }
+            }
+        }
+
+        $total = $events->count();
+
+        if ($failed > 0) {
+            $this->components->error("{$failed} of {$total} prediction(s) failed.");
+
+            return self::FAILURE;
+        }
+
+        $this->components->info("Predictions completed for {$total} event(s).");
+
+        return self::SUCCESS;
+    }
+}

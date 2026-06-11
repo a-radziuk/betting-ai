@@ -6,14 +6,14 @@ use App\Console\Commands\Concerns\RunsPredictionsForScheduledDate;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
-class PredictionsTodayCommand extends Command
+class PredictionsTomorrowCommand extends Command
 {
     use RunsPredictionsForScheduledDate;
 
-    protected $signature = 'predictions:today
+    protected $signature = 'predictions:tomorrow
         {predictionType=1 : Prediction type: 1=best, 2=safest, 3=upset}';
 
-    protected $description = 'Run predictions:for-event for each unresolved event scheduled today that has not started yet';
+    protected $description = 'Run predictions:for-event for each unresolved event scheduled tomorrow that has not started yet';
 
     public function handle(): int
     {
@@ -22,11 +22,11 @@ class PredictionsTodayCommand extends Command
 
     protected function predictionDate(Carbon $now): string
     {
-        return $now->format('Y-m-d');
+        return $now->copy()->addDay()->format('Y-m-d');
     }
 
     protected function scheduleDayWord(): string
     {
-        return 'today';
+        return 'tomorrow';
     }
 }
