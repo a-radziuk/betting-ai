@@ -67,7 +67,9 @@ class TournamentStandingsPageTest extends TestCase
             ->assertSee('form-icon--w', false)
             ->assertSee('form-icon--l', false)
             ->assertSee('Won 2-0 against Fulham', false)
-            ->assertSee('Lost 1-2 to Everton', false);
+            ->assertSee('Lost 1-2 to Everton', false)
+            ->assertDontSee('Latest results', false)
+            ->assertDontSee('No results recorded for this league yet.', false);
     }
 
     public function test_standings_table_shows_movement_arrows_after_team_when_up_or_down(): void
@@ -136,7 +138,7 @@ class TournamentStandingsPageTest extends TestCase
         $this->assertSame(1, substr_count($html, 'class="standings-movement standings-movement--down"'));
     }
 
-    public function test_tournament_page_empty_standings_message(): void
+    public function test_tournament_page_hides_standings_when_none(): void
     {
         $tournament = Tournament::query()->create([
             'name' => 'Empty League',
@@ -146,7 +148,9 @@ class TournamentStandingsPageTest extends TestCase
 
         $this->get(route('tournaments.show', $tournament))
             ->assertOk()
-            ->assertSee('No standings data yet', false);
+            ->assertSee('Empty League', false)
+            ->assertDontSee('League standings', false)
+            ->assertDontSee('No standings data yet', false);
     }
 
     public function test_standings_promrel_applies_zone_row_classes(): void
