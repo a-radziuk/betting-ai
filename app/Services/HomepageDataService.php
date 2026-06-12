@@ -7,6 +7,7 @@ use App\Models\Market;
 use App\Models\Tournament;
 use App\Models\User;
 use App\Models\UserBet;
+use App\Support\HomepageFeaturedBets;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
@@ -16,7 +17,8 @@ class HomepageDataService
      * @return array{
      *     events: Collection<int, Event>,
      *     topTournaments: Collection<int, Tournament>,
-     *     topBettors: Collection<int, User>
+     *     topBettors: Collection<int, User>,
+     *     featuredBets: Collection<int, UserBet>
      * }
      */
     public function get(): array
@@ -83,6 +85,12 @@ class HomepageDataService
                 ->get();
         }
 
-        return compact('events', 'topTournaments', 'topBettors');
+        /** @var Collection<int, UserBet> $featuredBets */
+        $featuredBets = collect();
+        if (Schema::hasTable('user_bets')) {
+            $featuredBets = HomepageFeaturedBets::forHomepage();
+        }
+
+        return compact('events', 'topTournaments', 'topBettors', 'featuredBets');
     }
 }

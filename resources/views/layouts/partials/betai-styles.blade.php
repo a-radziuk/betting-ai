@@ -2417,6 +2417,39 @@
         gap: 0.15rem 0.1rem;
     }
 
+    .welcome-see-all-players {
+        margin: -0.35rem 0 1.35rem;
+        text-align: right;
+    }
+
+    .welcome-featured-bets {
+        margin-top: 0;
+    }
+
+    .welcome-bettor-card--won {
+        border-color: rgba(76, 217, 100, 0.45);
+    }
+
+    .welcome-bettor-card--lost {
+        border-color: rgba(255, 120, 120, 0.4);
+    }
+
+    .welcome-bettor-card--void {
+        border-color: rgba(255, 200, 87, 0.4);
+    }
+
+    a.welcome-featured-bet-player-link,
+    a.welcome-featured-bet-event-link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    a.welcome-featured-bet-player-link:hover,
+    a.welcome-featured-bet-event-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }
+
     .tournament-leagues-line {
         padding: 0.85rem 1rem;
     }

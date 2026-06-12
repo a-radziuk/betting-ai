@@ -2,9 +2,6 @@
     <section class="hero">
         <h1>{{ __('Nearest 20 Upcoming Events') }}</h1>
         <p>{{ __('Real-time lineup of the next football fixtures sorted by kickoff time.') }}</p>
-        <p class="meta" style="margin-top: 0.9rem;">
-            <a class="header-link" href="{{ route('players.index') }}">{{ __('Players') }}</a>
-        </p>
     </section>
 
     @if (isset($topTournaments) && $topTournaments->isNotEmpty())
@@ -23,7 +20,7 @@
     @if (isset($topBettors) && $topBettors->isNotEmpty())
         <section class="welcome-top-bettors" aria-labelledby="welcome-top-bettors-title">
             <h2 id="welcome-top-bettors-title" class="welcome-top-bettors-title">{{ __('Top bettors') }}</h2>
-            <p class="welcome-top-bettors-lead">{{ __('Players with at least one bet, ranked by lifetime wallet result.') }}</p>
+            <p class="welcome-top-bettors-lead">{{ __('Top players, ranked by lifetime wallet result.') }}</p>
             <div class="welcome-top-bettors-grid">
                 @foreach ($topBettors as $index => $user)
                     @php
@@ -85,6 +82,12 @@
             </div>
         </section>
     @endif
+
+    <p class="welcome-see-all-players">
+        <a href="{{ route('players.index') }}" class="tournament-see-all-link">{{ __('See all players') }}</a>
+    </p>
+
+    @include('partials.welcome-featured-bets', ['featuredBets' => $featuredBets ?? collect()])
 
     <section class="card">
         @include('partials.upcoming-events-table', ['events' => $events])
