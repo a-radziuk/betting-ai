@@ -121,7 +121,7 @@ class WelcomeFeaturedBetsTest extends TestCase
         );
     }
 
-    public function test_top_by_win_amount_picks_three_highest_with_unique_users(): void
+    public function test_pick_one_per_user_from_recent_events_in_event_order_not_profit(): void
     {
         $first = User::factory()->create();
         $second = User::factory()->create();
@@ -130,14 +130,15 @@ class WelcomeFeaturedBetsTest extends TestCase
 
         $this->createResolvedBet($first, $odd, 87001, 1, UserBet::STATUS_WON, 50);
         $this->createResolvedBet($first, $odd, 87001, 2, UserBet::STATUS_WON, 45);
-        $this->createResolvedBet($second, $odd, 87001, 3, UserBet::STATUS_WON, 30);
+        $this->createResolvedBet($second, $odd, 87001, 3, UserBet::STATUS_LOST, -10);
         $this->createResolvedBet($third, $odd, 87001, 4, UserBet::STATUS_WON, 35);
 
-        $pool = UserBet::query()->whereIn('resolved_order', [1, 2, 3, 4])->get();
-        $featured = HomepageFeaturedBets::topByWinAmount($pool);
+        $pool = HomepageFeaturedBets::latestResolvedQuery()->get();
+        $featured = HomepageFeaturedBets::pickOnePerUserFromRecentEvents($pool);
 
         $this->assertCount(3, $featured);
-        $this->assertSame([50.0, 35.0, 30.0], $featured->map(fn (UserBet $bet) => (float) $bet->real_return)->all());
+        $this->assertSame([35.0, -10.0, 45.0], $featured->map(fn (UserBet $bet) => (float) $bet->real_return)->all());
+        $this->assertSame([4, 3, 2], $featured->pluck('resolved_order')->all());
         $this->assertCount(3, $featured->pluck('user_id')->unique());
     }
 
@@ -172,11 +173,11 @@ class WelcomeFeaturedBetsTest extends TestCase
             ->assertSee('FeaturedWinner', false)
             ->assertSee('FeaturedOther', false)
             ->assertSee('FeaturedThird', false)
-            ->assertSee('+80.00 EUR', false)
+            ->assertSee('-10.00 EUR', false)
             ->assertSee('+60.00 EUR', false)
             ->assertSee('+40.00 EUR', false)
             ->assertDontSee('+999.00 EUR', false)
-            ->assertDontSee('-10.00 EUR', false)
+            ->assertDontSee('+80.00 EUR', false)
             ->getContent();
 
         $this->assertMatchesRegularExpression(

@@ -8,9 +8,9 @@ use Illuminate\Support\Collection;
 
 final class HomepageFeaturedBets
 {
-    public const POOL_SIZE = 10;
-
     public const DISPLAY_LIMIT = 3;
+
+    public const MAX_SCAN = 100;
 
     /**
      * @return Builder<UserBet>
@@ -26,15 +26,17 @@ final class HomepageFeaturedBets
     }
 
     /**
-     * @param  Collection<int, UserBet>  $latestResolved
+     * Walk bets in recent-event order and pick the first resolved bet per user.
+     *
+     * @param  Collection<int, UserBet>  $bets
      * @return Collection<int, UserBet>
      */
-    public static function topByWinAmount(Collection $latestResolved, int $displayLimit = self::DISPLAY_LIMIT): Collection
+    public static function pickOnePerUserFromRecentEvents(Collection $bets, int $displayLimit = self::DISPLAY_LIMIT): Collection
     {
         $selected = collect();
         $seenUserIds = [];
 
-        foreach ($latestResolved->sortByDesc(fn (UserBet $bet) => (float) $bet->real_return) as $bet) {
+        foreach ($bets as $bet) {
             $userId = (int) $bet->user_id;
             if (isset($seenUserIds[$userId])) {
                 continue;
@@ -56,16 +58,16 @@ final class HomepageFeaturedBets
      */
     public static function forHomepage(): Collection
     {
-        $pool = self::latestResolvedQuery()
+        $bets = self::latestResolvedQuery()
             ->with([
                 'user.wallet',
                 'event.homeTeam.translations',
                 'event.awayTeam.translations',
                 'odd.selection.market',
             ])
-            ->limit(self::POOL_SIZE)
+            ->limit(self::MAX_SCAN)
             ->get();
 
-        return self::topByWinAmount($pool);
+        return self::pickOnePerUserFromRecentEvents($bets);
     }
 }
