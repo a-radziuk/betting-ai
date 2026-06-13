@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Event;
+use App\Models\EventResult;
 use App\Models\Market;
 use App\Models\Selection;
 use App\Models\UserBet;
@@ -29,7 +30,7 @@ class EventResultService
             return ['ok' => false, 'message' => 'Event not found.'];
         }
 
-        return DB::transaction(function () use ($eventId, $result, $additionalData, $fullTime): array {
+        return DB::transaction(function () use ($event, $eventId, $result, $additionalData, $fullTime): array {
             Event::query()->whereKey($eventId)->update([
                 'score' => $result,
                 'additional_data' => $additionalData,
@@ -50,6 +51,8 @@ class EventResultService
             Event::query()->whereKey($eventId)->update([
                 'status' => Event::STATUS_FINISHED,
             ]);
+
+            $this->recordEventResult($event->fresh(), $result, $additionalData);
 
             return [
                 'ok' => true,
@@ -341,6 +344,60 @@ class EventResultService
             'home' => (int) $m[1],
             'away' => (int) $m[2],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $additionalData
+     */
+    private function recordEventResult(Event $event, string $result, array $additionalData): void
+    {
+        if (EventResult::query()->where('event_id', $event->id)->exists()) {
+            return;
+        }
+
+        $tournamentId = $event->tournament_id;
+        if ($tournamentId === null) {
+            $event->loadMissing(['homeTeam', 'awayTeam']);
+            $tournamentId = $event->homeTeam?->tournament_id
+                ?? $event->awayTeam?->tournament_id;
+        }
+
+        if ($tournamentId === null) {
+            return;
+        }
+
+        $date = $event->start_time
+            ? $event->start_time->timezone(config('app.timezone'))->toDateString()
+            : now(config('app.timezone'))->toDateString();
+
+        if (EventResult::query()
+            ->where('home_team_id', $event->home_team_id)
+            ->where('away_team_id', $event->away_team_id)
+            ->whereDate('date', $date)
+            ->exists()) {
+            EventResult::query()
+                ->where('home_team_id', $event->home_team_id)
+                ->where('away_team_id', $event->away_team_id)
+                ->whereDate('date', $date)
+                ->whereNull('event_id')
+                ->update([
+                    'event_id' => $event->id,
+                    'results' => $result,
+                    'additional_data' => $additionalData !== [] ? $additionalData : null,
+                ]);
+
+            return;
+        }
+
+        EventResult::query()->create([
+            'home_team_id' => $event->home_team_id,
+            'away_team_id' => $event->away_team_id,
+            'results' => $result,
+            'additional_data' => $additionalData !== [] ? $additionalData : null,
+            'date' => $date,
+            'tournament_id' => $tournamentId,
+            'event_id' => $event->id,
+        ]);
     }
 
     private function winBet(UserBet $bet): void

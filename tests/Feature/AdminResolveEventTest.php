@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Event;
+use App\Models\EventResult;
 use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Selection;
 use App\Models\Team;
+use App\Models\Tournament;
 use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserWallet;
@@ -136,6 +138,13 @@ class AdminResolveEventTest extends TestCase
         $this->assertSame(Event::STATUS_FINISHED, $event->status);
         $this->assertSame('2:0', $event->score);
         $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('event_id', $event->id)->value('status'));
+
+        $eventResult = EventResult::query()->where('event_id', $event->id)->first();
+        $this->assertNotNull($eventResult);
+        $this->assertSame($event->home_team_id, $eventResult->home_team_id);
+        $this->assertSame($event->away_team_id, $eventResult->away_team_id);
+        $this->assertSame('2:0', $eventResult->results);
+        $this->assertSame($event->tournament_id, $eventResult->tournament_id);
     }
 
     public function test_invalid_score_format_returns_validation_error(): void
@@ -211,13 +220,25 @@ class AdminResolveEventTest extends TestCase
         string $status = Event::STATUS_SCHEDULED,
         ?string $score = null,
     ): Event {
-        $home = Team::query()->create(['name' => 'Home FC', 'short_name' => 'HOM', 'league' => 'T']);
-        $away = Team::query()->create(['name' => 'Away FC', 'short_name' => 'AWY', 'league' => 'T']);
+        $tournament = Tournament::query()->create(['name' => 'Resolve League', 'rank' => 1]);
+        $home = Team::query()->create([
+            'name' => 'Home FC',
+            'short_name' => 'HOM',
+            'league' => 'T',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'Away FC',
+            'short_name' => 'AWY',
+            'league' => 'T',
+            'tournament_id' => $tournament->id,
+        ]);
 
         return Event::query()->create([
             'id' => $id,
             'home_team_id' => $home->id,
             'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
             'start_time' => now()->subHours(3),
             'status' => $status,
             'score' => $score,
