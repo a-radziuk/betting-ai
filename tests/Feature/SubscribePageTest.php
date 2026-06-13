@@ -13,26 +13,33 @@ class SubscribePageTest extends TestCase
 
     public function test_subscribe_page_lists_visible_plans_with_prices(): void
     {
+        $oneDay = SubscriptionPlans::find(SubscriptionPlans::ONE_DAY);
+        $oneWeek = SubscriptionPlans::find(SubscriptionPlans::ONE_WEEK);
+        $oneMonth = SubscriptionPlans::find(SubscriptionPlans::ONE_MONTH);
+
         $html = $this->get(route('subscribe'))
             ->assertOk()
+            ->assertSee('1 day', false)
             ->assertSee('1 week', false)
             ->assertSee('1 month', false)
             ->assertSee('3 months', false)
             ->assertSee('1 year', false)
-            ->assertSee('€9.99', false)
-            ->assertSee('€29.99', false)
+            ->assertSee($oneDay['price_label'], false)
+            ->assertSee($oneWeek['price_label'], false)
+            ->assertSee($oneMonth['price_label'], false)
             ->assertDontSee('Free trial', false)
             ->assertDontSee('Coming soon', false)
             ->getContent();
 
         $this->assertStringContainsString('subscribe-plans-grid', $html);
-        $this->assertCount(4, SubscriptionPlans::all());
-        $this->assertStringContainsString(route('subscribe.terms', ['plan' => SubscriptionPlans::ONE_WEEK]), $html);
+        $this->assertCount(5, SubscriptionPlans::all());
+        $this->assertStringContainsString(route('subscribe.terms', ['plan' => SubscriptionPlans::ONE_DAY]), $html);
     }
 
     public function test_hidden_plans_are_not_listed(): void
     {
         config([
+            'subscriptions.plans.one_day.visible' => false,
             'subscriptions.plans.one_week.visible' => false,
             'subscriptions.plans.one_month.visible' => false,
             'subscriptions.plans.three_months.visible' => true,
@@ -42,6 +49,7 @@ class SubscribePageTest extends TestCase
         $this->get(route('subscribe'))
             ->assertOk()
             ->assertSee('3 months', false)
+            ->assertDontSee('1 day', false)
             ->assertDontSee('1 week', false)
             ->assertDontSee('1 month', false)
             ->assertDontSee('1 year', false);

@@ -12,7 +12,10 @@ class AuthPagesLocalizationTest extends TestCase
     public function test_login_register_and_forgot_password_are_localized_in_russian(): void
     {
         app()->setLocale('ru');
-        config(['app.locale' => 'ru']);
+        config([
+            'app.locale' => 'ru',
+            'app.name' => 'BetAI',
+        ]);
 
         $this->get('/login')
             ->assertOk()
@@ -37,7 +40,10 @@ class AuthPagesLocalizationTest extends TestCase
     public function test_login_register_and_forgot_password_are_localized_in_georgian(): void
     {
         app()->setLocale('ge');
-        config(['app.locale' => 'ge']);
+        config([
+            'app.locale' => 'ge',
+            'app.name' => 'BetAI',
+        ]);
 
         $this->get('/login')
             ->assertOk()

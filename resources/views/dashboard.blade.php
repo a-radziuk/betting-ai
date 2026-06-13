@@ -3,7 +3,7 @@
         <h2 class="font-semibold text-xl text-[#eaf0ff] leading-tight">
             {{ __('Dashboard') }}
         </h2>
-        <p class="mt-1 text-sm text-[#9fb0d3] font-normal">{{ __('Your BetAI account overview.') }}</p>
+        <p class="mt-1 text-sm text-[#9fb0d3] font-normal">{{ app_brand('Your :app account overview.') }}</p>
     </x-slot>
 
     <div class="pb-8 space-y-4">

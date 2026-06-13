@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'BetAI') }}</title>
+        <title>{{ app_name() }}</title>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @include('layouts.partials.betai-styles')

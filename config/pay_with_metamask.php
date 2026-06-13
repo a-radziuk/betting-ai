@@ -21,6 +21,7 @@ return [
     | Optional ETH amounts per plan (wei). When unset, ETH is not offered.
     */
     'eth_amount_wei_by_plan' => [
+        'one_day' => env('PAY_WITH_METAMASK_ONE_DAY_ETH_WEI'),
         'one_week' => env('PAY_WITH_METAMASK_ONE_WEEK_ETH_WEI'),
         'one_month' => env('PAY_WITH_METAMASK_ONE_MONTH_ETH_WEI'),
         'three_months' => env('PAY_WITH_METAMASK_THREE_MONTHS_ETH_WEI'),

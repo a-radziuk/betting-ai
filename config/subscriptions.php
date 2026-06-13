@@ -10,6 +10,12 @@ return [
     'currency' => env('SUBSCRIPTION_CURRENCY', 'EUR'),
 
     'plans' => [
+        'one_day' => [
+            'name' => '1 day',
+            'duration_label' => '1 day',
+            'visible' => filter_var(env('SUBSCRIPTION_ONE_DAY_VISIBLE', true), FILTER_VALIDATE_BOOLEAN),
+            'price' => env('SUBSCRIPTION_ONE_DAY_PRICE', '2.99'),
+        ],
         'one_week' => [
             'name' => '1 week',
             'duration_label' => '1 week',

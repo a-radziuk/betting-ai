@@ -10,6 +10,7 @@ class SubscriptionPlansTest extends TestCase
     public function test_all_returns_only_visible_plans_and_each_is_enabled(): void
     {
         config([
+            'subscriptions.plans.one_day.visible' => false,
             'subscriptions.plans.one_week.visible' => true,
             'subscriptions.plans.one_month.visible' => false,
             'subscriptions.plans.three_months.visible' => true,
@@ -50,5 +51,8 @@ class SubscriptionPlansTest extends TestCase
         $from = now();
         $expires = SubscriptionPlans::accessExpiresAtFrom($from, SubscriptionPlans::THREE_MONTHS);
         $this->assertSame($from->copy()->addMonths(3)->toDateString(), $expires->toDateString());
+
+        $oneDayExpires = SubscriptionPlans::accessExpiresAtFrom($from, SubscriptionPlans::ONE_DAY);
+        $this->assertSame($from->copy()->addDay()->toDateString(), $oneDayExpires->toDateString());
     }
 }

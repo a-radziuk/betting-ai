@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ __('BetAI | Subscribe') }}</title>
+    <title>{{ app_page_title('Subscribe') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 </head>
@@ -20,7 +20,7 @@
 <main class="container">
     <section class="hero">
         <h1>{{ __('Subscribe') }}</h1>
-        <p class="meta">{{ __('Choose a plan to unlock player tips and current bets across BetAI.') }}</p>
+        <p class="meta">{{ app_brand('Choose a plan to unlock player tips and current bets across :app.') }}</p>
     </section>
 
     @if (session('status'))

@@ -7,6 +7,8 @@ use InvalidArgumentException;
 
 final class SubscriptionPlans
 {
+    public const ONE_DAY = 'one_day';
+
     public const ONE_WEEK = 'one_week';
 
     public const ONE_MONTH = 'one_month';
@@ -108,6 +110,7 @@ final class SubscriptionPlans
     public static function accessExpiresAtFrom(CarbonInterface $from, string $planId): CarbonInterface
     {
         return match ($planId) {
+            self::ONE_DAY => $from->copy()->addDay(),
             self::ONE_WEEK => $from->copy()->addWeek(),
             self::ONE_MONTH => $from->copy()->addMonth(),
             self::THREE_MONTHS => $from->copy()->addMonths(3),
