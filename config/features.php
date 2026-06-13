@@ -19,4 +19,5 @@ return [
     'login_facebook' => filter_var(env('FEATURE_LOGIN_FACEBOOK', false), FILTER_VALIDATE_BOOLEAN),
     'login_github' => filter_var(env('FEATURE_LOGIN_GITHUB', false), FILTER_VALIDATE_BOOLEAN),
     'cookie_consent' => filter_var(env('FEATURE_COOKIE_CONSENT', false), FILTER_VALIDATE_BOOLEAN),
+    'profile_photo' => filter_var(env('FEATURE_PROFILE_PHOTO', false), FILTER_VALIDATE_BOOLEAN),
 ];

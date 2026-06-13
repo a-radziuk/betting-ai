@@ -93,9 +93,56 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_profile_photo_field_is_hidden_when_feature_flag_is_disabled(): void
+    {
+        config(['features.profile_photo' => false]);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk()
+            ->assertDontSee('Profile photo', false)
+            ->assertDontSee('name="avatar"', false);
+    }
+
+    public function test_profile_photo_field_is_shown_when_feature_flag_is_enabled(): void
+    {
+        config(['features.profile_photo' => true]);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk()
+            ->assertSee('Profile photo', false)
+            ->assertSee('name="avatar"', false);
+    }
+
+    public function test_profile_avatar_upload_is_ignored_when_feature_flag_is_disabled(): void
+    {
+        Storage::fake('public');
+        config(['features.profile_photo' => false]);
+
+        $user = User::factory()->create([
+            'avatar' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => UploadedFile::fake()->image('avatar.jpg', 100, 100),
+            ])
+            ->assertSessionHasErrors('avatar');
+
+        $this->assertNull($user->fresh()->avatar);
+    }
+
     public function test_profile_avatar_can_be_uploaded(): void
     {
         Storage::fake('public');
+        config(['features.profile_photo' => true]);
 
         $user = User::factory()->create();
 
@@ -119,6 +166,7 @@ class ProfileTest extends TestCase
     public function test_profile_avatar_replacement_removes_previous_upload(): void
     {
         Storage::fake('public');
+        config(['features.profile_photo' => true]);
 
         $user = User::factory()->create();
 

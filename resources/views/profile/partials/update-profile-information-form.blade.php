@@ -5,7 +5,11 @@
         </h2>
 
         <p class="mt-1 text-sm text-[#9fb0d3]">
-            {{ __('Update your photo, contact details, and what others see on your player page.') }}
+            @feature('profile_photo')
+                {{ __('Update your photo, contact details, and what others see on your player page.') }}
+            @else
+                {{ __('Update your contact details and what others see on your player page.') }}
+            @endfeature
         </p>
     </header>
 
@@ -13,31 +17,38 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
+    <form
+        method="post"
+        action="{{ route('profile.update') }}"
+        class="mt-6 space-y-6"
+        @feature('profile_photo') enctype="multipart/form-data" @endfeature
+    >
         @csrf
         @method('patch')
 
-        <div>
-            <x-input-label for="avatar" :value="__('Profile photo')" />
-            <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-                @if ($url = $user->profileAvatarUrl())
-                    <img src="{{ $url }}" alt="" class="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-[#2a3550]" />
-                @else
-                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#1a2233] text-sm text-[#9fb0d3] ring-2 ring-[#2a3550]" aria-hidden="true">{{ __('None') }}</div>
-                @endif
-                <div class="min-w-0 flex-1">
-                    <input
-                        id="avatar"
-                        name="avatar"
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        class="block w-full text-sm text-[#dce7ff] file:mr-4 file:rounded-md file:border-0 file:bg-[#2a3550] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#eaf0ff] hover:file:bg-[#3a4a6a]"
-                    />
-                    <p class="mt-1 text-xs text-[#9fb0d3]">{{ __('JPEG, PNG, GIF or WebP, up to 2 MB.') }}</p>
-                    <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+        @feature('profile_photo')
+            <div>
+                <x-input-label for="avatar" :value="__('Profile photo')" />
+                <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    @if ($url = $user->profileAvatarUrl())
+                        <img src="{{ $url }}" alt="" class="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-[#2a3550]" />
+                    @else
+                        <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#1a2233] text-sm text-[#9fb0d3] ring-2 ring-[#2a3550]" aria-hidden="true">{{ __('None') }}</div>
+                    @endif
+                    <div class="min-w-0 flex-1">
+                        <input
+                            id="avatar"
+                            name="avatar"
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            class="block w-full text-sm text-[#dce7ff] file:mr-4 file:rounded-md file:border-0 file:bg-[#2a3550] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#eaf0ff] hover:file:bg-[#3a4a6a]"
+                        />
+                        <p class="mt-1 text-xs text-[#9fb0d3]">{{ __('JPEG, PNG, GIF or WebP, up to 2 MB.') }}</p>
+                        <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+                    </div>
                 </div>
             </div>
-        </div>
+        @endfeature
 
         <div>
             <x-input-label for="name" :value="__('Name')" />

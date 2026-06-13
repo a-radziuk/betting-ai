@@ -38,7 +38,7 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
-        if ($request->hasFile('avatar')) {
+        if (feature('profile_photo') && $request->hasFile('avatar')) {
             $path = $request->file('avatar')->store('avatars', 'public');
             User::deleteStoredAvatarFile($previousAvatar);
             $user->avatar = $path;
