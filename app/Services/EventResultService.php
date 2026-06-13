@@ -41,6 +41,7 @@ class EventResultService
                 ->where('event_id', $eventId)
                 ->where('status', UserBet::STATUS_PENDING)
                 ->orderBy('id')
+                ->lockForUpdate()
                 ->with(['odd.selection.market'])
                 ->get();
 
@@ -67,6 +68,11 @@ class EventResultService
      */
     private function settleBet(UserBet $bet, array $fullTime, array $additionalData): void
     {
+        $bet = $this->lockPendingBet($bet);
+        if ($bet === null) {
+            return;
+        }
+
         $previousBet = UserBet::query()
             ->where('user_id', $bet->user_id)
             ->whereKeyNot($bet->id)
@@ -117,6 +123,17 @@ class EventResultService
     private function applyResolvedOrder(UserBet $bet, int $resolvedOrder): void
     {
         $bet->update(['resolved_order' => $resolvedOrder]);
+    }
+
+    private function lockPendingBet(UserBet $bet): ?UserBet
+    {
+        $locked = UserBet::query()->whereKey($bet->id)->lockForUpdate()->first();
+
+        if ($locked === null || $locked->status !== UserBet::STATUS_PENDING) {
+            return null;
+        }
+
+        return $locked;
     }
 
     /**
@@ -402,6 +419,10 @@ class EventResultService
 
     private function winBet(UserBet $bet): void
     {
+        if ($bet->status !== UserBet::STATUS_PENDING) {
+            return;
+        }
+
         $wallet = UserWallet::query()->where('user_id', $bet->user_id)->lockForUpdate()->first();
         if ($wallet !== null) {
             $betReturn = bcsub(
@@ -434,6 +455,10 @@ class EventResultService
 
     private function refundBet(UserBet $bet): void
     {
+        if ($bet->status !== UserBet::STATUS_PENDING) {
+            return;
+        }
+
         $wallet = UserWallet::query()->where('user_id', $bet->user_id)->lockForUpdate()->first();
         if ($wallet !== null) {
             $newBalance = bcadd(
@@ -454,6 +479,10 @@ class EventResultService
 
     private function loseBet(UserBet $bet): void
     {
+        if ($bet->status !== UserBet::STATUS_PENDING) {
+            return;
+        }
+
         $wallet = UserWallet::query()->where('user_id', $bet->user_id)->lockForUpdate()->first();
         if ($wallet !== null) {
             $newAmountInPlay = bcsub(

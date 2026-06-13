@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserWallet;
+use App\Services\EventResultService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -251,5 +252,65 @@ class BetEventResultCommandTest extends TestCase
 
         $this->assertSame('void', UserBet::query()->first()->status);
         $this->assertSame('1000.00', UserWallet::query()->where('user_id', $user->id)->value('balance'));
+    }
+
+    public function test_apply_event_result_twice_does_not_double_settle_bets(): void
+    {
+        $user = $this->seedMatchResultBet(88020, 'HOME', 2.0);
+        $service = app(EventResultService::class);
+
+        $first = $service->applyEventResult(88020, '2:0', []);
+        $this->assertTrue($first['ok']);
+        $this->assertSame('Event settled. Processed 1 pending bet(s).', $first['message']);
+
+        $balanceAfterFirst = UserWallet::query()->where('user_id', $user->id)->value('balance');
+        $betAfterFirst = UserBet::query()->first();
+        $this->assertSame(UserBet::STATUS_WON, $betAfterFirst->status);
+        $this->assertSame(1, $betAfterFirst->resolved_order);
+
+        $second = $service->applyEventResult(88020, '2:0', []);
+        $this->assertTrue($second['ok']);
+        $this->assertSame('Event settled. Processed 0 pending bet(s).', $second['message']);
+        $this->assertSame($balanceAfterFirst, UserWallet::query()->where('user_id', $user->id)->value('balance'));
+        $this->assertSame(1, UserBet::query()->value('resolved_order'));
+    }
+
+    public function test_apply_event_result_skips_already_resolved_bets_on_same_event(): void
+    {
+        $userOne = $this->seedMatchResultBet(88021, 'HOME', 2.0);
+
+        $eventId = 88021;
+        $market = Market::query()->where('event_id', $eventId)->firstOrFail();
+        $selection = Selection::query()->where('market_id', $market->id)->firstOrFail();
+        $odd = Odd::query()->where('selection_id', $selection->id)->firstOrFail();
+
+        $userTwo = User::factory()->create();
+        UserWallet::query()->where('user_id', $userTwo->id)->update(['balance' => 990]);
+
+        UserBet::query()->create([
+            'user_id' => $userTwo->id,
+            'event_id' => $eventId,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.0,
+            'potential_return' => 20,
+            'status' => UserBet::STATUS_WON,
+            'resolved_order' => 3,
+            'real_return' => 10,
+            'wallet_total_result' => 10,
+        ]);
+
+        $pendingBet = UserBet::query()->where('user_id', $userOne->id)->where('event_id', $eventId)->firstOrFail();
+
+        $service = app(EventResultService::class);
+        $result = $service->applyEventResult($eventId, '2:0', []);
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('Event settled. Processed 1 pending bet(s).', $result['message']);
+        $this->assertSame(UserBet::STATUS_WON, $pendingBet->fresh()->status);
+        $this->assertSame(1, $pendingBet->fresh()->resolved_order);
+        $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('user_id', $userTwo->id)->value('status'));
+        $this->assertSame(3, UserBet::query()->where('user_id', $userTwo->id)->value('resolved_order'));
+        $this->assertSame('1010.00', UserWallet::query()->where('user_id', $userOne->id)->value('balance'));
     }
 }
