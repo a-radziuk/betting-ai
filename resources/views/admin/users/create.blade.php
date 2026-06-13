@@ -12,7 +12,7 @@
             </ul>
         @endif
 
-        <form method="post" action="{{ route('admin.users.store') }}" class="admin-upload-form">
+        <form method="post" action="{{ route('admin.users.store') }}" class="admin-upload-form" enctype="multipart/form-data">
             @csrf
             @include('admin.users._form', ['privelegeOptions' => $privelegeOptions, 'selectedPriveleges' => []])
             <div class="admin-form-actions">

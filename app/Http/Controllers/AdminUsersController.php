@@ -35,6 +35,10 @@ class AdminUsersController extends Controller
     {
         $validated = $this->validateUser($request);
 
+        if ($avatarPath = $this->storeAvatarFromRequest($request)) {
+            $validated['avatar'] = $avatarPath;
+        }
+
         User::query()->create($validated);
 
         return redirect()
@@ -57,6 +61,11 @@ class AdminUsersController extends Controller
 
         if ($validated['password'] === null) {
             unset($validated['password']);
+        }
+
+        if ($avatarPath = $this->storeAvatarFromRequest($request)) {
+            User::deleteStoredAvatarFile($user->avatar);
+            $validated['avatar'] = $avatarPath;
         }
 
         $user->update($validated);
@@ -103,8 +112,10 @@ class AdminUsersController extends Controller
             'see_tips_expires_at' => ['nullable', 'date'],
             'tagline' => ['nullable', 'string', 'max:120'],
             'bio' => ['nullable', 'string', 'max:5000'],
+            'hidden_description' => ['nullable', 'string', 'max:5000'],
             'city' => ['nullable', 'string', 'max:120'],
             'country' => ['nullable', 'string', 'max:120'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ]);
 
         return [
@@ -116,9 +127,19 @@ class AdminUsersController extends Controller
             'see_tips_expires_at' => $validated['see_tips_expires_at'] ?? null,
             'tagline' => $validated['tagline'] ?? null,
             'bio' => $validated['bio'] ?? null,
+            'hidden_description' => $validated['hidden_description'] ?? null,
             'city' => $validated['city'] ?? null,
             'country' => $validated['country'] ?? null,
             'email_verified_at' => $request->boolean('email_verified') ? now() : null,
         ];
+    }
+
+    private function storeAvatarFromRequest(Request $request): ?string
+    {
+        if (! $request->hasFile('avatar')) {
+            return null;
+        }
+
+        return $request->file('avatar')->store('avatars', 'public');
     }
 }

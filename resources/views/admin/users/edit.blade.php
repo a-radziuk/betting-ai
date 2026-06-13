@@ -13,7 +13,7 @@
             </ul>
         @endif
 
-        <form method="post" action="{{ route('admin.users.update', $user) }}" class="admin-upload-form">
+        <form method="post" action="{{ route('admin.users.update', $user) }}" class="admin-upload-form" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('admin.users._form', [

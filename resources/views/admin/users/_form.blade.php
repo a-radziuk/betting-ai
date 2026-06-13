@@ -5,6 +5,28 @@
         : ($selectedPriveleges ?? []);
 @endphp
 
+<label class="admin-upload-label" for="avatar">{{ __('Avatar') }}</label>
+<div class="admin-avatar-field">
+    @if ($avatarUrl = $user?->profileAvatarUrl())
+        <img src="{{ $avatarUrl }}" alt="" class="admin-avatar-preview">
+    @else
+        <div class="admin-avatar-preview admin-avatar-preview--empty" aria-hidden="true">{{ __('None') }}</div>
+    @endif
+    <div class="admin-avatar-field-input">
+        <input
+            type="file"
+            id="avatar"
+            name="avatar"
+            class="admin-upload-input"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+        >
+        <p class="admin-upload-hint">{{ __('JPEG, PNG, GIF or WebP, up to 2 MB.') }}</p>
+        @error('avatar')
+            <p class="admin-upload-hint admin-upload-hint--error">{{ $message }}</p>
+        @enderror
+    </div>
+</div>
+
 <label class="admin-upload-label" for="name">{{ __('Name') }}</label>
 <input
     type="text"
@@ -126,6 +148,15 @@
     class="admin-upload-textarea admin-upload-textarea--compact"
     rows="6"
 >{{ old('bio', $user?->bio) }}</textarea>
+
+<label class="admin-upload-label" for="hidden_description">{{ __('Hidden description') }}</label>
+<textarea
+    id="hidden_description"
+    name="hidden_description"
+    class="admin-upload-textarea admin-upload-textarea--compact"
+    rows="4"
+>{{ old('hidden_description', $user?->hidden_description) }}</textarea>
+<p class="admin-upload-hint">{{ __('Internal admin notes only. Not shown on public profile pages.') }}</p>
 
 @if ($user?->provider)
     <p class="admin-upload-hint">{{ __('OAuth provider: :provider (:id)', ['provider' => $user->provider, 'id' => $user->provider_id]) }}</p>

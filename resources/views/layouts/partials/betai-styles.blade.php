@@ -1413,6 +1413,44 @@
         color: var(--muted);
     }
 
+    .admin-upload-hint--error {
+        color: #ff8b8b;
+    }
+
+    .admin-avatar-field {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .admin-avatar-field-input {
+        flex: 1 1 12rem;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .admin-avatar-preview {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 999px;
+        object-fit: cover;
+        border: 2px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .admin-avatar-preview--empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1a2233;
+        color: var(--muted);
+        font-size: 0.75rem;
+    }
+
     .admin-page-header {
         display: flex;
         align-items: flex-start;
