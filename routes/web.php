@@ -1,48 +1,44 @@
 <?php
 
 use App\Http\Controllers\AdminLegalPagesController;
-use App\Http\Controllers\CookieConsentController;
-use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
-use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\AdminResolveEventController;
-use App\Http\Controllers\EventShowController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\CryptoWebhookController;
-use App\Http\Controllers\StripeWebhookController;
-use App\Http\Controllers\SubscribeController;
-use App\Http\Controllers\SubscribeTermsController;
-use App\Http\Controllers\SubscriptionPaymentCompleteController;
-use App\Http\Controllers\SubscriptionCryptoPaymentController;
-use App\Http\Controllers\SubscriptionPaymentController;
-use App\PayWithMetamask\Http\Controllers\RecordTransactionController;
-use App\Http\Controllers\SubscriptionStripePaymentIntentController;
-use App\Http\Controllers\PlayerShowController;
-use App\Http\Controllers\PlayersIndexController;
-use App\Http\Controllers\TournamentShowController;
+use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
 use App\Http\Controllers\AdminUploadAnalysisController;
 use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\AdminUploadPredictionsController;
+use App\Http\Controllers\AdminUploadStandingsController;
 use App\Http\Controllers\AdminUploadTournamentController;
 use App\Http\Controllers\AdminUserBetsController;
 use App\Http\Controllers\AdminUsersController;
+use App\Http\Controllers\CookieConsentController;
+use App\Http\Controllers\CryptoWebhookController;
+use App\Http\Controllers\EventShowController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
+use App\Http\Controllers\PlayerShowController;
+use App\Http\Controllers\PlayersIndexController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\SubscribeTermsController;
+use App\Http\Controllers\SubscriptionCryptoPaymentController;
+use App\Http\Controllers\SubscriptionPaymentCompleteController;
+use App\Http\Controllers\SubscriptionPaymentController;
+use App\Http\Controllers\SubscriptionStripePaymentIntentController;
+use App\Http\Controllers\TournamentShowController;
 use App\Models\Event;
-use App\Models\EventAnalysis;
 use App\Models\EventResult;
-use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Tournament;
 use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserSubscription;
+use App\PayWithMetamask\Http\Controllers\RecordTransactionController;
 use App\Services\PlaceBetService;
-use App\Support\PlayerResolvedBets;
-use App\Support\PlayerWalletResultChart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -184,6 +180,11 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.upload-tournament');
     Route::post('/upload-tournament', [AdminUploadTournamentController::class, 'store'])
         ->name('admin.upload-tournament.store');
+
+    Route::get('/upload-standings', [AdminUploadStandingsController::class, 'show'])
+        ->name('admin.upload-standings');
+    Route::post('/upload-standings', [AdminUploadStandingsController::class, 'store'])
+        ->name('admin.upload-standings.store');
 
     Route::get('/upload-analysis', [AdminUploadAnalysisController::class, 'show'])
         ->name('admin.upload-analysis');

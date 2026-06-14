@@ -21,6 +21,7 @@
                 ['label' => __('Simple Crypto Payments'), 'route' => 'admin.simple-crypto-payments', 'active' => 'admin.simple-crypto-payments*', 'feature' => 'simple_crypto_payment'],
                 ['label' => __('Upload Events'), 'route' => 'admin.upload-events', 'active' => 'admin.upload-events*'],
                 ['label' => __('Upload Tournament'), 'route' => 'admin.upload-tournament', 'active' => 'admin.upload-tournament*'],
+                ['label' => __('Import standings'), 'route' => 'admin.upload-standings', 'active' => 'admin.upload-standings*'],
                 ['label' => __('Upload Analysis'), 'route' => 'admin.upload-analysis', 'active' => 'admin.upload-analysis*'],
                 ['label' => __('Upload Predictions'), 'route' => 'admin.upload-predictions', 'active' => 'admin.upload-predictions*'],
                 ['label' => __('Resolve Event'), 'route' => 'admin.resolve-event', 'active' => 'admin.resolve-event*'],
