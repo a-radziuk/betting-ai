@@ -1,3 +1,7 @@
+@php
+    $standingsPromrel = $tournament->standings_promrel;
+@endphp
+
 @if (count($standingsRows) === 0 && count($standingsGroups ?? []) === 0)
     <div class="empty">{{ __('No standings data yet. Run') }} <code class="tabular-nums">php artisan guardian:standings {{ $tournament->id }}</code> {{ __('or') }} <code class="tabular-nums">php artisan guardian:standings-multi {{ $tournament->id }}</code> {{ __('after setting') }} <code>guardian_standings_url</code> {{ __('on this tournament.') }}</div>
 @else

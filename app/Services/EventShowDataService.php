@@ -84,7 +84,7 @@ class EventShowDataService
         if ($tournament !== null) {
             $standingsRows = $tournament->localizedStandingsRows();
             $standingsGroups = $tournament->localizedStandingsGroups();
-            $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
+            $standingsPromrel = $tournament->standings_promrel;
         }
 
         return [

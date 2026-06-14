@@ -124,7 +124,7 @@ final class EventOddsExportPayload
         $eventTournament = $event->tournament?->name;
 
         $tournament = $event->tournament;
-        $promrel = is_array($tournament?->standings_promrel) ? $tournament->standings_promrel : [];
+        $promrel = $tournament?->standings_promrel ?? [];
 
         return [
             'eventId' => (string) $event->id,

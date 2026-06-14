@@ -26,7 +26,7 @@ class TournamentShowDataService
     {
         $tournament->loadMissing('translations');
 
-        $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
+        $standingsPromrel = $tournament->standings_promrel;
 
         /** @var Collection<int, Event> $upcomingEvents */
         $upcomingEvents = collect();

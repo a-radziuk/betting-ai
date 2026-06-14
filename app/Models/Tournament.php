@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsStandingsPromrel;
 use App\Services\TournamentShowCache;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,7 @@ class Tournament extends Model
             'rank' => 'integer',
             'standings' => 'array',
             'standings_updated_at' => 'datetime',
-            'standings_promrel' => 'array',
+            'standings_promrel' => AsStandingsPromrel::class,
         ];
     }
 
