@@ -36,6 +36,13 @@ class TournamentShowCache
         return Cache::store(config('page_cache.cache_store'))->forget($this->cacheKey($tournament, $locale));
     }
 
+    public function forgetAllLocales(Tournament $tournament): void
+    {
+        foreach (['en', 'ru', 'ge'] as $locale) {
+            $this->forget($tournament, $locale);
+        }
+    }
+
     private function renderMainContent(Tournament $tournament): string
     {
         return view('tournament-standings.main', $this->tournamentShowData->get($tournament))->render();

@@ -85,4 +85,60 @@ class TournamentShowCacheTest extends TestCase
         $other = Tournament::query()->create(['name' => 'League B', 'rank' => 1]);
         $this->assertFalse(Cache::store('array')->has($cache->cacheKey($other, 'en')));
     }
+
+    public function test_tournament_cache_is_cleared_when_standings_promrel_changes(): void
+    {
+        Cache::store('array')->flush();
+
+        $tournament = Tournament::query()->create([
+            'name' => 'Cached Cup',
+            'rank' => 1,
+            'standings' => [
+                'groups' => [
+                    [
+                        'name' => 'Group A',
+                        'rows' => [
+                            [
+                                'position' => 1,
+                                'team' => 'Alpha FC',
+                                'played' => 0,
+                                'won' => 0,
+                                'drawn' => 0,
+                                'lost' => 0,
+                                'goals_for' => 0,
+                                'goals_against' => 0,
+                                'goal_difference' => 0,
+                                'points' => 0,
+                                'form' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'standings_promrel' => null,
+        ]);
+
+        $cache = app(TournamentShowCache::class);
+
+        $this->get(route('tournaments.show', $tournament))->assertOk();
+        $this->assertTrue(Cache::store('array')->has($cache->cacheKey($tournament, 'en')));
+
+        $cachedBefore = Cache::store('array')->get($cache->cacheKey($tournament, 'en'));
+        $this->assertStringNotContainsString('standings-row--promotion-cl', $cachedBefore);
+
+        $tournament->update([
+            'standings_promrel' => [
+                '1' => [
+                    'type' => 'promotion',
+                    'name' => 'Playoff',
+                    'subtype' => 'champions-league',
+                ],
+            ],
+        ]);
+
+        $this->assertFalse(Cache::store('array')->has($cache->cacheKey($tournament, 'en')));
+
+        $html = $this->get(route('tournaments.show', $tournament))->assertOk()->getContent();
+        $this->assertStringContainsString('<tr class="standings-row--promotion standings-row--promotion-cl"', $html);
+    }
 }

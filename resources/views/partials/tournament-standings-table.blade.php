@@ -8,16 +8,17 @@
         </p>
     @endif
 
-
     @if (count($standingsGroups ?? []) > 0)
         <div class="standings-groups">
             @foreach ($standingsGroups as $group)
                 <section class="standings-group" aria-label="{{ $group['name'] }}">
                     <h3 class="standings-group-title">{{ $group['name'] }}</h3>
-                    @include('partials.tournament-standings-table-body', [
-                        'standingsRows' => $group['rows'],
-                        'standingsPromrel' => $standingsPromrel,
-                    ])
+                    <div class="overflow-x-auto">
+                        @include('partials.tournament-standings-table-body', [
+                            'standingsRows' => $group['rows'],
+                            'standingsPromrel' => $standingsPromrel,
+                        ])
+                    </div>
                 </section>
             @endforeach
         </div>

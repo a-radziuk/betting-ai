@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Event;
 use App\Models\EventAnalysis;
+use App\Models\Tournament;
 use App\Models\UserBet;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ class EventShowDataService
      *     event: Event,
      *     eventBets: Collection<int, UserBet>,
      *     eventAnalysis: ?EventAnalysis,
-     *     tournament: ?\App\Models\Tournament,
+     *     tournament: ?Tournament,
      *     standingsRows: list<array<string, mixed>>,
      *     standingsGroups: list<array{name: string, rows: list<array<string, mixed>>}>,
      *     standingsPromrel: array<string, mixed>

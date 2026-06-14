@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\TournamentShowCache;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -29,6 +31,15 @@ class Tournament extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saved(function (Tournament $tournament): void {
+            if ($tournament->wasChanged(['standings', 'standings_promrel'])) {
+                app(TournamentShowCache::class)->forgetAllLocales($tournament);
+            }
+        });
+    }
+
     /**
      * @return HasMany<Team, $this>
      */
@@ -50,7 +61,7 @@ class Tournament extends Model
         $locale = app()->getLocale();
 
         if ($this->relationLoaded('translations')) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, TournamentTranslation> $translations */
+            /** @var Collection<int, TournamentTranslation> $translations */
             $translations = $this->getRelation('translations');
 
             return $translations->firstWhere('locale', $locale);
