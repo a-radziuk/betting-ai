@@ -59,6 +59,49 @@ final class StandingsMovement
     }
 
     /**
+     * @param  array{groups?: list<array{name?: string, rows?: list<array<string, mixed>>}>}  $newStandings
+     * @param  array{groups?: list<array{name?: string, rows?: list<array<string, mixed>>}>}|null  $previousStandings
+     * @return array{groups: list<array{name: string, rows: list<array<string, mixed>>}>}
+     */
+    public static function applyToGroups(array $newStandings, ?array $previousStandings): array
+    {
+        $groups = $newStandings['groups'] ?? [];
+        if (! is_array($groups)) {
+            return $newStandings;
+        }
+
+        $previousByName = [];
+        if (is_array($previousStandings)) {
+            foreach ($previousStandings['groups'] ?? [] as $group) {
+                if (! is_array($group)) {
+                    continue;
+                }
+                $name = isset($group['name']) ? trim((string) $group['name']) : '';
+                if ($name !== '') {
+                    $previousByName[$name] = $group;
+                }
+            }
+        }
+
+        foreach ($groups as $index => $group) {
+            if (! is_array($group)) {
+                continue;
+            }
+
+            $name = isset($group['name']) ? trim((string) $group['name']) : '';
+            $rows = is_array($group['rows'] ?? null) ? $group['rows'] : [];
+            $previousGroup = $name !== '' ? ($previousByName[$name] ?? null) : null;
+            $applied = self::apply(['rows' => $rows], is_array($previousGroup) ? $previousGroup : null);
+            $group['rows'] = $applied['rows'] ?? [];
+            $groups[$index] = $group;
+        }
+
+        $newStandings['groups'] = $groups;
+
+        return $newStandings;
+    }
+
+    /**
      * @param  list<array<string, mixed>>|array<int, mixed>  $rows
      * @return array<string, int>
      */

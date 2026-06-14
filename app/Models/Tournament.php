@@ -73,15 +73,72 @@ class Tournament extends Model
     }
 
     /**
+     * @return list<array{name: string, rows: list<array<string, mixed>>}>
+     */
+    public function localizedStandingsGroups(): array
+    {
+        $groups = is_array($this->standings) ? ($this->standings['groups'] ?? []) : [];
+        if (! is_array($groups) || $groups === []) {
+            return [];
+        }
+
+        $localizedGroups = [];
+        foreach ($groups as $group) {
+            if (! is_array($group)) {
+                continue;
+            }
+
+            $rows = is_array($group['rows'] ?? null) ? $group['rows'] : [];
+            $name = isset($group['name']) ? trim((string) $group['name']) : '';
+            if ($name === '' && $rows === []) {
+                continue;
+            }
+
+            $localizedGroups[] = [
+                'name' => $name !== '' ? $name : __('Group'),
+                'rows' => $this->localizeStandingsRowList($rows),
+            ];
+        }
+
+        return $localizedGroups;
+    }
+
+    public function hasGroupedStandings(): bool
+    {
+        return $this->localizedStandingsGroups() !== [];
+    }
+
+    /**
      * @return list<array<string, mixed>>
      */
     public function localizedStandingsRows(): array
     {
+        if ($this->hasGroupedStandings()) {
+            $rows = [];
+            foreach ($this->localizedStandingsGroups() as $group) {
+                foreach ($group['rows'] as $row) {
+                    $row['group'] = $group['name'];
+                    $rows[] = $row;
+                }
+            }
+
+            return $rows;
+        }
+
         $rows = is_array($this->standings) ? ($this->standings['rows'] ?? []) : [];
         if (! is_array($rows) || $rows === []) {
             return [];
         }
 
+        return $this->localizeStandingsRowList($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function localizeStandingsRowList(array $rows): array
+    {
         $teams = $this->relationLoaded('teams')
             ? $this->teams
             : $this->teams()->with('translations')->get();

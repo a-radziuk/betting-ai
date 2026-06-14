@@ -2661,6 +2661,28 @@
         color: #c92a2a;
     }
 
+    .standings-groups {
+        display: grid;
+        gap: 1.75rem;
+        margin-top: 0.75rem;
+    }
+
+    .standings-group {
+        min-width: 0;
+    }
+
+    .standings-group-title {
+        margin: 0 0 0.65rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .standings-group .overflow-x-auto,
+    .standings-groups .overflow-x-auto {
+        overflow-x: auto;
+    }
+
     .footer-cookie-settings {
         padding: 0 0 1.25rem;
         text-align: center;

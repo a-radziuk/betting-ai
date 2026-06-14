@@ -210,6 +210,96 @@ class TournamentStandingsPageTest extends TestCase
         $this->assertStringContainsString('title="Championship"', $html);
     }
 
+    public function test_grouped_standings_flat_promrel_applies_to_each_group(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'World Cup',
+            'rank' => 1,
+            'standings' => [
+                'groups' => [
+                    [
+                        'name' => 'Group A',
+                        'rows' => [
+                            [
+                                'position' => 1,
+                                'team' => 'Alpha FC',
+                                'played' => 1,
+                                'won' => 1,
+                                'drawn' => 0,
+                                'lost' => 0,
+                                'goals_for' => 2,
+                                'goals_against' => 0,
+                                'goal_difference' => 2,
+                                'points' => 3,
+                                'form' => null,
+                            ],
+                            [
+                                'position' => 3,
+                                'team' => 'Gamma FC',
+                                'played' => 1,
+                                'won' => 0,
+                                'drawn' => 0,
+                                'lost' => 1,
+                                'goals_for' => 0,
+                                'goals_against' => 2,
+                                'goal_difference' => -2,
+                                'points' => 0,
+                                'form' => null,
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'Group B',
+                        'rows' => [
+                            [
+                                'position' => 2,
+                                'team' => 'Beta FC',
+                                'played' => 1,
+                                'won' => 0,
+                                'drawn' => 1,
+                                'lost' => 0,
+                                'goals_for' => 1,
+                                'goals_against' => 1,
+                                'goal_difference' => 0,
+                                'points' => 1,
+                                'form' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'standings_promrel' => [
+                '1' => [
+                    'type' => 'promotion',
+                    'name' => 'Playoff',
+                    'subtype' => 'champions-league',
+                    'positivity' => 10,
+                ],
+                '2' => [
+                    'type' => 'promotion',
+                    'name' => 'Playoff',
+                    'subtype' => 'champions-league',
+                    'positivity' => 8,
+                ],
+                '3' => [
+                    'type' => 'promotion',
+                    'name' => 'Possible play-off',
+                    'subtype' => 'europa-league',
+                    'positivity' => 5,
+                ],
+            ],
+        ]);
+
+        $html = $this->get(route('tournaments.show', $tournament))->assertOk()->getContent();
+
+        $this->assertSame(2, substr_count($html, '<tr class="standings-row--promotion standings-row--promotion-cl"'));
+        $this->assertSame(1, substr_count($html, '<tr class="standings-row--promotion standings-row--promotion-el"'));
+        $this->assertSame(2, substr_count($html, 'title="Playoff"'));
+        $this->assertStringContainsString('title="Possible play-off"', $html);
+        $this->assertStringContainsString('Group A', $html);
+        $this->assertStringContainsString('Group B', $html);
+    }
+
     public function test_tournament_page_shows_upcoming_events_before_standings(): void
     {
         $tz = config('app.timezone');

@@ -50,6 +50,7 @@ HTML;
     {
         $tournament = Tournament::query()->create([
             'name' => 'Test League',
+            'country' => 'UK',
             'guardian_standings_url' => 'https://www.theguardian.com/football/test/table',
         ]);
 
@@ -114,6 +115,7 @@ HTML;
     {
         $tournament = Tournament::query()->create([
             'name' => 'Mov League',
+            'country' => 'UK',
             'guardian_standings_url' => 'https://www.theguardian.com/football/mov/table',
             'standings' => [
                 'rows' => [

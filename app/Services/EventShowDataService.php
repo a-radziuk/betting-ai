@@ -18,6 +18,7 @@ class EventShowDataService
      *     eventAnalysis: ?EventAnalysis,
      *     tournament: ?\App\Models\Tournament,
      *     standingsRows: list<array<string, mixed>>,
+     *     standingsGroups: list<array{name: string, rows: list<array<string, mixed>>}>,
      *     standingsPromrel: array<string, mixed>
      * }
      */
@@ -77,9 +78,11 @@ class EventShowDataService
 
         $tournament = $event->tournament;
         $standingsRows = [];
+        $standingsGroups = [];
         $standingsPromrel = [];
         if ($tournament !== null) {
             $standingsRows = $tournament->localizedStandingsRows();
+            $standingsGroups = $tournament->localizedStandingsGroups();
             $standingsPromrel = is_array($tournament->standings_promrel) ? $tournament->standings_promrel : [];
         }
 
@@ -89,6 +92,7 @@ class EventShowDataService
             'eventAnalysis' => $eventAnalysis,
             'tournament' => $tournament,
             'standingsRows' => $standingsRows,
+            'standingsGroups' => $standingsGroups ?? [],
             'standingsPromrel' => $standingsPromrel,
         ];
     }

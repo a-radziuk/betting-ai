@@ -9,14 +9,14 @@ use App\Support\StandingsMovement;
 use Illuminate\Console\Command;
 use Throwable;
 
-class GuardianStandingsCommand extends Command
+class GuardianStandingsMultiCommand extends Command
 {
     use SyncsGuardianStandings;
 
-    protected $signature = 'guardian:standings
+    protected $signature = 'guardian:standings-multi
         {tournamentId : Tournament primary key}';
 
-    protected $description = 'Fetch Guardian league table HTML, parse standings JSON, and save to the tournament';
+    protected $description = 'Fetch Guardian multi-group table HTML, parse all group standings, and save to the tournament';
 
     public function handle(GuardianStandingsParser $parser): int
     {
@@ -42,28 +42,33 @@ class GuardianStandingsCommand extends Command
         }
 
         try {
-            $data = $parser->parseHtml($html);
+            $data = $parser->parseMultiGroupHtml($html);
         } catch (Throwable $e) {
-            $this->components->error('Failed to parse standings: '.$e->getMessage());
+            $this->components->error('Failed to parse group standings: '.$e->getMessage());
 
             return self::FAILURE;
         }
 
         $previousStandings = $tournament->standings;
-        $hasPreviousRows = is_array($previousStandings)
-            && isset($previousStandings['rows'])
-            && is_array($previousStandings['rows'])
-            && count($previousStandings['rows']) > 0;
+        $hasPreviousGroups = is_array($previousStandings)
+            && isset($previousStandings['groups'])
+            && is_array($previousStandings['groups'])
+            && count($previousStandings['groups']) > 0;
 
-        $data = StandingsMovement::apply($data, $hasPreviousRows ? $previousStandings : null);
-        $data = $this->attachTeamIdsToStandingsRows($data, $tournamentId);
+        $data = StandingsMovement::applyToGroups($data, $hasPreviousGroups ? $previousStandings : null);
+        $data = $this->attachTeamIdsToStandingsGroups($data, $tournamentId);
 
         $tournament->standings = $data;
         $tournament->standings_updated_at = now();
         $tournament->save();
 
-        $count = count($data['rows'] ?? []);
-        $this->components->info("Saved {$count} row(s) to tournament {$tournamentId} standings.");
+        $groupCount = count($data['groups'] ?? []);
+        $rowCount = array_sum(array_map(
+            static fn (array $group): int => count($group['rows'] ?? []),
+            $data['groups'] ?? [],
+        ));
+
+        $this->components->info("Saved {$groupCount} group(s) with {$rowCount} row(s) to tournament {$tournamentId} standings.");
 
         return self::SUCCESS;
     }

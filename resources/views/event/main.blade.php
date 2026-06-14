@@ -30,6 +30,7 @@
             @include('partials.tournament-standings-table', [
                 'tournament' => $tournament,
                 'standingsRows' => $standingsRows,
+                'standingsGroups' => $standingsGroups ?? [],
                 'standingsPromrel' => $standingsPromrel,
             ])
         </section>

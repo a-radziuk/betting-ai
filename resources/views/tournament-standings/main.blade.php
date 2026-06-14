@@ -20,11 +20,12 @@
         </section>
     @endif
 
-    @if (count($standingsRows) > 0)
+    @if (count($standingsRows) > 0 || count($standingsGroups) > 0)
         <section class="card">
             @include('partials.tournament-standings-table', [
                 'tournament' => $tournament,
                 'standingsRows' => $standingsRows,
+                'standingsGroups' => $standingsGroups,
                 'standingsPromrel' => $standingsPromrel,
             ])
         </section>

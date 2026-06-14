@@ -15,6 +15,7 @@ class TournamentShowDataService
      * @return array{
      *     tournament: Tournament,
      *     standingsRows: list<array<string, mixed>>,
+     *     standingsGroups: list<array{name: string, rows: list<array<string, mixed>>}>,
      *     standingsPromrel: array<string, mixed>,
      *     upcomingEvents: Collection<int, Event>,
      *     recentEventResults: Collection<int, EventResult>,
@@ -72,6 +73,7 @@ class TournamentShowDataService
         return [
             'tournament' => $tournament,
             'standingsRows' => $tournament->localizedStandingsRows(),
+            'standingsGroups' => $tournament->localizedStandingsGroups(),
             'standingsPromrel' => $standingsPromrel,
             'upcomingEvents' => $upcomingEvents,
             'recentEventResults' => $recentEventResults,
