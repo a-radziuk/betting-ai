@@ -91,6 +91,9 @@ final class TournamentImportService
             'league',
             'country',
             'guardian_name',
+            'fifa_name',
+            'fifa_rank',
+            'fifa_points',
             'created_at',
             'updated_at',
         ]);

@@ -15,10 +15,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RussianTournamentTranslationsSeeder::class,
-            RussianTeamTranslationsSeeder::class,
-            GeorgianTournamentTranslationsSeeder::class,
-            GeorgianTeamTranslationsSeeder::class,
+       //     RussianTournamentTranslationsSeeder::class,
+       //     RussianTeamTranslationsSeeder::class,
+       //     GeorgianTournamentTranslationsSeeder::class,
+       //     GeorgianTeamTranslationsSeeder::class,
+            WorldTeamFifaNamesSeeder::class
         ]);
     }
 }

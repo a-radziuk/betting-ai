@@ -17,7 +17,18 @@ class Team extends Model
         'league',
         'country',
         'guardian_name',
+        'fifa_name',
+        'fifa_rank',
+        'fifa_points',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'fifa_rank' => 'integer',
+            'fifa_points' => 'decimal:2',
+        ];
+    }
 
     /**
      * Label shown on the site: `display_name` when set, otherwise `name`.
