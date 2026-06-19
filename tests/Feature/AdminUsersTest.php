@@ -39,6 +39,7 @@ class AdminUsersTest extends TestCase
         $member = User::factory()->create([
             'name' => 'Listed Member',
             'email' => 'member@example.com',
+            'is_metrics_available' => true,
         ]);
 
         $this->actingAs($admin)
@@ -47,7 +48,70 @@ class AdminUsersTest extends TestCase
             ->assertSee('Users', false)
             ->assertSee('Listed Member', false)
             ->assertSee('member@example.com', false)
+            ->assertSee(__('Metrics'), false)
+            ->assertSee('data-admin-metrics-toggle', false)
             ->assertSee((string) $member->id, false);
+    }
+
+    public function test_guest_cannot_update_user_metrics_availability(): void
+    {
+        $user = User::factory()->create();
+
+        $this->patchJson(route('admin.users.metrics-availability', $user), [
+            'is_metrics_available' => true,
+        ])->assertRedirect(route('login'));
+    }
+
+    public function test_non_superadmin_cannot_update_user_metrics_availability(): void
+    {
+        $actor = User::factory()->create([
+            'is_superadmin' => false,
+        ]);
+
+        $user = User::factory()->create([
+            'is_metrics_available' => false,
+        ]);
+
+        $this->actingAs($actor)
+            ->patchJson(route('admin.users.metrics-availability', $user), [
+                'is_metrics_available' => true,
+            ])
+            ->assertForbidden();
+
+        $this->assertFalse($user->fresh()->is_metrics_available);
+    }
+
+    public function test_superadmin_can_update_user_metrics_availability_via_ajax(): void
+    {
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $user = User::factory()->create([
+            'is_metrics_available' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->patchJson(route('admin.users.metrics-availability', $user), [
+                'is_metrics_available' => true,
+            ])
+            ->assertOk()
+            ->assertJson([
+                'is_metrics_available' => true,
+            ]);
+
+        $this->assertTrue($user->fresh()->is_metrics_available);
+
+        $this->actingAs($admin)
+            ->patchJson(route('admin.users.metrics-availability', $user), [
+                'is_metrics_available' => false,
+            ])
+            ->assertOk()
+            ->assertJson([
+                'is_metrics_available' => false,
+            ]);
+
+        $this->assertFalse($user->fresh()->is_metrics_available);
     }
 
     public function test_superadmin_can_create_user(): void
@@ -224,6 +288,32 @@ class AdminUsersTest extends TestCase
         $this->assertSame('After Update', $user->name);
         $this->assertSame(User::PRIVELEGE_PLACE_BETS, $user->priveleges);
         $this->assertSame($originalPassword, $user->password);
+    }
+
+    public function test_superadmin_can_toggle_metrics_available(): void
+    {
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $user = User::factory()->create([
+            'is_metrics_available' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $user), [
+                'name' => $user->name,
+                'email' => $user->email,
+                'password' => '',
+                'password_confirmation' => '',
+                'is_metrics_available' => '1',
+            ])
+            ->assertRedirect(route('admin.users'));
+
+        $user->refresh();
+
+        $this->assertTrue($user->is_metrics_available);
+        $this->assertTrue($user->isMetricsAvailable());
     }
 
     public function test_superadmin_can_delete_user(): void

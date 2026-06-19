@@ -179,6 +179,105 @@
         font-size: 0.95rem;
     }
 
+    .home-hero-banner {
+        position: relative;
+        margin: 1.5rem 0 1.75rem;
+        padding: clamp(1.5rem, 3vw, 2.25rem);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(93, 226, 255, 0.22);
+        background:
+            linear-gradient(135deg, rgba(8, 28, 22, 0.92) 0%, rgba(10, 22, 42, 0.95) 48%, rgba(14, 18, 38, 0.98) 100%);
+        box-shadow:
+            0 24px 50px rgba(0, 0, 0, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+    }
+
+    .home-hero-banner-pitch {
+        position: absolute;
+        inset: 0;
+        background:
+            repeating-linear-gradient(
+                90deg,
+                rgba(76, 255, 157, 0.045) 0,
+                rgba(76, 255, 157, 0.045) 12%,
+                rgba(76, 255, 157, 0.02) 12%,
+                rgba(76, 255, 157, 0.02) 24%
+            );
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85), transparent 95%);
+        pointer-events: none;
+    }
+
+    .home-hero-banner-pitch::before {
+        content: "";
+        position: absolute;
+        inset: 12% 8%;
+        border: 1px solid rgba(93, 226, 255, 0.12);
+        border-radius: 0.5rem;
+    }
+
+    .home-hero-banner-pitch::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 8%;
+        right: 8%;
+        border-top: 1px solid rgba(93, 226, 255, 0.1);
+        transform: translateY(-50%);
+    }
+
+    .home-hero-banner-inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    .home-hero-banner-content {
+        max-width: 42rem;
+    }
+
+    .home-hero-banner-eyebrow {
+        margin: 0 0 0.65rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(93, 226, 255, 0.28);
+        background: rgba(93, 226, 255, 0.08);
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .home-hero-banner-title {
+        margin: 0;
+        font-size: clamp(1.85rem, 4vw, 2.75rem);
+        line-height: 1.08;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #ffffff 0%, #b8f4ff 42%, #9f8dff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .home-hero-banner-lead {
+        margin: 0.85rem 0 0;
+        max-width: 36rem;
+        color: var(--muted);
+        font-size: clamp(1rem, 1.8vw, 1.12rem);
+        line-height: 1.55;
+    }
+
+    .home-hero-banner-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.35rem;
+    }
+
     .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -1651,6 +1750,13 @@
     .admin-table-actions {
         text-align: right;
         white-space: nowrap;
+    }
+
+    .admin-table-checkbox {
+        width: 1rem;
+        height: 1rem;
+        margin: 0;
+        cursor: pointer;
     }
 
     .btn-sm {

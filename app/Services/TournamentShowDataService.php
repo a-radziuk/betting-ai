@@ -37,7 +37,9 @@ class TournamentShowDataService
                     'awayTeam.translations',
                     'tournament.translations',
                 ])
-                ->withCount('userBets')
+                ->withCount(['userBets as user_bets_count' => function ($query): void {
+                    $query->whereHas('user', fn ($userQuery) => $userQuery->visibleOnSite());
+                }])
                 ->with([
                     'markets' => function ($query): void {
                         $query->where('type', Market::TYPE_MATCH_RESULT)

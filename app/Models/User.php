@@ -8,14 +8,16 @@ use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'email_verified_at', 'is_superadmin', 'priveleges', 'see_tips_expires_at', 'provider', 'provider_id', 'avatar', 'tagline', 'bio', 'hidden_description', 'city', 'country'])]
+#[Fillable(['name', 'email', 'password', 'email_verified_at', 'is_superadmin', 'is_hidden', 'is_metrics_available', 'priveleges', 'see_tips_expires_at', 'provider', 'provider_id', 'avatar', 'tagline', 'bio', 'hidden_description', 'city', 'country'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -39,6 +41,39 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuperadmin(): bool
     {
         return (bool) $this->is_superadmin;
+    }
+
+    public function isHidden(): bool
+    {
+        return (bool) $this->is_hidden;
+    }
+
+    public function isMetricsAvailable(): bool
+    {
+        return (bool) $this->is_metrics_available;
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeDueForMetricsUpdate(Builder $query, ?Carbon $now = null): Builder
+    {
+        $cutoff = ($now ?? now())->copy()->subDay();
+
+        return $query->where(function (Builder $query) use ($cutoff): void {
+            $query->whereNull('metrics_updated_at')
+                ->orWhere('metrics_updated_at', '<', $cutoff);
+        });
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeVisibleOnSite(Builder $query): Builder
+    {
+        return $query->where('is_hidden', false);
     }
 
     public function hasPrivelege(string $privelege): bool
@@ -166,6 +201,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * @return HasMany<UserMetric, $this>
+     */
+    public function metrics(): HasMany
+    {
+        return $this->hasMany(UserMetric::class);
+    }
+
+    /**
      * @return HasMany<UserPredictionSubscription, $this>
      */
     public function predictionSubscriptions(): HasMany
@@ -184,6 +227,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
+            'is_hidden' => 'boolean',
+            'is_metrics_available' => 'boolean',
+            'metrics_updated_at' => 'datetime',
             'see_tips_expires_at' => 'datetime',
         ];
     }

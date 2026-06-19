@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\UserPriveleges;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,6 +76,21 @@ class AdminUsersController extends Controller
             ->with('status', __('User updated.'));
     }
 
+    public function updateMetricsAvailability(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'is_metrics_available' => ['required', 'boolean'],
+        ]);
+
+        $user->update([
+            'is_metrics_available' => $validated['is_metrics_available'],
+        ]);
+
+        return response()->json([
+            'is_metrics_available' => $user->is_metrics_available,
+        ]);
+    }
+
     public function destroy(User $user): RedirectResponse
     {
         $admin = Auth::user();
@@ -123,6 +139,8 @@ class AdminUsersController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'] ?? null,
             'is_superadmin' => $request->boolean('is_superadmin'),
+            'is_hidden' => $request->boolean('is_hidden'),
+            'is_metrics_available' => $request->boolean('is_metrics_available'),
             'priveleges' => UserPriveleges::toStorage($validated['priveleges'] ?? []),
             'see_tips_expires_at' => $validated['see_tips_expires_at'] ?? null,
             'tagline' => $validated['tagline'] ?? null,

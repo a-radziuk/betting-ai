@@ -54,8 +54,9 @@
                     <p class="subscribe-plan-duration">{{ $plan['duration_label'] }}</p>
                     <p class="subscribe-plan-price">{{ $plan['price_label'] }}</p>
                     <ul class="subscribe-plan-features">
-                        <li>{{ __('See player tips on events') }}</li>
-                        <li>{{ __('View current bets from players') }}</li>
+                        <li>{{ __('View player betting tips on events') }}</li>
+                        <li>{{ __('Download full player bet history as CSV') }}</li>
+                        <li>{{ __('View full cumulative result trend charts') }}</li>
                     </ul>
                     <div class="subscribe-plan-action">
                         @if ($hasActiveSeeTips)

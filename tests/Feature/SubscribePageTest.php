@@ -34,6 +34,9 @@ class SubscribePageTest extends TestCase
         $this->assertStringContainsString('subscribe-plans-grid', $html);
         $this->assertCount(5, SubscriptionPlans::all());
         $this->assertStringContainsString(route('subscribe.terms', ['plan' => SubscriptionPlans::ONE_DAY]), $html);
+        $this->assertStringContainsString(__('View player betting tips on events'), $html);
+        $this->assertStringContainsString(__('Download full player bet history as CSV'), $html);
+        $this->assertStringContainsString(__('View full cumulative result trend charts'), $html);
     }
 
     public function test_hidden_plans_are_not_listed(): void

@@ -42,9 +42,10 @@ class EventShowDataService
             $eventBetsQuery = UserBet::query()
                 ->where('user_bets.event_id', $event->id)
                 ->whereHas('user', function ($q): void {
-                    $q->whereHas('bets', function ($bq): void {
-                        $bq->where('status', '<>', UserBet::STATUS_PENDING);
-                    });
+                    $q->visibleOnSite()
+                        ->whereHas('bets', function ($bq): void {
+                            $bq->where('status', '<>', UserBet::STATUS_PENDING);
+                        });
                 })
                 ->with([
                     'user.wallet',

@@ -6,6 +6,9 @@
         <div class="header-right">
             <span class="header-tag">{{ __('AI-Powered Football Betting Insights') }}</span>
             @auth
+                @if (auth()->user()->isSuperadmin())
+                    <a class="header-link" href="{{ route('admin') }}">{{ __('Admin') }}</a>
+                @endif
                 <a class="header-link" href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
                 <a class="header-link" href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>
                 <form method="POST" action="{{ route('logout') }}" style="display: inline; margin: 0;">

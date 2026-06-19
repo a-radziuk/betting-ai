@@ -44,5 +44,6 @@
 </main>
 
 @include('layouts.partials.betai-footer')
+@stack('scripts')
 </body>
 </html>

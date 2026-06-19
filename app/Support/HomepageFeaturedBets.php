@@ -20,6 +20,7 @@ final class HomepageFeaturedBets
         return UserBet::query()
             ->join('events', 'events.id', '=', 'user_bets.event_id')
             ->where('user_bets.status', '<>', UserBet::STATUS_PENDING)
+            ->whereHas('user', fn ($query) => $query->visibleOnSite())
             ->orderByDesc('events.start_time')
             ->orderByDesc('user_bets.id')
             ->select('user_bets.*');

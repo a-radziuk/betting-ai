@@ -33,7 +33,9 @@ class HomepageDataService
                     'awayTeam.translations',
                     'tournament.translations',
                 ])
-                ->withCount('userBets')
+                ->withCount(['userBets as user_bets_count' => function ($query): void {
+                    $query->whereHas('user', fn ($userQuery) => $userQuery->visibleOnSite());
+                }])
                 ->with([
                     'markets' => function ($query): void {
                         $query->where('type', Market::TYPE_MATCH_RESULT)
@@ -67,22 +69,7 @@ class HomepageDataService
             && Schema::hasTable('user_wallets')
             && Schema::hasColumn('user_wallets', 'total_result')
         ) {
-            $topBettors = User::query()
-                ->whereHas('bets', function ($q): void {
-                    $q->where('status', '<>', UserBet::STATUS_PENDING);
-                })
-                ->join('user_wallets', 'user_wallets.user_id', '=', 'users.id')
-                ->orderByDesc('user_wallets.total_result')
-                ->orderBy('users.id')
-                ->select('users.*')
-                ->withCount('bets')
-                ->withSum('bets', 'stake')
-                ->limit(3)
-                ->with([
-                    'wallet',
-                    'bets' => UserBet::eagerLoadRecentResolved(),
-                ])
-                ->get();
+            $topBettors = $this->topBettorsByWallet();
         }
 
         /** @var Collection<int, UserBet> $featuredBets */
@@ -92,5 +79,29 @@ class HomepageDataService
         }
 
         return compact('events', 'topTournaments', 'topBettors', 'featuredBets');
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    private function topBettorsByWallet(): Collection
+    {
+        return User::query()
+            ->visibleOnSite()
+            ->whereHas('bets', function ($q): void {
+                $q->where('status', '<>', UserBet::STATUS_PENDING);
+            })
+            ->join('user_wallets', 'user_wallets.user_id', '=', 'users.id')
+            ->orderByDesc('user_wallets.total_result')
+            ->orderBy('users.id')
+            ->select('users.*')
+            ->withCount('bets')
+            ->withSum('bets', 'stake')
+            ->limit(3)
+            ->with([
+                'wallet',
+                'bets' => UserBet::eagerLoadRecentResolved(),
+            ])
+            ->get();
     }
 }

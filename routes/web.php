@@ -167,6 +167,8 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.users.edit');
     Route::put('/users/{user}', [AdminUsersController::class, 'update'])
         ->name('admin.users.update');
+    Route::patch('/users/{user}/metrics-availability', [AdminUsersController::class, 'updateMetricsAvailability'])
+        ->name('admin.users.metrics-availability');
     Route::delete('/users/{user}', [AdminUsersController::class, 'destroy'])
         ->name('admin.users.destroy');
 

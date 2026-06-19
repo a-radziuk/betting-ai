@@ -83,6 +83,26 @@
 <label class="admin-upload-checkbox">
     <input
         type="checkbox"
+        name="is_hidden"
+        value="1"
+        @checked((bool) old('is_hidden', $user?->is_hidden))
+    >
+    <span>{{ __('Hidden from public site') }}</span>
+</label>
+
+<label class="admin-upload-checkbox">
+    <input
+        type="checkbox"
+        name="is_metrics_available"
+        value="1"
+        @checked((bool) old('is_metrics_available', $user?->is_metrics_available))
+    >
+    <span>{{ __('Metrics available') }}</span>
+</label>
+
+<label class="admin-upload-checkbox">
+    <input
+        type="checkbox"
         name="email_verified"
         value="1"
         @checked((bool) old('email_verified', $user?->email_verified_at !== null))
@@ -157,6 +177,8 @@
     rows="4"
 >{{ old('hidden_description', $user?->hidden_description) }}</textarea>
 <p class="admin-upload-hint">{{ __('Internal admin notes only. Not shown on public profile pages.') }}</p>
+
+<p class="admin-upload-hint">{{ __('Hidden users are excluded from player listings, event tips, and all other public pages.') }}</p>
 
 @if ($user?->provider)
     <p class="admin-upload-hint">{{ __('OAuth provider: :provider (:id)', ['provider' => $user->provider, 'id' => $user->provider_id]) }}</p>

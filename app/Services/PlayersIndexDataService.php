@@ -15,6 +15,7 @@ class PlayersIndexDataService
     public function get(int $page): array
     {
         $players = User::query()
+            ->visibleOnSite()
             ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
             ->whereExists(function ($q): void {
                 $q->selectRaw('1')

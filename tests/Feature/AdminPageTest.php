@@ -27,6 +27,38 @@ class AdminPageTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_superadmin_sees_admin_link_in_header(): void
+    {
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(url('/'))
+            ->assertOk()
+            ->assertSee(route('admin'), false)
+            ->assertSee(__('Admin'), false);
+    }
+
+    public function test_non_superadmin_does_not_see_admin_link_in_header(): void
+    {
+        $user = User::factory()->create([
+            'is_superadmin' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get(url('/'))
+            ->assertOk()
+            ->assertDontSee(route('admin'), false);
+    }
+
+    public function test_guest_does_not_see_admin_link_in_header(): void
+    {
+        $this->get(url('/'))
+            ->assertOk()
+            ->assertDontSee(route('admin'), false);
+    }
+
     public function test_superadmin_can_access_admin_page(): void
     {
         $admin = User::factory()->create([

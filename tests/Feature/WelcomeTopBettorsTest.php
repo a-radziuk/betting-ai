@@ -9,6 +9,7 @@ use App\Models\Selection;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserBet;
+use App\Models\UserMetric;
 use App\Models\UserWallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -175,5 +176,117 @@ class WelcomeTopBettorsTest extends TestCase
             ->assertOk()
             ->assertSee('HasBetUser', false)
             ->assertDontSee('NoBetHighWallet', false);
+    }
+
+    public function test_home_shows_top_bettors_from_metrics_when_at_least_three_users_have_metrics(): void
+    {
+        $odd = $this->seedOddForBets();
+        $eventId = 88001;
+
+        $metricLeader = User::factory()->create(['name' => 'MetricLeader']);
+        $metricSecond = User::factory()->create(['name' => 'MetricSecond']);
+        $metricThird = User::factory()->create(['name' => 'MetricThird']);
+        $walletLeader = User::factory()->create(['name' => 'WalletLeaderOnly']);
+
+        foreach ([$metricLeader, $metricSecond, $metricThird, $walletLeader] as $user) {
+            UserWallet::query()->where('user_id', $user->id)->update(['total_result' => 10.0]);
+            $this->placeBet($user, $odd, $eventId);
+            UserBet::query()->where('user_id', $user->id)->update(['status' => UserBet::STATUS_WON]);
+        }
+
+        UserWallet::query()->where('user_id', $walletLeader->id)->update(['total_result' => 999.0]);
+
+        UserMetric::query()->create([
+            'user_id' => $metricLeader->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 500.00,
+            'bets_stats' => ['won' => 12, 'lost' => 3, 'drawn' => 1],
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $metricSecond->id,
+            'type' => UserMetric::TYPE_LAST_10_POSITIVE,
+            'amount' => 300.00,
+            'bets_stats' => ['won' => 8, 'lost' => 2, 'drawn' => 0],
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $metricThird->id,
+            'type' => UserMetric::TYPE_LAST_20_POSITIVE,
+            'amount' => 200.00,
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $walletLeader->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 50.00,
+        ]);
+
+        $response = $this->get('/');
+
+        $response
+            ->assertOk()
+            ->assertSee('Top players, ranked by performance metrics.', false)
+            ->assertSeeInOrder([
+                'MetricLeader',
+                '+500.00 EUR',
+                'Total result',
+                '12',
+                '3',
+                '1',
+                'MetricSecond',
+                '+300.00 EUR',
+                'Last 10 bets',
+                '8',
+                '2',
+                '0',
+                'MetricThird',
+                '+200.00 EUR',
+                'Last 20 bets',
+            ], false)
+            ->assertDontSee('+999.00 EUR', false);
+
+        $this->assertStringContainsString('form-icon--w', $response->getContent());
+        $this->assertStringContainsString('form-icon--l', $response->getContent());
+        $this->assertStringContainsString('form-icon--d', $response->getContent());
+    }
+
+    public function test_home_falls_back_to_wallet_ranking_when_fewer_than_three_users_have_metrics(): void
+    {
+        $odd = $this->seedOddForBets();
+        $eventId = 88001;
+
+        $first = User::factory()->create(['name' => 'WalletFirst']);
+        $second = User::factory()->create(['name' => 'WalletSecond']);
+        $third = User::factory()->create(['name' => 'WalletThird']);
+
+        UserWallet::query()->where('user_id', $first->id)->update(['total_result' => 100.0]);
+        UserWallet::query()->where('user_id', $second->id)->update(['total_result' => 300.0]);
+        UserWallet::query()->where('user_id', $third->id)->update(['total_result' => 200.0]);
+
+        foreach ([$first, $second, $third] as $user) {
+            $this->placeBet($user, $odd, $eventId);
+            UserBet::query()->where('user_id', $user->id)->update(['status' => UserBet::STATUS_WON]);
+        }
+
+        UserMetric::query()->create([
+            'user_id' => $first->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 500.00,
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $second->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 400.00,
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Top players, ranked by lifetime wallet result.', false)
+            ->assertSeeInOrder([
+                'WalletSecond',
+                '+300.00 EUR',
+                'WalletThird',
+                '+200.00 EUR',
+                'WalletFirst',
+                '+100.00 EUR',
+            ], false);
     }
 }
