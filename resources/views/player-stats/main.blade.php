@@ -80,7 +80,10 @@
     @endif
 
     <div class="event-empty user-results" style="margin-bottom: 12px;">
-        @include('players.partials.wallet-result-chart', ['resultChart' => $resultChart])
+        @include('players.partials.wallet-result-chart', [
+            'resultChart' => $resultChart,
+            'player' => $player,
+        ])
         <span class="user-results-item">
             <span class="user-results-label">{{ __('Currently in play') }}</span>
             <span class="user-results-value">{{ number_format((float) $player->wallet->amount_in_play, 2) }}</span>

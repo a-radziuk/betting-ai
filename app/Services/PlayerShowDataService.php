@@ -9,6 +9,8 @@ use App\Support\PlayerWalletResultChart;
 
 class PlayerShowDataService
 {
+    public const RESULT_CHART_RECENT_LIMIT = 30;
+
     /**
      * @return array{
      *     player: User,
@@ -30,37 +32,10 @@ class PlayerShowDataService
     {
         $user->loadMissing('wallet');
 
-        $chartValues = UserBet::query()
-            ->where('user_bets.user_id', $user->id)
-            ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
-            ->orderByDesc('user_bets.resolved_order')
-            ->orderByDesc('user_bets.id')
-            ->limit(30)
-            ->get(['user_bets.wallet_total_result', 'user_bets.resolved_order', 'user_bets.id'])
-            ->sortBy([
-                ['resolved_order', 'asc'],
-                ['id', 'asc'],
-            ])
-            ->pluck('wallet_total_result')
-            ->values()
-            ->all();
+        $resolvedBetCount = $this->resolvedBetCount($user);
+        $resolvedAggregate = $this->resolvedBetsAggregate($user);
 
-        $resultChart = PlayerWalletResultChart::fromValues($chartValues);
-
-        $resolvedAggregate = UserBet::query()
-            ->where('user_id', $user->id)
-            ->where('status', '!=', UserBet::STATUS_PENDING)
-            ->selectRaw(
-                'COUNT(*) as bet_count,
-            COALESCE(SUM(stake), 0) as turnover,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as won_count,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as lost_count,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as void_count',
-                [UserBet::STATUS_WON, UserBet::STATUS_LOST, UserBet::STATUS_VOID],
-            )
-            ->first();
-
-        $resolvedBetCount = (int) ($resolvedAggregate->bet_count ?? 0);
+        $resultChart = $this->buildResultChart($user, self::RESULT_CHART_RECENT_LIMIT, $resolvedBetCount);
         $wonBetCount = (int) ($resolvedAggregate->won_count ?? 0);
         $lostBetCount = (int) ($resolvedAggregate->lost_count ?? 0);
         $voidBetCount = (int) ($resolvedAggregate->void_count ?? 0);
@@ -100,5 +75,70 @@ class PlayerShowDataService
             'efficiencyPercentAbsolute' => $efficiencyPercentAbsolute,
             'pendingBetCount' => $pendingBetCount,
         ];
+    }
+
+    public function buildFullResultChart(User $user): PlayerWalletResultChart
+    {
+        return $this->buildResultChart(
+            $user,
+            null,
+            $this->resolvedBetCount($user),
+        );
+    }
+
+    public function buildResultChart(User $user, ?int $limit, ?int $resolvedBetCount = null): PlayerWalletResultChart
+    {
+        $resolvedBetCount ??= $this->resolvedBetCount($user);
+        $chartValues = $this->resolvedBetChartValues($user, $limit);
+        $startAtZero = $limit === null || $resolvedBetCount <= self::RESULT_CHART_RECENT_LIMIT;
+
+        return PlayerWalletResultChart::fromValues($chartValues, startAtZero: $startAtZero);
+    }
+
+    public function resolvedBetCount(User $user): int
+    {
+        return (int) ($this->resolvedBetsAggregate($user)->bet_count ?? 0);
+    }
+
+    /**
+     * @return list<float|int|string|null>
+     */
+    private function resolvedBetChartValues(User $user, ?int $limit): array
+    {
+        $query = UserBet::query()
+            ->where('user_bets.user_id', $user->id)
+            ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
+            ->orderByDesc('user_bets.resolved_order')
+            ->orderByDesc('user_bets.id');
+
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        return $query
+            ->get(['user_bets.wallet_total_result', 'user_bets.resolved_order', 'user_bets.id'])
+            ->sortBy([
+                ['resolved_order', 'asc'],
+                ['id', 'asc'],
+            ])
+            ->pluck('wallet_total_result')
+            ->values()
+            ->all();
+    }
+
+    private function resolvedBetsAggregate(User $user): UserBet
+    {
+        return UserBet::query()
+            ->where('user_id', $user->id)
+            ->where('status', '!=', UserBet::STATUS_PENDING)
+            ->selectRaw(
+                'COUNT(*) as bet_count,
+            COALESCE(SUM(stake), 0) as turnover,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as won_count,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as lost_count,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as void_count',
+                [UserBet::STATUS_WON, UserBet::STATUS_LOST, UserBet::STATUS_VOID],
+            )
+            ->first();
     }
 }

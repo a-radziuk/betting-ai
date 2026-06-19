@@ -1,6 +1,9 @@
 @php
     /** @var \App\Support\PlayerWalletResultChart $resultChart */
+    /** @var \App\Models\User|null $player */
     $latest = $resultChart->latest;
+    $isFullHistory = $isFullHistory ?? false;
+    $showFullTrendLink = ($showFullTrendLink ?? true) && isset($player);
     $formatChartValue = static function (float $value, bool $isOrigin = false): string {
         if ($isOrigin) {
             return '0.00';
@@ -8,10 +11,20 @@
 
         return ($value > 0 ? '+' : '').number_format($value, 2);
     };
+    $betCount = count($resultChart->values);
 @endphp
 
 <span class="user-results-item user-results-item--chart">
-    <span class="user-results-label">{{ __('Result trend') }}</span>
+    @if ($showFullTrendLink)
+        <div class="player-result-head user-results-chart-head">
+            <span class="user-results-label">{{ __('Result trend') }}</span>
+            <a href="{{ route('players.result-trend', ['user' => $player->id]) }}" class="user-results-chart-full-link subbar-back">
+                {{ __('View full trend') }}
+            </a>
+        </div>
+    @else
+        <span class="user-results-label">{{ __('Result trend') }}</span>
+    @endif
     @if ($resultChart->hasData())
         <span @class([
             'user-results-value',
@@ -24,11 +37,13 @@
             {{ $formatChartValue($latest) }}
         </span>
         <svg
-            class="user-results-chart"
+            @class(['user-results-chart', 'user-results-chart--full' => $isFullHistory])
             viewBox="0 0 100 40"
             preserveAspectRatio="none"
             role="img"
-            aria-label="{{ __('Cumulative result over the last :count resolved bets', ['count' => count($resultChart->values)]) }}"
+            aria-label="{{ $isFullHistory
+                ? __('Cumulative result over all :count resolved bets', ['count' => $betCount])
+                : __('Cumulative result over the last :count resolved bets', ['count' => $betCount]) }}"
         >
             @if ($resultChart->zeroLineY !== null)
                 <line
@@ -53,17 +68,21 @@
                     $tooltipHalf = $tooltipWidth / 2;
                 @endphp
                 <g @class(['user-results-chart-point', 'user-results-chart-point--origin' => $isOrigin]) tabindex="0">
-                    <circle
+                    <ellipse
                         cx="{{ $point['x'] }}"
                         cy="{{ $point['y'] }}"
-                        r="6"
+                        rx="6"
+                        ry="6"
                         class="user-results-chart-hit"
+                        data-chart-radius="6"
                     />
-                    <circle
+                    <ellipse
                         cx="{{ $point['x'] }}"
                         cy="{{ $point['y'] }}"
-                        r="2.25"
+                        rx="2.25"
+                        ry="2.25"
                         @class(['user-results-chart-dot', 'user-results-chart-dot--origin' => $isOrigin])
+                        data-chart-radius="2.25"
                     />
                     <g class="user-results-chart-tooltip" transform="translate({{ $point['x'] }}, {{ $tooltipY }})">
                         <rect
@@ -85,7 +104,11 @@
                 </g>
             @endforeach
         </svg>
-        <span class="user-results-chart-caption">{{ __('Last :count resolved bets', ['count' => count($resultChart->values)]) }}</span>
+        <span class="user-results-chart-caption">
+            {{ $isFullHistory
+                ? __('All :count resolved bets', ['count' => $betCount])
+                : __('Last :count resolved bets', ['count' => $betCount]) }}
+        </span>
     @else
         <p class="user-results-chart-empty">{{ __('Not enough resolved bets for a chart yet.') }}</p>
     @endif

@@ -16,6 +16,7 @@ use App\Http\Controllers\EventShowController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
+use App\Http\Controllers\PlayerResultTrendController;
 use App\Http\Controllers\PlayerShowController;
 use App\Http\Controllers\PlayersIndexController;
 use App\Http\Controllers\ProfileController;
@@ -75,6 +76,9 @@ Route::get('/players/{user}', PlayerShowController::class)->name('players.show')
 
 Route::get('/players/{user}/bets.csv', PlayerResolvedBetsCsvController::class)
     ->name('players.bets.csv');
+
+Route::get('/players/{user}/result-trend', PlayerResultTrendController::class)
+    ->name('players.result-trend');
 
 Route::get('/players/{user}/current', function (User $user) {
     $viewer = Auth::user();

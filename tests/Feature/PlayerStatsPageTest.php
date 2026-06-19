@@ -209,6 +209,71 @@ class PlayerStatsPageTest extends TestCase
         $this->assertLessThan($posThird, $posSecond);
     }
 
+    public function test_result_trend_chart_starts_at_first_visible_bet_when_more_than_thirty_resolved_bets(): void
+    {
+        $player = User::factory()->create();
+        $home = Team::query()->create(['name' => 'H', 'short_name' => 'H', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'A', 'short_name' => 'A', 'league' => 'T']);
+
+        for ($order = 1; $order <= 31; $order++) {
+            $eventId = 93000 + $order;
+            Event::query()->create([
+                'id' => $eventId,
+                'home_team_id' => $home->id,
+                'away_team_id' => $away->id,
+                'start_time' => now()->addDays($order),
+                'status' => Event::STATUS_FINISHED,
+            ]);
+
+            $market = Market::query()->create([
+                'id' => $eventId * 100 + 1,
+                'event_id' => $eventId,
+                'type' => Market::TYPE_MATCH_RESULT,
+                'period' => Market::PERIOD_FULL_TIME,
+                'line' => null,
+                'status' => Market::STATUS_OPEN,
+                'is_supported_market' => true,
+            ]);
+
+            $selection = Selection::query()->create([
+                'id' => $eventId * 100 + 2,
+                'market_id' => $market->id,
+                'name' => Selection::NAME_HOME,
+                'participant_id' => null,
+                'handicap' => null,
+                'created_at' => now(),
+            ]);
+
+            $odd = Odd::query()->create([
+                'id' => $eventId * 100 + 3,
+                'selection_id' => $selection->id,
+                'odds' => 2,
+                'probability' => null,
+                'is_active' => true,
+                'created_at' => now(),
+            ]);
+
+            UserBet::query()->create([
+                'user_id' => $player->id,
+                'event_id' => $eventId,
+                'odd_id' => $odd->id,
+                'stake' => '10.00',
+                'odds_at_bet' => '2.0000',
+                'potential_return' => '20.00',
+                'status' => UserBet::STATUS_WON,
+                'wallet_total_result' => (string) ($order * 10),
+                'resolved_order' => $order,
+            ]);
+        }
+
+        $chart = app(\App\Services\PlayerShowDataService::class)->get($player, 1)['resultChart'];
+
+        $this->assertCount(30, $chart->values);
+        $this->assertFalse($chart->points[0]['isOrigin']);
+        $this->assertSame(20.0, $chart->points[0]['value']);
+        $this->assertSame(310.0, $chart->latest);
+    }
+
     public function test_shows_wallet_result_chart_instead_of_balance(): void
     {
         $tz = config('app.timezone');

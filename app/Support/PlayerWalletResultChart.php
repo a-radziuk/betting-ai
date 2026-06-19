@@ -27,7 +27,7 @@ final class PlayerWalletResultChart
     /**
      * @param  list<float|int|string|null>  $values
      */
-    public static function fromValues(array $values): self
+    public static function fromValues(array $values, bool $startAtZero = true): self
     {
         $values = array_values(array_map(
             static fn ($value) => (float) $value,
@@ -38,7 +38,7 @@ final class PlayerWalletResultChart
             return new self([], [], '', null, null, null, null);
         }
 
-        $chartValues = array_merge([0.0], $values);
+        $chartValues = $startAtZero ? array_merge([0.0], $values) : $values;
 
         $min = min($chartValues);
         $max = max($chartValues);
@@ -60,7 +60,7 @@ final class PlayerWalletResultChart
                 'x' => round($x, 2),
                 'y' => round($y, 2),
                 'value' => $value,
-                'isOrigin' => $i === 0,
+                'isOrigin' => $startAtZero && $i === 0,
             ];
         }
 

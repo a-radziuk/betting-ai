@@ -1,4 +1,5 @@
 import './bootstrap';
+import './wallet-result-chart';
 
 import Alpine from 'alpinejs';
 

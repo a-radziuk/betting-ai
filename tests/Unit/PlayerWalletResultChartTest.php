@@ -50,4 +50,14 @@ class PlayerWalletResultChartTest extends TestCase
         $this->assertNotNull($chart->zeroLineY);
         $this->assertTrue($chart->points[0]['isOrigin']);
     }
+
+    public function test_can_start_at_first_value_without_zero_origin(): void
+    {
+        $chart = PlayerWalletResultChart::fromValues([100.0, 125.0, 140.0], startAtZero: false);
+
+        $this->assertCount(3, $chart->points);
+        $this->assertFalse($chart->points[0]['isOrigin']);
+        $this->assertSame(100.0, $chart->points[0]['value']);
+        $this->assertSame(140.0, $chart->latest);
+    }
 }
