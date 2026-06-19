@@ -4,6 +4,7 @@
     $latest = $resultChart->latest;
     $isFullHistory = $isFullHistory ?? false;
     $showFullTrendLink = ($showFullTrendLink ?? true) && isset($player);
+    $showChartDates = $showChartDates ?? false;
     $formatChartValue = static function (float $value, bool $isOrigin = false): string {
         if ($isOrigin) {
             return '0.00';
@@ -12,6 +13,24 @@
         return ($value > 0 ? '+' : '').number_format($value, 2);
     };
     $betCount = count($resultChart->values);
+    $chartPointItems = [];
+
+    foreach ($resultChart->points as $index => $point) {
+        $isOrigin = $point['isOrigin'] ?? false;
+        $label = $formatChartValue($point['value'], $isOrigin);
+
+        $chartPointItems[] = [
+            'index' => $index,
+            'point' => $point,
+            'isOrigin' => $isOrigin,
+            'label' => $label,
+            'tooltipY' => $point['y'] - 6.5,
+            'tooltipWidth' => max(22, strlen($label) * 2.35),
+        ];
+    }
+
+    $chartDotRadius = $isFullHistory ? 1.5 : 2.25;
+    $chartHitRadius = $isFullHistory ? 4.5 : 6;
 @endphp
 
 <span class="user-results-item user-results-item--chart">
@@ -36,6 +55,7 @@
         ])>
             {{ $formatChartValue($latest) }}
         </span>
+        <div @class(['user-results-chart-wrap', 'user-results-chart-wrap--dates' => $showChartDates])>
         <svg
             @class(['user-results-chart', 'user-results-chart--full' => $isFullHistory])
             viewBox="0 0 100 40"
@@ -59,37 +79,48 @@
                 fill="none"
                 class="user-results-chart-line"
             />
-            @foreach ($resultChart->points as $point)
-                @php
-                    $isOrigin = $point['isOrigin'] ?? false;
-                    $label = $formatChartValue($point['value'], $isOrigin);
-                    $tooltipY = $point['y'] > 10 ? $point['y'] - 5.5 : $point['y'] + 7.5;
-                    $tooltipWidth = max(22, strlen($label) * 2.35);
-                    $tooltipHalf = $tooltipWidth / 2;
-                @endphp
-                <g @class(['user-results-chart-point', 'user-results-chart-point--origin' => $isOrigin]) tabindex="0">
-                    <ellipse
-                        cx="{{ $point['x'] }}"
-                        cy="{{ $point['y'] }}"
-                        rx="6"
-                        ry="6"
-                        class="user-results-chart-hit"
-                        data-chart-radius="6"
-                    />
-                    <ellipse
-                        cx="{{ $point['x'] }}"
-                        cy="{{ $point['y'] }}"
-                        rx="2.25"
-                        ry="2.25"
-                        @class(['user-results-chart-dot', 'user-results-chart-dot--origin' => $isOrigin])
-                        data-chart-radius="2.25"
-                    />
-                    <g class="user-results-chart-tooltip" transform="translate({{ $point['x'] }}, {{ $tooltipY }})">
+            <g class="user-results-chart-points">
+                @foreach ($chartPointItems as $item)
+                    <g
+                        @class(['user-results-chart-point', 'user-results-chart-point--origin' => $item['isOrigin']])
+                        data-chart-point="{{ $item['index'] }}"
+                        tabindex="0"
+                        aria-label="{{ $item['label'] }}"
+                    >
+                        <ellipse
+                            cx="{{ $item['point']['x'] }}"
+                            cy="{{ $item['point']['y'] }}"
+                            rx="{{ $chartHitRadius }}"
+                            ry="{{ $chartHitRadius }}"
+                            class="user-results-chart-hit"
+                            data-chart-radius="{{ $chartHitRadius }}"
+                        />
+                        <ellipse
+                            cx="{{ $item['point']['x'] }}"
+                            cy="{{ $item['point']['y'] }}"
+                            rx="{{ $chartDotRadius }}"
+                            ry="{{ $chartDotRadius }}"
+                            @class(['user-results-chart-dot', 'user-results-chart-dot--origin' => $item['isOrigin']])
+                            data-chart-radius="{{ $chartDotRadius }}"
+                        />
+                    </g>
+                @endforeach
+            </g>
+            <g class="user-results-chart-tooltips" aria-hidden="true">
+                @foreach ($chartPointItems as $item)
+                    @php
+                        $tooltipHalf = $item['tooltipWidth'] / 2;
+                    @endphp
+                    <g
+                        class="user-results-chart-tooltip"
+                        data-chart-point="{{ $item['index'] }}"
+                        transform="translate({{ $item['point']['x'] }}, {{ $item['tooltipY'] }})"
+                    >
                         <rect
                             class="user-results-chart-tooltip-bg"
                             x="{{ -$tooltipHalf }}"
                             y="-6.5"
-                            width="{{ $tooltipWidth }}"
+                            width="{{ $item['tooltipWidth'] }}"
                             height="7"
                             rx="1.5"
                         />
@@ -98,12 +129,32 @@
                             text-anchor="middle"
                             dominant-baseline="middle"
                             y="-3"
-                        >{{ $label }}</text>
+                        >{{ $item['label'] }}</text>
                     </g>
-                    <title>{{ $label }}</title>
-                </g>
-            @endforeach
+                @endforeach
+            </g>
         </svg>
+        @if ($showChartDates)
+            <div class="user-results-chart-axis" aria-hidden="true">
+                @foreach ($resultChart->axisDateLabels() as $axisLabel)
+                    <span
+                        @class([
+                            'user-results-chart-axis-label',
+                            'user-results-chart-axis-label--start' => $axisLabel['align'] === 'start',
+                            'user-results-chart-axis-label--end' => $axisLabel['align'] === 'end',
+                        ])
+                        @if ($axisLabel['align'] === 'center')
+                            style="left: {{ $axisLabel['x'] }}%"
+                        @elseif ($axisLabel['align'] === 'start')
+                            style="left: {{ $axisLabel['x'] }}%"
+                        @else
+                            style="right: {{ 100 - $axisLabel['x'] }}%"
+                        @endif
+                    >{{ $axisLabel['date'] }}</span>
+                @endforeach
+            </div>
+        @endif
+        </div>
         <span class="user-results-chart-caption">
             {{ $isFullHistory
                 ? __('All :count resolved bets', ['count' => $betCount])

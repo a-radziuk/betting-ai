@@ -1181,6 +1181,45 @@
         width: 100%;
         height: 4.5rem;
         margin-top: 0.15rem;
+        overflow: visible;
+    }
+
+    .user-results-chart-wrap {
+        width: 100%;
+        overflow: visible;
+    }
+
+    .user-results-chart-wrap--dates {
+        margin-bottom: 0.15rem;
+    }
+
+    .user-results-chart-axis {
+        position: relative;
+        height: 1.15rem;
+        margin-top: 0.2rem;
+    }
+
+    .user-results-chart-axis-label {
+        position: absolute;
+        top: 0;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.15;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .user-results-chart-axis-label:not(.user-results-chart-axis-label--start):not(.user-results-chart-axis-label--end) {
+        transform: translateX(-50%);
+    }
+
+    .user-results-chart-axis-label--start {
+        transform: none;
+    }
+
+    .user-results-chart-axis-label--end {
+        left: auto;
+        transform: none;
     }
 
     .user-results-chart--full {
@@ -1230,21 +1269,13 @@
         transition: fill 0.12s ease;
     }
 
-    .user-results-chart-point:hover .user-results-chart-dot,
-    .user-results-chart-point:focus-visible .user-results-chart-dot {
-        fill: #8bffcd;
-        stroke: #eaf0ff;
-    }
-
     .user-results-chart-dot--origin {
         fill: #9fb0d3;
         stroke: #6b7a99;
     }
 
-    .user-results-chart-point--origin:hover .user-results-chart-dot--origin,
-    .user-results-chart-point--origin:focus-visible .user-results-chart-dot--origin {
-        fill: #b8c8e8;
-        stroke: #9fb0d3;
+    .user-results-chart-tooltips {
+        pointer-events: none;
     }
 
     .user-results-chart-tooltip {
@@ -1253,9 +1284,22 @@
         transition: opacity 0.12s ease;
     }
 
-    .user-results-chart-point:hover .user-results-chart-tooltip,
-    .user-results-chart-point:focus-visible .user-results-chart-tooltip {
+    .user-results-chart-tooltip.is-visible {
         opacity: 1;
+    }
+
+    .user-results-chart-point.is-active .user-results-chart-dot,
+    .user-results-chart-point:hover .user-results-chart-dot,
+    .user-results-chart-point:focus-visible .user-results-chart-dot {
+        fill: #8bffcd;
+        stroke: #eaf0ff;
+    }
+
+    .user-results-chart-point--origin.is-active .user-results-chart-dot--origin,
+    .user-results-chart-point--origin:hover .user-results-chart-dot--origin,
+    .user-results-chart-point--origin:focus-visible .user-results-chart-dot--origin {
+        fill: #b8c8e8;
+        stroke: #9fb0d3;
     }
 
     .user-results-chart-tooltip-bg {

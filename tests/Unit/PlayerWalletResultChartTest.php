@@ -60,4 +60,24 @@ class PlayerWalletResultChartTest extends TestCase
         $this->assertSame(100.0, $chart->points[0]['value']);
         $this->assertSame(140.0, $chart->latest);
     }
+
+    public function test_attaches_dates_to_points_and_axis_labels(): void
+    {
+        $chart = PlayerWalletResultChart::fromValues(
+            [10.0, 20.0, 30.0],
+            dates: ['1 Jan 2026', '2 Jan 2026', '3 Jan 2026'],
+            axisDates: ['1 Jan', '2 Jan', '3 Jan'],
+        );
+
+        $this->assertNull($chart->points[0]['date']);
+        $this->assertSame('1 Jan 2026', $chart->points[1]['date']);
+        $this->assertSame('3 Jan 2026', $chart->points[3]['date']);
+        $this->assertSame('1 Jan', $chart->points[1]['axisDate']);
+
+        $labels = $chart->axisDateLabels();
+        $this->assertCount(3, $labels);
+        $this->assertSame('1 Jan', $labels[0]['date']);
+        $this->assertSame('start', $labels[0]['align']);
+        $this->assertSame('end', $labels[2]['align']);
+    }
 }

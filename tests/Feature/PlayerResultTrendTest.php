@@ -63,6 +63,24 @@ class PlayerResultTrendTest extends TestCase
         $this->assertTrue($chart->points[0]['isOrigin']);
         $this->assertSame(0.0, $chart->points[0]['value']);
         $this->assertSame(310.0, $chart->latest);
+        $this->assertSame('2 Jan 2026', $chart->points[1]['date']);
+        $this->assertNotEmpty($chart->axisDateLabels());
+    }
+
+    public function test_result_trend_page_shows_chart_dates(): void
+    {
+        $player = User::factory()->create();
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+        $this->seedResolvedBets($player, 5);
+
+        $this->actingAs($viewer)
+            ->get(route('players.result-trend', $player))
+            ->assertOk()
+            ->assertSee('user-results-chart-axis', false)
+            ->assertSee('2 Jan', false)
+            ->assertSee('6 Jan', false);
     }
 
     public function test_player_page_shows_full_trend_link_even_without_see_tips(): void
@@ -142,7 +160,9 @@ class PlayerResultTrendTest extends TestCase
                 'created_at' => now(),
             ]);
 
-            UserBet::query()->create([
+            $resolvedAt = Carbon::parse('2026-01-01 12:00:00')->addDays($order);
+
+            $bet = UserBet::query()->create([
                 'user_id' => $player->id,
                 'event_id' => $eventId,
                 'odd_id' => $odd->id,
@@ -153,6 +173,10 @@ class PlayerResultTrendTest extends TestCase
                 'wallet_total_result' => (string) ($order * 10),
                 'resolved_order' => $order,
             ]);
+            $bet->forceFill([
+                'created_at' => $resolvedAt,
+                'updated_at' => $resolvedAt,
+            ])->saveQuietly();
         }
     }
 }

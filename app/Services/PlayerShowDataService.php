@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\UserBet;
 use App\Support\PlayerResolvedBets;
 use App\Support\PlayerWalletResultChart;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 
 class PlayerShowDataService
 {
@@ -79,17 +81,20 @@ class PlayerShowDataService
 
     public function buildFullResultChart(User $user): PlayerWalletResultChart
     {
-        return $this->buildResultChart(
-            $user,
-            null,
-            $this->resolvedBetCount($user),
+        $series = $this->resolvedBetChartSeries($user, null, withDates: true);
+
+        return PlayerWalletResultChart::fromValues(
+            $series['values'],
+            startAtZero: true,
+            dates: $series['dates'],
+            axisDates: $series['axisDates'],
         );
     }
 
     public function buildResultChart(User $user, ?int $limit, ?int $resolvedBetCount = null): PlayerWalletResultChart
     {
         $resolvedBetCount ??= $this->resolvedBetCount($user);
-        $chartValues = $this->resolvedBetChartValues($user, $limit);
+        $chartValues = $this->resolvedBetChartSeries($user, $limit)['values'];
         $startAtZero = $limit === null || $resolvedBetCount <= self::RESULT_CHART_RECENT_LIMIT;
 
         return PlayerWalletResultChart::fromValues($chartValues, startAtZero: $startAtZero);
@@ -101,10 +106,19 @@ class PlayerShowDataService
     }
 
     /**
-     * @return list<float|int|string|null>
+     * @return array{
+     *     values: list<float|int|string|null>,
+     *     dates: list<string|null>,
+     *     axisDates: list<string|null>
+     * }
      */
-    private function resolvedBetChartValues(User $user, ?int $limit): array
+    private function resolvedBetChartSeries(User $user, ?int $limit, bool $withDates = false): array
     {
+        $columns = ['user_bets.wallet_total_result', 'user_bets.resolved_order', 'user_bets.id'];
+        if ($withDates) {
+            $columns[] = 'user_bets.updated_at';
+        }
+
         $query = UserBet::query()
             ->where('user_bets.user_id', $user->id)
             ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
@@ -115,15 +129,58 @@ class PlayerShowDataService
             $query->limit($limit);
         }
 
-        return $query
-            ->get(['user_bets.wallet_total_result', 'user_bets.resolved_order', 'user_bets.id'])
+        $rows = $query
+            ->get($columns)
             ->sortBy([
                 ['resolved_order', 'asc'],
                 ['id', 'asc'],
             ])
-            ->pluck('wallet_total_result')
+            ->values();
+
+        $series = [
+            'values' => $rows->pluck('wallet_total_result')->values()->all(),
+            'dates' => [],
+            'axisDates' => [],
+        ];
+
+        if (! $withDates) {
+            return $series;
+        }
+
+        $series['dates'] = $rows
+            ->map(fn (UserBet $bet): ?string => $this->formatChartTooltipDate($bet->updated_at))
             ->values()
             ->all();
+        $series['axisDates'] = $rows
+            ->map(fn (UserBet $bet): ?string => $this->formatChartAxisDate($bet->updated_at))
+            ->values()
+            ->all();
+
+        return $series;
+    }
+
+    private function formatChartTooltipDate(?CarbonInterface $date): ?string
+    {
+        if ($date === null) {
+            return null;
+        }
+
+        return Carbon::parse($date)
+            ->timezone(config('app.timezone'))
+            ->locale(app()->getLocale())
+            ->translatedFormat('j M Y');
+    }
+
+    private function formatChartAxisDate(?CarbonInterface $date): ?string
+    {
+        if ($date === null) {
+            return null;
+        }
+
+        return Carbon::parse($date)
+            ->timezone(config('app.timezone'))
+            ->locale(app()->getLocale())
+            ->translatedFormat('j M');
     }
 
     private function resolvedBetsAggregate(User $user): UserBet

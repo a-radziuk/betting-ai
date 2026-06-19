@@ -12,7 +12,7 @@ final class PlayerWalletResultChart
 
     /**
      * @param  list<float>  $values  wallet_total_result values in resolved_order (asc), excluding the origin.
-     * @param  list<array{x: float, y: float, value: float, isOrigin: bool}>  $points
+     * @param  list<array{x: float, y: float, value: float, isOrigin: bool, date?: string|null, axisDate?: string|null}>  $points
      */
     public function __construct(
         public readonly array $values,
@@ -26,9 +26,15 @@ final class PlayerWalletResultChart
 
     /**
      * @param  list<float|int|string|null>  $values
+     * @param  list<string|null>  $dates
+     * @param  list<string|null>  $axisDates
      */
-    public static function fromValues(array $values, bool $startAtZero = true): self
-    {
+    public static function fromValues(
+        array $values,
+        bool $startAtZero = true,
+        array $dates = [],
+        array $axisDates = [],
+    ): self {
         $values = array_values(array_map(
             static fn ($value) => (float) $value,
             array_filter($values, static fn ($value) => $value !== null),
@@ -38,7 +44,23 @@ final class PlayerWalletResultChart
             return new self([], [], '', null, null, null, null);
         }
 
+        if ($dates !== []) {
+            $dates = array_values($dates);
+        }
+
+        if ($axisDates !== []) {
+            $axisDates = array_values($axisDates);
+        }
+
         $chartValues = $startAtZero ? array_merge([0.0], $values) : $values;
+
+        if ($startAtZero && $dates !== []) {
+            array_unshift($dates, null);
+        }
+
+        if ($startAtZero && $axisDates !== []) {
+            array_unshift($axisDates, null);
+        }
 
         $min = min($chartValues);
         $max = max($chartValues);
@@ -56,12 +78,22 @@ final class PlayerWalletResultChart
             $x = self::PADDING + ($count === 1 ? $plotW / 2 : ($i / ($count - 1)) * $plotW);
             $normalized = ($value - $min) / $range;
             $y = self::PADDING + $plotH - ($normalized * $plotH);
-            $points[] = [
+            $point = [
                 'x' => round($x, 2),
                 'y' => round($y, 2),
                 'value' => $value,
                 'isOrigin' => $startAtZero && $i === 0,
             ];
+
+            if ($dates !== []) {
+                $point['date'] = $dates[$i] ?? null;
+            }
+
+            if ($axisDates !== []) {
+                $point['axisDate'] = $axisDates[$i] ?? null;
+            }
+
+            $points[] = $point;
         }
 
         $polylinePoints = implode(' ', array_map(
@@ -89,5 +121,54 @@ final class PlayerWalletResultChart
     public function hasData(): bool
     {
         return $this->values !== [];
+    }
+
+    /**
+     * @return list<array{date: string, x: float, align: string}>
+     */
+    public function axisDateLabels(int $maxLabels = 6): array
+    {
+        $points = array_values(array_filter(
+            $this->points,
+            static fn (array $point): bool => ! ($point['isOrigin'] ?? false)
+                && ($point['axisDate'] ?? null) !== null,
+        ));
+
+        if ($points === []) {
+            return [];
+        }
+
+        $count = count($points);
+        if ($count <= $maxLabels) {
+            $labels = array_map(
+                static fn (array $point): array => [
+                    'date' => $point['axisDate'],
+                    'x' => $point['x'],
+                ],
+                $points,
+            );
+        } else {
+            $labels = [];
+            for ($i = 0; $i < $maxLabels; $i++) {
+                $index = (int) round($i * ($count - 1) / ($maxLabels - 1));
+                $point = $points[$index];
+                $labels[] = [
+                    'date' => $point['axisDate'],
+                    'x' => $point['x'],
+                ];
+            }
+        }
+
+        $lastIndex = count($labels) - 1;
+        foreach ($labels as $index => $label) {
+            $labels[$index]['align'] = match (true) {
+                $lastIndex === 0 => 'center',
+                $index === 0 => 'start',
+                $index === $lastIndex => 'end',
+                default => 'center',
+            };
+        }
+
+        return $labels;
     }
 }

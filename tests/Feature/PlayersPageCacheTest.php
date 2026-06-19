@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\User;
 use App\Models\UserBet;
+use App\Services\PlayerResultTrendCache;
 use App\Services\PlayerShowCache;
 use App\Services\PlayersIndexCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,6 +50,23 @@ class PlayersPageCacheTest extends TestCase
         $this->get(route('players.show', $player))->assertOk();
 
         $this->assertTrue(Cache::store('array')->has($cache->cacheKey($player, 1)));
+    }
+
+    public function test_player_result_trend_main_content_is_stored_in_cache(): void
+    {
+        Cache::store('array')->flush();
+
+        $player = User::factory()->create();
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+        $cache = app(PlayerResultTrendCache::class);
+
+        $this->actingAs($viewer)
+            ->get(route('players.result-trend', $player))
+            ->assertOk();
+
+        $this->assertTrue(Cache::store('array')->has($cache->cacheKey($player)));
     }
 
     public function test_player_show_serves_cached_main_without_hitting_database_on_second_request(): void
