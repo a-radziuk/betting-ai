@@ -70,6 +70,26 @@
     autocomplete="new-password"
 >
 
+@if ($user)
+    <label class="admin-upload-label" for="wallet_balance">{{ __('Wallet balance') }}</label>
+    <input
+        type="number"
+        id="wallet_balance"
+        name="wallet_balance"
+        class="admin-upload-input"
+        value="{{ old('wallet_balance', $user->wallet?->balance ?? 0) }}"
+        min="0"
+        step="0.01"
+        required
+    >
+    @if ($user->wallet?->currency)
+        <p class="admin-upload-hint">{{ __('Currency: :currency', ['currency' => $user->wallet->currency]) }}</p>
+    @endif
+    @error('wallet_balance')
+        <p class="admin-upload-hint admin-upload-hint--error">{{ $message }}</p>
+    @enderror
+@endif
+
 <label class="admin-upload-checkbox">
     <input
         type="checkbox"

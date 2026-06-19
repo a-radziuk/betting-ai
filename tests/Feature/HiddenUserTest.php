@@ -85,6 +85,7 @@ class HiddenUserTest extends TestCase
                 'email' => $player->email,
                 'password' => '',
                 'password_confirmation' => '',
+                'wallet_balance' => number_format((float) $player->wallet->balance, 2, '.', ''),
                 'is_hidden' => '1',
             ])
             ->assertRedirect(route('admin.users'));

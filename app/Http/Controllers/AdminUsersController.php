@@ -49,6 +49,8 @@ class AdminUsersController extends Controller
 
     public function edit(User $user): View
     {
+        $user->load('wallet');
+
         return view('admin.users.edit', [
             'user' => $user,
             'privelegeOptions' => UserPriveleges::options(),
@@ -70,6 +72,15 @@ class AdminUsersController extends Controller
         }
 
         $user->update($validated);
+
+        $walletValidated = $request->validate([
+            'wallet_balance' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+        ]);
+
+        $user->wallet()->updateOrCreate(
+            ['user_id' => $user->id],
+            ['balance' => $walletValidated['wallet_balance']],
+        );
 
         return redirect()
             ->route('admin.users')

@@ -169,13 +169,9 @@ class AdminUsersTest extends TestCase
         $this->assertSame('VIP contact — handle with care.', $user->hidden_description);
 
         $this->actingAs($admin)
-            ->put(route('admin.users.update', $user), [
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => '',
-                'password_confirmation' => '',
+            ->put(route('admin.users.update', $user), $this->adminUserUpdatePayload($user, [
                 'hidden_description' => 'Updated internal note.',
-            ])
+            ]))
             ->assertRedirect(route('admin.users'))
             ->assertSessionHasNoErrors();
 
@@ -242,13 +238,9 @@ class AdminUsersTest extends TestCase
         $file = UploadedFile::fake()->image('new-avatar.jpg', 120, 120);
 
         $this->actingAs($admin)
-            ->put(route('admin.users.update', $user), [
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => '',
-                'password_confirmation' => '',
+            ->put(route('admin.users.update', $user), $this->adminUserUpdatePayload($user, [
                 'avatar' => $file,
-            ])
+            ]))
             ->assertRedirect(route('admin.users'))
             ->assertSessionHasNoErrors();
 
@@ -274,13 +266,10 @@ class AdminUsersTest extends TestCase
         $originalPassword = $user->password;
 
         $this->actingAs($admin)
-            ->put(route('admin.users.update', $user), [
+            ->put(route('admin.users.update', $user), $this->adminUserUpdatePayload($user, [
                 'name' => 'After Update',
-                'email' => $user->email,
-                'password' => '',
-                'password_confirmation' => '',
                 'priveleges' => [User::PRIVELEGE_PLACE_BETS],
-            ])
+            ]))
             ->assertRedirect(route('admin.users'));
 
         $user->refresh();
@@ -301,19 +290,51 @@ class AdminUsersTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->put(route('admin.users.update', $user), [
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => '',
-                'password_confirmation' => '',
+            ->put(route('admin.users.update', $user), $this->adminUserUpdatePayload($user, [
                 'is_metrics_available' => '1',
-            ])
+            ]))
             ->assertRedirect(route('admin.users'));
 
         $user->refresh();
 
         $this->assertTrue($user->is_metrics_available);
         $this->assertTrue($user->isMetricsAvailable());
+    }
+
+    public function test_superadmin_can_update_user_wallet_balance(): void
+    {
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $user = User::factory()->create();
+        $user->wallet->update(['balance' => 100.00]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $user), $this->adminUserUpdatePayload($user, [
+                'wallet_balance' => '275.50',
+            ]))
+            ->assertRedirect(route('admin.users'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('275.50', $user->fresh()->wallet->balance);
+    }
+
+    public function test_superadmin_edit_user_form_shows_wallet_balance_field(): void
+    {
+        $admin = User::factory()->create([
+            'is_superadmin' => true,
+        ]);
+
+        $user = User::factory()->create();
+        $user->wallet->update(['balance' => 432.10]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $user))
+            ->assertOk()
+            ->assertSee('name="wallet_balance"', false)
+            ->assertSee('432.10', false)
+            ->assertSee(__('Wallet balance'), false);
     }
 
     public function test_superadmin_can_delete_user(): void
@@ -346,5 +367,22 @@ class AdminUsersTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $admin->id,
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function adminUserUpdatePayload(User $user, array $overrides = []): array
+    {
+        $user->loadMissing('wallet');
+
+        return array_merge([
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => '',
+            'password_confirmation' => '',
+            'wallet_balance' => number_format((float) ($user->wallet?->balance ?? 0), 2, '.', ''),
+        ], $overrides);
     }
 }
