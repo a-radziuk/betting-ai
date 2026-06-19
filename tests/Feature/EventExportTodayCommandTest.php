@@ -115,6 +115,59 @@ class EventExportTodayCommandTest extends TestCase
         }
     }
 
+    public function test_exports_grouped_tournament_standings_at_tournament_level(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00', $tz));
+        $out = storage_path('app/2026-06-01.json');
+
+        try {
+            $tournament = Tournament::query()->create([
+                'name' => 'World Cup',
+                'standings' => [
+                    'groups' => [
+                        [
+                            'name' => 'Group A',
+                            'rows' => [
+                                ['position' => 1, 'team' => 'Alpha FC', 'played' => 1, 'points' => 3],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+            $home = Team::query()->create(['name' => 'H', 'short_name' => 'H', 'league' => 'W', 'tournament_id' => $tournament->id]);
+            $away = Team::query()->create(['name' => 'A', 'short_name' => 'A', 'league' => 'W', 'tournament_id' => $tournament->id]);
+
+            $this->seedExportableEvent(
+                101501,
+                101511,
+                101521,
+                101531,
+                $tournament->id,
+                $home->id,
+                $away->id,
+                Carbon::parse('2026-06-01 18:00:00', $tz),
+            );
+
+            $exit = Artisan::call('event:export-today');
+            $this->assertSame(0, $exit);
+
+            $data = json_decode(file_get_contents($out), true);
+            $this->assertCount(1, $data);
+            $this->assertIsArray($data[0]['standings']);
+            $this->assertCount(1, $data[0]['standings']);
+            $this->assertSame('Group A', $data[0]['standings'][0]['group']);
+            $this->assertSame('Alpha FC', $data[0]['standings'][0]['team']);
+            $this->assertArrayNotHasKey('standings', $data[0]['events'][0]);
+        } finally {
+            Carbon::setTestNow();
+            if (is_file($out)) {
+                unlink($out);
+            }
+        }
+    }
+
     public function test_optional_tournament_id_limits_events(): void
     {
         $tz = config('app.timezone');
@@ -268,7 +321,8 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertStringStartsWith($json, $txt);
             $this->assertStringContainsString('Above is the odds for 1 games that are happening today.', $txt);
             $this->assertStringContainsString('1/ the safest bet', $txt);
-            $this->assertStringContainsString('4/ the never win bet', $txt);
+            $this->assertStringContainsString('fifa_rank', $txt);
+            $this->assertStringContainsString('fifa_points', $txt);
             $this->assertStringContainsString('odd_id: // id from the JSON', $txt);
             $this->assertStringContainsString('stake: // percent from 1000', $txt);
             $this->assertStringContainsString('description: // explain why you want to bet', $txt);
@@ -303,6 +357,8 @@ class EventExportTodayCommandTest extends TestCase
             $txt = file_get_contents($txtPath);
             $this->assertStringContainsString('Above are 1 game happening today', $txt);
             $this->assertStringContainsString('most likely outcome', $txt);
+            $this->assertStringContainsString('fifa_rank', $txt);
+            $this->assertStringContainsString('fifa_points', $txt);
             $this->assertStringContainsString('Analyse the standings thoroughly', $txt);
             $this->assertStringContainsString('motivation', $txt);
             $this->assertStringNotContainsString('1/ the safest bet', $txt);

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Event;
 use App\Models\Market;
+use App\Models\Team;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -111,6 +112,8 @@ final class EventOddsExportPayload
      *     eventTournament: string|null,
      *     eventDateTime: string|null,
      *     standings: array<string, mixed>|null,
+     *     homeTeam?: array{fifa_rank: int, fifa_points: float},
+     *     awayTeam?: array{fifa_rank: int, fifa_points: float},
      *     odds: list<array<string, mixed>>
      * }
      */
@@ -126,7 +129,7 @@ final class EventOddsExportPayload
         $tournament = $event->tournament;
         $promrel = $tournament?->standings_promrel ?? [];
 
-        return [
+        $payload = [
             'eventId' => (string) $event->id,
             'eventName' => $eventName,
             'eventTournament' => $eventTournament,
@@ -134,6 +137,40 @@ final class EventOddsExportPayload
             'standings' => self::prepareStandings($tournament?->standings, $promrel),
             'odds' => array_values($rows),
         ];
+
+        $homeFifa = self::teamFifaExportFields($home);
+        if ($homeFifa !== null) {
+            $payload['homeTeam'] = $homeFifa;
+        }
+
+        $awayFifa = self::teamFifaExportFields($away);
+        if ($awayFifa !== null) {
+            $payload['awayTeam'] = $awayFifa;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @return array{fifa_rank?: int, fifa_points?: float}|null
+     */
+    private static function teamFifaExportFields(?Team $team): ?array
+    {
+        if ($team === null || $team->country !== 'World') {
+            return null;
+        }
+
+        $fields = [];
+
+        if ($team->fifa_rank !== null) {
+            $fields['fifa_rank'] = (int) $team->fifa_rank;
+        }
+
+        if ($team->fifa_points !== null) {
+            $fields['fifa_points'] = round((float) $team->fifa_points, 2);
+        }
+
+        return $fields === [] ? null : $fields;
     }
 
     /**
@@ -184,40 +221,86 @@ final class EventOddsExportPayload
      */
     private static function prepareStandings(?array $standings, array $standings_promrel): ?array
     {
-        if ($standings === null || ! isset($standings['rows']) || ! is_array($standings['rows'])) {
+        if ($standings === null) {
             return null;
         }
 
-        $totalGamesInTheTournament = (count($standings['rows']) - 1) * 2;
+        if (isset($standings['groups']) && is_array($standings['groups'])) {
+            $prepared = [];
+            foreach ($standings['groups'] as $group) {
+                if (! is_array($group)) {
+                    continue;
+                }
 
+                $groupName = isset($group['name']) ? trim((string) $group['name']) : '';
+                $rows = is_array($group['rows'] ?? null) ? $group['rows'] : [];
+                if ($rows === []) {
+                    continue;
+                }
+
+                $totalGamesInGroup = max(count($rows) - 1, 0) * 1;
+                foreach (self::prepareStandingsRows($rows, $standings_promrel, $totalGamesInGroup) as $row) {
+                    if ($groupName !== '') {
+                        $row['group'] = $groupName;
+                    }
+                    $prepared[] = $row;
+                }
+            }
+
+            return $prepared === [] ? null : $prepared;
+        }
+
+        if (! isset($standings['rows']) || ! is_array($standings['rows'])) {
+            return null;
+        }
+
+        $totalGamesInTheTournament = max(count($standings['rows']) - 1, 0) * 2;
+
+        return self::prepareStandingsRows($standings['rows'], $standings_promrel, $totalGamesInTheTournament);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     * @param  array<string, mixed>  $standings_promrel
+     * @return list<array<string, mixed>>
+     */
+    private static function prepareStandingsRows(array $rows, array $standings_promrel, int $totalGamesInTheTournament): array
+    {
         return array_map(function ($row) use ($standings_promrel, $totalGamesInTheTournament) {
             if (! is_array($row)) {
                 return $row;
             }
             $row['team'] = $row['team_display_name'] ?? $row['team'] ?? '';
             unset($row['team_path'], $row['form'], $row['movement'], $row['team_id'], $row['team_display_name']);
-            $posKey = isset($row['position']) ? (string) $row['position'] : '';
-            if ($posKey !== '' && isset($standings_promrel[$posKey])) {
-                $pr = $standings_promrel[$posKey];
-                $effect = 'Relegation to ';
-                if (($pr['type'] ?? '') === 'promotion') {
-                    $effect = 'Promotion to ';
-                }
-                $effect .= $pr['name'] ?? '';
-                $row['outcome'] = $effect;
-                $row['outcome_positivity'] = $pr['positivity'] ?? 'Unknown';
+
+            $played = (int) ($row['played'] ?? 0);
+            if ($played === 0) {
+                $row['position'] = 0;
+                unset($row['outcome'], $row['outcome_positivity']);
             } else {
-                $row['outcome'] = 'None';
-                $row['outcome_positivity'] = 0;
+                $posKey = isset($row['position']) ? (string) $row['position'] : '';
+                if ($posKey !== '' && isset($standings_promrel[$posKey])) {
+                    $pr = $standings_promrel[$posKey];
+                    $effect = 'Relegation to ';
+                    if (($pr['type'] ?? '') === 'promotion') {
+                        $effect = 'Promotion to ';
+                    }
+                    $effect .= $pr['name'] ?? '';
+                    $row['outcome'] = $effect;
+                    $row['outcome_positivity'] = $pr['positivity'] ?? 'Unknown';
+                } else {
+                    $row['outcome'] = 'None';
+                    $row['outcome_positivity'] = 0;
+                }
             }
 
-            $remainingGames = $totalGamesInTheTournament - (int) ($row['played'] ?? 0);
+            $remainingGames = $totalGamesInTheTournament - $played;
             $potentialPointsToScore = $remainingGames * 3;
 
             $row['remaining_games'] = $remainingGames;
             $row['potential_points'] = $potentialPointsToScore;
 
             return $row;
-        }, array_values($standings['rows']));
+        }, array_values($rows));
     }
 }

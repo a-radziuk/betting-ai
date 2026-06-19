@@ -190,8 +190,9 @@ For the safest strategy, do not consider odds below 1.20
 The best bet is typically the one between 1.5 and 3
 
 3/ the potential upset bet
-The upsetter goes for odds that are typically between 3 and 5, but in some cases can be higher
+The upsetter goes for odds that are typically between 3 and 5, but in some cases can be higher. But don't go for long-shot upsets and unrealistic results
 
+{$this->fifaRankingsInstructionParagraph()}
 If the event JSON includes a "standings" array, you must use it before choosing a bet. Each row describes one club in the competition table: league position, team name, matches played and results (won/drawn/lost), goals for and against, goal difference, total points, a textual "outcome" describing what that position currently means (e.g. title race, European qualification, mid-table, relegation), an "outcome_positivity" score reflecting how desirable or urgent that situation is (higher for title or European chase, lower or negative for relegation danger), plus "remaining_games" and "potential_points" showing how much can still change in the table.
 Match each side in the fixture (from event name and context) to its standings row. Infer motivation and likely approach: teams fighting for the title or a European spot often press for wins; those in a relegation battle may be desperate or tight; clubs with little left to play for may rotate, conserve energy, or lack intensity; late-season gaps between points and potential_points reveal whether a result is must-win, enough for a draw, or largely irrelevant.
 Weave this motivation analysis into your probability estimates and into the explanation when standings are present. If "standings" is missing or empty, state that limitation briefly and rely on odds and match context only.
@@ -213,11 +214,17 @@ TXT;
         return <<<TXT
 Above are {$numberOfEvents} {$gamesLabel} happening {$dayWord} (fixture list and tournament context only — no betting odds are included).
 
+{$this->fifaRankingsInstructionParagraph()}
 For each game, state the most likely outcome (home win, draw, or away win), how many goals will be scored approximately based primarily on the tournament standings. Analyse the standings thoroughly: match each club in the fixture to its table row and infer motivation (title race, European qualification, relegation fight, mid-table comfort, dead rubbers, etc.) using position, points, goal difference, remaining games, potential points, and the outcome / outcome_positivity fields where present.
 When analysing motivation of each team, also consider other teams who have plus-minus the same amount of points and a similar outcome based on their position in the table. . If there is some other game or games provided in the list of events that can influence this game in any way, please mention them in the description and in the "influenced_by" field
 Explain your reasoning per fixture in terms of what each team is playing for and how that shapes the probable result. If standings are missing or empty for a competition, say so briefly and use only the fixture names and any other context in the JSON.
 
 Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
 TXT;
+    }
+
+    private function fifaRankingsInstructionParagraph(): string
+    {
+        return 'If an event object includes "homeTeam" and/or "awayTeam" with "fifa_rank" and "fifa_points", those fields contain the official FIFA men\'s world ranking position and points for that national team. Use them as a signal of relative team strength when analysing fixtures, alongside standings and odds where present.';
     }
 }

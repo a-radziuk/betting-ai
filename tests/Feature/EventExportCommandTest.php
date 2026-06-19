@@ -23,7 +23,7 @@ class EventExportCommandTest extends TestCase
             'name' => 'Premier League',
             'standings' => [
                 'rows' => [
-                    ['position' => 1, 'team' => 'Alpha United', 'points' => 9],
+                    ['position' => 1, 'team' => 'Alpha United', 'played' => 3, 'points' => 9],
                 ],
             ],
         ]);
@@ -109,6 +109,126 @@ class EventExportCommandTest extends TestCase
         $this->assertSame(Market::PERIOD_FULL_TIME, $row['period']);
         $this->assertSame('HOME', $row['selection']);
         $this->assertSame(2.5, $row['odds']);
+    }
+
+    public function test_exports_grouped_standings_with_group_labels(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'World Cup',
+            'standings' => [
+                'groups' => [
+                    [
+                        'name' => 'Group A',
+                        'rows' => [
+                            ['position' => 1, 'team' => 'Alpha FC', 'played' => 1, 'points' => 3],
+                            ['position' => 2, 'team' => 'Beta FC', 'played' => 1, 'points' => 1],
+                        ],
+                    ],
+                    [
+                        'name' => 'Group B',
+                        'rows' => [
+                            ['position' => 1, 'team' => 'Gamma FC', 'played' => 0, 'points' => 0],
+                        ],
+                    ],
+                ],
+            ],
+            'standings_promrel' => [
+                '1' => [
+                    'type' => 'promotion',
+                    'name' => 'Knockout',
+                    'positivity' => 10,
+                ],
+            ],
+        ]);
+        $home = Team::query()->create([
+            'name' => 'H',
+            'short_name' => 'H',
+            'league' => 'World',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'A',
+            'short_name' => 'A',
+            'league' => 'World',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        Event::query()->create([
+            'id' => 99010,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::parse('2026-06-15 18:30:00', 'UTC'),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $exit = Artisan::call('event:export', ['eventId' => 99010, '--no-odds' => true]);
+        $this->assertSame(0, $exit);
+
+        $decoded = json_decode(Artisan::output(), true);
+        $this->assertIsArray($decoded['standings']);
+        $this->assertCount(3, $decoded['standings']);
+        $this->assertSame('Group A', $decoded['standings'][0]['group']);
+        $this->assertSame('Alpha FC', $decoded['standings'][0]['team']);
+        $this->assertSame('Promotion to Knockout', $decoded['standings'][0]['outcome']);
+        $this->assertSame(0, $decoded['standings'][0]['remaining_games']);
+        $this->assertSame('Group A', $decoded['standings'][1]['group']);
+        $this->assertSame('Beta FC', $decoded['standings'][1]['team']);
+        $this->assertSame('Group B', $decoded['standings'][2]['group']);
+        $this->assertSame(0, $decoded['standings'][2]['position']);
+        $this->assertSame('Gamma FC', $decoded['standings'][2]['team']);
+        $this->assertSame(0, $decoded['standings'][2]['remaining_games']);
+        $this->assertArrayNotHasKey('outcome', $decoded['standings'][2]);
+        $this->assertArrayNotHasKey('outcome_positivity', $decoded['standings'][2]);
+    }
+
+    public function test_unplayed_standings_row_has_zero_position_and_no_outcome_fields(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'League',
+            'standings' => [
+                'rows' => [
+                    ['position' => 4, 'team' => 'Not Started FC', 'played' => 0, 'points' => 0],
+                ],
+            ],
+            'standings_promrel' => [
+                '4' => [
+                    'type' => 'relegation',
+                    'name' => 'Second Division',
+                    'positivity' => -5,
+                ],
+            ],
+        ]);
+        $home = Team::query()->create([
+            'name' => 'H',
+            'short_name' => 'H',
+            'league' => 'England',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'A',
+            'short_name' => 'A',
+            'league' => 'England',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        Event::query()->create([
+            'id' => 99011,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::parse('2026-06-15 18:30:00', 'UTC'),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $exit = Artisan::call('event:export', ['eventId' => 99011, '--no-odds' => true]);
+        $this->assertSame(0, $exit);
+
+        $row = json_decode(Artisan::output(), true)['standings'][0];
+        $this->assertSame(0, $row['position']);
+        $this->assertSame('Not Started FC', $row['team']);
+        $this->assertArrayNotHasKey('outcome', $row);
+        $this->assertArrayNotHasKey('outcome_positivity', $row);
     }
 
     public function test_no_markets_excludes_listed_types_case_insensitively(): void
@@ -277,6 +397,84 @@ class EventExportCommandTest extends TestCase
         $this->assertSame('H3 vs A3', $decoded['eventName']);
         $this->assertArrayHasKey('odds', $decoded);
         $this->assertSame([], $decoded['odds']);
+    }
+
+    public function test_includes_fifa_fields_for_world_teams_when_present(): void
+    {
+        $tournament = Tournament::query()->create(['name' => 'World Cup']);
+        $home = Team::query()->create([
+            'name' => 'Argentina',
+            'short_name' => 'ARG',
+            'league' => 'INT',
+            'country' => 'World',
+            'tournament_id' => $tournament->id,
+            'fifa_name' => 'Argentina',
+            'fifa_rank' => 1,
+            'fifa_points' => 1889.06,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'France',
+            'short_name' => 'FRA',
+            'league' => 'INT',
+            'country' => 'World',
+            'tournament_id' => $tournament->id,
+            'fifa_name' => 'France',
+            'fifa_rank' => 2,
+            'fifa_points' => 1887.11,
+        ]);
+
+        Event::query()->create([
+            'id' => 99400,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::parse('2026-06-18 18:00:00', 'UTC'),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $exit = Artisan::call('event:export', ['eventId' => 99400, '--no-odds' => true]);
+        $decoded = json_decode(Artisan::output(), true);
+
+        $this->assertSame(0, $exit);
+        $this->assertSame(['fifa_rank' => 1, 'fifa_points' => 1889.06], $decoded['homeTeam']);
+        $this->assertSame(['fifa_rank' => 2, 'fifa_points' => 1887.11], $decoded['awayTeam']);
+    }
+
+    public function test_omits_fifa_fields_for_non_world_teams_or_missing_values(): void
+    {
+        $tournament = Tournament::query()->create(['name' => 'Premier League']);
+        $home = Team::query()->create([
+            'name' => 'Club Home',
+            'short_name' => 'CH',
+            'league' => 'England',
+            'country' => 'England',
+            'tournament_id' => $tournament->id,
+            'fifa_rank' => 10,
+            'fifa_points' => 1500.00,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'World Away',
+            'short_name' => 'WA',
+            'league' => 'INT',
+            'country' => 'World',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        Event::query()->create([
+            'id' => 99401,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::parse('2026-06-18 19:00:00', 'UTC'),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $exit = Artisan::call('event:export', ['eventId' => 99401, '--no-odds' => true]);
+        $decoded = json_decode(Artisan::output(), true);
+
+        $this->assertSame(0, $exit);
+        $this->assertArrayNotHasKey('homeTeam', $decoded);
+        $this->assertArrayNotHasKey('awayTeam', $decoded);
     }
 
     public function test_fails_when_event_missing(): void
