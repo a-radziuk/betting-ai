@@ -46,6 +46,46 @@
         color: var(--text);
     }
 
+    .home-hero-banner {
+        border-color: rgba(47, 152, 241, 0.22);
+        background:
+            linear-gradient(135deg, rgba(232, 245, 236, 0.95) 0%, rgba(224, 236, 250, 0.96) 52%, rgba(214, 228, 248, 0.98) 100%);
+        box-shadow: 0 20px 40px rgba(72, 118, 170, 0.14);
+    }
+
+    .home-hero-banner-pitch {
+        background:
+            repeating-linear-gradient(
+                90deg,
+                rgba(20, 137, 93, 0.06) 0,
+                rgba(20, 137, 93, 0.06) 12%,
+                rgba(20, 137, 93, 0.03) 12%,
+                rgba(20, 137, 93, 0.03) 24%
+            );
+    }
+
+    .home-hero-banner-pitch::before,
+    .home-hero-banner-pitch::after {
+        border-color: rgba(47, 152, 241, 0.16);
+    }
+
+    .home-hero-banner-eyebrow {
+        border-color: rgba(47, 152, 241, 0.24);
+        background: rgba(47, 152, 241, 0.08);
+        color: var(--accent);
+    }
+
+    .home-hero-banner-title {
+        background: linear-gradient(135deg, #10263d 0%, #2f7fe4 45%, #14895d 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .home-hero-banner-lead {
+        color: var(--muted);
+    }
+
     .logo-text {
         background: linear-gradient(135deg, #18324d, #2f7fe4 45%, #53c6ff 80%, #7a8cff);
         -webkit-background-clip: text;

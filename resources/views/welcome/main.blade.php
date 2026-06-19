@@ -1,8 +1,5 @@
 <main class="container">
-    <section class="hero">
-        <h1>{{ __('Nearest 20 Upcoming Events') }}</h1>
-        <p>{{ __('Real-time lineup of the next football fixtures sorted by kickoff time.') }}</p>
-    </section>
+    @include('partials.home-hero-banner')
 
     @if (isset($topTournaments) && $topTournaments->isNotEmpty())
         <section class="card tournament-leagues-line" aria-label="{{ __('Featured tournaments') }}">
@@ -89,7 +86,7 @@
 
     @include('partials.welcome-featured-bets', ['featuredBets' => $featuredBets ?? collect()])
 
-    <section class="card">
+    <section id="upcoming-events" class="card">
         @include('partials.upcoming-events-table', ['events' => $events])
     </section>
 </main>

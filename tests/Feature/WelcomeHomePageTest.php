@@ -117,6 +117,8 @@ class WelcomeHomePageTest extends TestCase
 
             $this->get('/')
                 ->assertOk()
+                ->assertSee('Smart football bets with AI', false)
+                ->assertSee('Browse fixtures', false)
                 ->assertSee('Monday, 12 January 2026', false)
                 ->assertSee('14:30', false)
                 ->assertSee('Welcome Test League', false)
