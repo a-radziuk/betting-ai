@@ -354,7 +354,13 @@ Route::middleware('auth')->group(function () {
 
             $validated = $request->validate([
                 'sum' => ['required', 'numeric', 'min:0.01'],
+                'explanation' => ['nullable', 'string', 'max:65535'],
             ]);
+
+            $explanation = isset($validated['explanation'])
+                ? trim($validated['explanation'])
+                : '';
+            $explanation = $explanation !== '' ? $explanation : null;
 
             $user = Auth::user();
             $user->loadMissing('wallet');
@@ -368,7 +374,7 @@ Route::middleware('auth')->group(function () {
                     ->withErrors(['sum' => 'Insufficient wallet balance.']);
             }
 
-            $result = $placeBetService->placeBet($user->id, $odd->id, (string) $validated['sum']);
+            $result = $placeBetService->placeBet($user->id, $odd->id, (string) $validated['sum'], null, $explanation);
             if (! $result['ok']) {
                 return back()
                     ->withInput()

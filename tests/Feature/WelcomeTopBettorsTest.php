@@ -248,6 +248,40 @@ class WelcomeTopBettorsTest extends TestCase
         $this->assertStringContainsString('form-icon--d', $response->getContent());
     }
 
+    public function test_home_hero_shows_best_user_metric(): void
+    {
+        $odd = $this->seedOddForBets();
+        $eventId = 88001;
+
+        $leader = User::factory()->create(['name' => 'HeroLeader']);
+        $runnerUp = User::factory()->create(['name' => 'HeroRunnerUp', 'is_hidden' => true]);
+
+        foreach ([$leader, $runnerUp] as $user) {
+            UserWallet::query()->where('user_id', $user->id)->update(['total_result' => 10.0]);
+            $this->placeBet($user, $odd, $eventId);
+            UserBet::query()->where('user_id', $user->id)->update(['status' => UserBet::STATUS_WON]);
+        }
+
+        UserMetric::query()->create([
+            'user_id' => $leader->id,
+            'type' => UserMetric::TYPE_LAST_10_POSITIVE,
+            'amount' => 420.00,
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $runnerUp->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 150.00,
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('home-hero-banner-featured', false)
+            ->assertSee('HeroLeader', false)
+            ->assertSee('Last 10 bets', false)
+            ->assertSee('+420.00 EUR', false)
+            ->assertDontSee('HeroRunnerUp', false);
+    }
+
     public function test_home_falls_back_to_wallet_ranking_when_fewer_than_three_users_have_metrics(): void
     {
         $odd = $this->seedOddForBets();

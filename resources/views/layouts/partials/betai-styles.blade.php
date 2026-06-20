@@ -229,6 +229,107 @@
     .home-hero-banner-inner {
         position: relative;
         z-index: 1;
+        display: grid;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    @media (min-width: 900px) {
+        .home-hero-banner-inner {
+            grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+        }
+    }
+
+    .home-hero-banner-featured {
+        margin: 0;
+    }
+
+    .home-hero-banner-featured-label {
+        margin: 0 0 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    .home-hero-banner-featured-card {
+        display: flex;
+        gap: 0.85rem;
+        align-items: center;
+        padding: 1rem 1.1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(93, 226, 255, 0.28);
+        background: rgba(6, 11, 22, 0.55);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .home-hero-banner-featured-card:hover {
+        border-color: rgba(93, 226, 255, 0.5);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+    }
+
+    .home-hero-banner-featured-card:focus-visible {
+        outline: 2px solid rgba(93, 226, 255, 0.85);
+        outline-offset: 2px;
+    }
+
+    .home-hero-banner-featured-avatar {
+        flex-shrink: 0;
+    }
+
+    .home-hero-banner-featured-avatar-img,
+    .home-hero-banner-featured-avatar-placeholder {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        display: block;
+        border: 1px solid rgba(93, 226, 255, 0.3);
+    }
+
+    .home-hero-banner-featured-avatar-img {
+        object-fit: cover;
+    }
+
+    .home-hero-banner-featured-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: var(--accent);
+        background: rgba(93, 226, 255, 0.1);
+    }
+
+    .home-hero-banner-featured-body {
+        min-width: 0;
+    }
+
+    .home-hero-banner-featured-name {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.25;
+    }
+
+    .home-hero-banner-featured-type {
+        margin: 0.2rem 0 0;
+        font-size: 0.82rem;
+        color: var(--muted);
+        line-height: 1.35;
+    }
+
+    .home-hero-banner-featured-amount {
+        margin: 0.35rem 0 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #8bffcd;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.2;
     }
 
     .home-hero-banner-content {

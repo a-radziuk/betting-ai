@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\HomepageCache;
+use App\Support\HomepageTopUserMetrics;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -12,6 +13,7 @@ class HomeController extends Controller
         return view('welcome', [
             'mainHtml' => $homepageCache->mainContentHtml(),
             'showHomePromocode' => ! auth()->user()?->hasActiveSeeTipsAccess(),
+            'heroTopUserMetric' => HomepageTopUserMetrics::bestForHero(),
         ]);
     }
 }

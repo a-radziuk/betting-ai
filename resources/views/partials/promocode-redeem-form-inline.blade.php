@@ -1,6 +1,5 @@
 <form method="post" action="{{ route('subscribe.promocode') }}" class="home-promocode-form">
     @csrf
-    <label class="home-promocode-label" for="{{ $inputId }}">{{ __('Promocode') }}</label>
     <input
         type="text"
         id="{{ $inputId }}"
@@ -8,6 +7,7 @@
         class="admin-upload-input home-promocode-input"
         value="{{ old('code') }}"
         placeholder="{{ __('Enter promocode') }}"
+        aria-label="{{ __('Promocode') }}"
         autocomplete="off"
         spellcheck="false"
         required

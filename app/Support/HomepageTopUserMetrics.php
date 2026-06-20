@@ -52,4 +52,18 @@ class HomepageTopUserMetrics
 
         return $selectedMetrics;
     }
+
+    public static function bestForHero(): ?UserMetric
+    {
+        if (! Schema::hasTable('user_metrics')) {
+            return null;
+        }
+
+        return UserMetric::query()
+            ->whereHas('user', fn (Builder $query) => $query->visibleOnSite())
+            ->orderByDesc('amount')
+            ->orderBy('id')
+            ->with(['user.wallet'])
+            ->first();
+    }
 }

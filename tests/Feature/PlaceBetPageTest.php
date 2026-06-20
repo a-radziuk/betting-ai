@@ -162,6 +162,36 @@ class PlaceBetPageTest extends TestCase
         $this->assertSame('5.00', UserWallet::query()->where('user_id', $user->id)->value('balance'));
     }
 
+    public function test_place_bet_page_shows_explanation_field(): void
+    {
+        $odd = $this->seedOddChain(90109, Event::STATUS_SCHEDULED);
+        $user = $this->userWhoCanPlaceBets();
+
+        $this->actingAs($user)
+            ->get(route('bets.place.show', ['odd' => $odd->id]))
+            ->assertOk()
+            ->assertSee('name="explanation"', false)
+            ->assertSee(__('Explanation'), false);
+    }
+
+    public function test_place_bet_post_stores_explanation_on_user_bet(): void
+    {
+        $odd = $this->seedOddChain(90110, Event::STATUS_SCHEDULED);
+        $user = $this->userWhoCanPlaceBets();
+        UserWallet::query()->where('user_id', $user->id)->update(['balance' => 100]);
+
+        $this->actingAs($user)
+            ->post(route('bets.place.store', ['odd' => $odd->id]), [
+                'sum' => 10,
+                'explanation' => 'Home side value based on recent form.',
+            ])
+            ->assertRedirect(route('dashboard'));
+
+        $bet = UserBet::query()->firstOrFail();
+
+        $this->assertSame('Home side value based on recent form.', $bet->explanation);
+    }
+
     public function test_place_bet_post_places_bet_and_redirects_to_dashboard(): void
     {
         $odd = $this->seedOddChain(90104, Event::STATUS_SCHEDULED);

@@ -75,6 +75,20 @@
                         <div style="margin-top: 8px; color: #b91c1c;">{{ $message }}</div>
                     @enderror
                 </div>
+
+                <div class="row" style="grid-template-columns: 1fr;">
+                    <label class="name" for="explanation">{{ __('Explanation') }}</label>
+                    <textarea
+                        id="explanation"
+                        name="explanation"
+                        rows="4"
+                        class="input-dark"
+                        placeholder="{{ __('Why are you placing this bet?') }}"
+                    >{{ old('explanation') }}</textarea>
+                    @error('explanation')
+                        <div style="margin-top: 8px; color: #b91c1c;">{{ $message }}</div>
+                    @enderror
+                </div>
             </div>
 
             <div class="bet-kpi" aria-live="polite">

@@ -65,4 +65,50 @@ class HomepageTopUserMetricsTest extends TestCase
 
         $this->assertTrue(HomepageTopUserMetrics::forHomepage()->isEmpty());
     }
+
+    public function test_best_for_hero_returns_highest_amount_metric_for_visible_user(): void
+    {
+        $first = User::factory()->create();
+        $second = User::factory()->create();
+
+        UserMetric::query()->create([
+            'user_id' => $first->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 100.00,
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $second->id,
+            'type' => UserMetric::TYPE_LAST_10_POSITIVE,
+            'amount' => 250.00,
+        ]);
+
+        $metric = HomepageTopUserMetrics::bestForHero();
+
+        $this->assertNotNull($metric);
+        $this->assertSame($second->id, $metric->user_id);
+        $this->assertSame(UserMetric::TYPE_LAST_10_POSITIVE, $metric->type);
+        $this->assertSame('250.00', number_format((float) $metric->amount, 2));
+    }
+
+    public function test_best_for_hero_ignores_hidden_users(): void
+    {
+        $visible = User::factory()->create();
+        $hidden = User::factory()->create(['is_hidden' => true]);
+
+        UserMetric::query()->create([
+            'user_id' => $visible->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 100.00,
+        ]);
+        UserMetric::query()->create([
+            'user_id' => $hidden->id,
+            'type' => UserMetric::TYPE_TOTAL_RESULT_POSITIVE,
+            'amount' => 500.00,
+        ]);
+
+        $metric = HomepageTopUserMetrics::bestForHero();
+
+        $this->assertNotNull($metric);
+        $this->assertSame($visible->id, $metric->user_id);
+    }
 }
