@@ -108,4 +108,19 @@ class HomepageCacheTest extends TestCase
 
         $this->assertFalse(Cache::store('array')->has($cache->cacheKey()));
     }
+
+    public function test_homepage_cache_does_not_include_promocode_form(): void
+    {
+        Cache::store('array')->flush();
+
+        $cache = app(HomepageCache::class);
+
+        $this->get('/')->assertOk();
+
+        $cached = Cache::store('array')->get($cache->cacheKey());
+
+        $this->assertIsString($cached);
+        $this->assertStringNotContainsString('id="home-promocode"', $cached);
+        $this->assertStringNotContainsString(route('subscribe.promocode'), $cached);
+    }
 }

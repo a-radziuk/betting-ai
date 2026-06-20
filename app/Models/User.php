@@ -125,6 +125,22 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->save();
     }
 
+    public function extendSeeTipsAccessForDays(int $days): void
+    {
+        if ($days < 1) {
+            return;
+        }
+
+        $this->grantPrivelege(self::PRIVELEGE_SEE_TIPS);
+
+        $startsAt = ($this->see_tips_expires_at !== null && $this->see_tips_expires_at->isFuture())
+            ? $this->see_tips_expires_at
+            : now();
+
+        $this->see_tips_expires_at = $startsAt->copy()->addDays($days);
+        $this->save();
+    }
+
     public function grantPrivelege(string $privelege): void
     {
         if ($this->priveleges === null || $this->priveleges === '') {

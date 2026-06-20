@@ -2658,6 +2658,38 @@
         text-decoration: underline;
     }
 
+    .home-promocode-line {
+        padding: 0.85rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .home-promocode-form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+    }
+
+    .home-promocode-label {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .home-promocode-input {
+        flex: 1 1 8rem;
+        min-width: 8rem;
+        margin: 0;
+    }
+
+    .home-promocode-submit {
+        white-space: nowrap;
+    }
+
+    .home-promocode-error {
+        flex: 1 1 100%;
+        margin: 0;
+    }
+
     .tournament-leagues-line {
         padding: 0.85rem 1rem;
     }

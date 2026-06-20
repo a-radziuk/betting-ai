@@ -76,6 +76,20 @@
             @endforeach
         </section>
     @endif
+
+    <section class="card card-pad subscribe-promocode" aria-labelledby="subscribe-promocode-title">
+        <h2 id="subscribe-promocode-title" class="subscribe-plan-name">{{ __('Promocode') }}</h2>
+        <p class="subscribe-plan-duration">{{ __('Redeem a promocode to unlock tips access for a set number of days.') }}</p>
+
+        @auth
+            @include('partials.promocode-redeem-form', ['inputId' => 'promocode'])
+        @else
+            <p class="admin-upload-hint">
+                <a href="{{ route('login') }}" class="tournament-see-all-link">{{ __('Sign in') }}</a>
+                {{ __('to redeem a promocode.') }}
+            </p>
+        @endauth
+    </section>
 </main>
 
 @include('layouts.partials.betai-footer')

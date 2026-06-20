@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\PendingPromocodeRedemption;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +26,7 @@ class SocialAuthController extends Controller
     /**
      * @param string $provider
      */
-    public function callback(string $provider): RedirectResponse
+    public function callback(string $provider, PendingPromocodeRedemption $pendingPromocodeRedemption): RedirectResponse
     {
         $this->validateProvider($provider);
 
@@ -60,7 +61,10 @@ class SocialAuthController extends Controller
 
         Auth::login($user, true);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return $pendingPromocodeRedemption->applyToRedirect(
+            $user,
+            redirect(route('dashboard', absolute: false)),
+        );
     }
 
     private function validateProvider(string $provider): void

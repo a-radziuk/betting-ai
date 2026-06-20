@@ -11,6 +11,7 @@ class HomeController extends Controller
     {
         return view('welcome', [
             'mainHtml' => $homepageCache->mainContentHtml(),
+            'showHomePromocode' => ! auth()->user()?->hasActiveSeeTipsAccess(),
         ]);
     }
 }

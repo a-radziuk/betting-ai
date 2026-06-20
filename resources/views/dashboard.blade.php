@@ -7,6 +7,17 @@
     </x-slot>
 
     <div class="pb-8 space-y-4">
+        @if (! auth()->user()->hasVerifiedEmail())
+            <section class="card card-pad" role="alert">
+                <p class="text-sm text-[#dce7ff] m-0">
+                    {{ __('You must verify your email address.') }}
+                    <a href="{{ route('verification.notice') }}" class="text-[#5de2ff] hover:underline">
+                        {{ __('Resend verification email') }}
+                    </a>
+                </p>
+            </section>
+        @endif
+
         @if (session('status'))
             <section class="card card-pad">
                 <div class="flash">
@@ -125,6 +136,19 @@
                 </p>
                 <p class="text-[#9fb0d3] text-sm mt-2 mb-0">
                     <a href="{{ route('subscribe') }}" class="text-[#5de2ff] hover:underline">{{ __('View plans') }}</a>
+                </p>
+            </section>
+        @else
+            <section class="card card-pad">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-[#c7d7fa] m-0">{{ __('Promocode') }}</h3>
+                <p class="text-[#9fb0d3] text-sm mt-2 mb-0">
+                    {{ __('Redeem a promocode to unlock tips access for a set number of days.') }}
+                </p>
+                <div class="mt-4">
+                    @include('partials.promocode-redeem-form', ['inputId' => 'dashboard-promocode'])
+                </div>
+                <p class="text-[#9fb0d3] text-sm mt-4 mb-0">
+                    <a href="{{ route('subscribe') }}" class="text-[#5de2ff] hover:underline">{{ __('View subscription plans') }}</a>
                 </p>
             </section>
         @endif

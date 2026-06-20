@@ -22,6 +22,7 @@ use App\Http\Controllers\PlayersIndexController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\SubscribePromocodeController;
 use App\Http\Controllers\SubscribeTermsController;
 use App\Http\Controllers\SubscriptionCryptoPaymentController;
 use App\Http\Controllers\SubscriptionPaymentCompleteController;
@@ -150,7 +151,7 @@ Route::get('/dashboard', function () {
         'hasActiveSeeTips' => $user->hasActiveSeeTipsAccess(),
         'seeTipsExpiresAt' => $user->see_tips_expires_at,
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
     Route::get('/', function () {
@@ -231,6 +232,8 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');
+Route::post('/subscribe/promocode', [SubscribePromocodeController::class, 'store'])
+    ->name('subscribe.promocode');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/subscribe/terms/{plan}', [SubscribeTermsController::class, 'show'])

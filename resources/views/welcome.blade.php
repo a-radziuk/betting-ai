@@ -11,7 +11,15 @@
 <body>
     @include('layouts.partials.betai-header')
 
-    {!! $mainHtml !!}
+    <main class="container">
+        @include('partials.home-hero-banner')
+
+        @if ($showHomePromocode)
+            @include('partials.home-promocode-line')
+        @endif
+
+        {!! $mainHtml !!}
+    </main>
 
     @include('layouts.partials.betai-footer')
     </body>

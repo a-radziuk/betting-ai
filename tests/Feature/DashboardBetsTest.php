@@ -10,6 +10,8 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\UserBet;
 use App\Models\UserWallet;
+use App\Support\PromocodeGenerator;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -199,6 +201,42 @@ class DashboardBetsTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee('active tips subscription', false);
+            ->assertDontSee('active tips subscription', false)
+            ->assertSee('name="code"', false)
+            ->assertSee(__('Apply promocode'), false);
+    }
+
+    public function test_dashboard_hides_promocode_form_when_tips_access_is_active(): void
+    {
+        $user = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+            'see_tips_expires_at' => now()->addMonth(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('active tips subscription', false)
+            ->assertDontSee('name="code"', false);
+    }
+
+    public function test_user_can_redeem_promocode_from_dashboard(): void
+    {
+        Carbon::setTestNow('2026-06-10 12:00:00');
+
+        $user = User::factory()->create();
+        $promocode = PromocodeGenerator::generateUnique(2);
+
+        $this->actingAs($user)
+            ->from(route('dashboard'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $promocode->code,
+            ])
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('status');
+
+        $this->assertTrue($user->fresh()->hasActiveSeeTipsAccess());
+
+        Carbon::setTestNow();
     }
 }

@@ -1,6 +1,3 @@
-<main class="container">
-    @include('partials.home-hero-banner')
-
     @if (isset($topTournaments) && $topTournaments->isNotEmpty())
         <section class="card tournament-leagues-line" aria-label="{{ __('Featured tournaments') }}">
             <div class="tournament-leagues-line-inner">
@@ -150,4 +147,3 @@
     <section id="upcoming-events" class="card">
         @include('partials.upcoming-events-table', ['events' => $events])
     </section>
-</main>

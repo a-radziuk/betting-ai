@@ -70,4 +70,34 @@ class EmailVerificationTest extends TestCase
 
         Notification::assertSentTo($user, VerifyEmail::class);
     }
+
+    public function test_unverified_user_can_access_dashboard(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk();
+    }
+
+    public function test_unverified_user_sees_email_verification_notice_on_dashboard(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(__('You must verify your email address.'), false)
+            ->assertSee(route('verification.notice'), false);
+    }
+
+    public function test_verified_user_does_not_see_email_verification_notice_on_dashboard(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee(__('You must verify your email address.'), false);
+    }
 }
