@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\CookieConsentController;
 use App\Http\Controllers\CryptoWebhookController;
 use App\Http\Controllers\EventShowController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PlayerResolvedBetsCsvController;
@@ -45,6 +46,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 Route::get('/', HomeController::class);
+
+Route::get('/faq', FaqController::class)->name('faq');
 
 Route::get('/legal/{slug}', [LegalPageController::class, 'show'])
     ->name('legal.show');

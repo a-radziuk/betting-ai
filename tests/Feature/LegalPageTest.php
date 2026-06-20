@@ -53,6 +53,7 @@ class LegalPageTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
+            ->assertSee('FAQ', false)
             ->assertSee('Terms &amp; Conditions', false)
             ->assertSee('Privacy Policy', false)
             ->assertSee('Refund Policy', false);

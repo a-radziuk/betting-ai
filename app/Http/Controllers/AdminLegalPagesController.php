@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LegalPage;
+use App\Support\FaqPageContent;
 use App\Support\SubscriptionTermsContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,8 @@ class AdminLegalPagesController extends Controller
 
         if (SubscriptionTermsContent::isManagedPage($legalPage)) {
             $validated['slug'] = SubscriptionTermsContent::slug();
+        } elseif (FaqPageContent::isManagedPage($legalPage)) {
+            $validated['slug'] = FaqPageContent::slug();
         }
 
         $legalPage->update($validated);
@@ -66,6 +69,12 @@ class AdminLegalPagesController extends Controller
             return redirect()
                 ->route('admin.legal-pages')
                 ->with('status', __('Subscription terms cannot be deleted. Edit the page content instead.'));
+        }
+
+        if (FaqPageContent::isManagedPage($legalPage)) {
+            return redirect()
+                ->route('admin.legal-pages')
+                ->with('status', __('FAQ cannot be deleted. Edit the page content instead.'));
         }
 
         $legalPage->delete();

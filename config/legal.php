@@ -18,4 +18,8 @@ return [
 
     'country' => env('LEGAL_COUNTRY', ''),
 
+    'faq' => [
+        'slug' => 'faq',
+    ],
+
 ];

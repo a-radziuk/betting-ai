@@ -5,6 +5,9 @@
         </a>
         <div class="header-right">
             <span class="header-tag">{{ __('AI-Powered Football Betting Insights') }}</span>
+            @if ($faqPage)
+                <a class="header-link" href="{{ route('faq') }}">{{ $faqPage->title }}</a>
+            @endif
             @auth
                 @if (auth()->user()->isSuperadmin())
                     <a class="header-link" href="{{ route('admin') }}">{{ __('Admin') }}</a>

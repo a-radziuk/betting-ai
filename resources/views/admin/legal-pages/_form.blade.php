@@ -1,6 +1,8 @@
 @php
     $page = $page ?? null;
     $isSubscriptionTerms = ($page?->slug ?? '') === config('subscriptions.terms.slug');
+    $isFaq = ($page?->slug ?? '') === config('legal.faq.slug');
+    $isManagedSlug = $isSubscriptionTerms || $isFaq;
 @endphp
 
 <label class="admin-upload-label" for="title">{{ __('Title') }}</label>
@@ -21,11 +23,13 @@
     class="admin-upload-input"
     value="{{ old('slug', $page?->slug) }}"
     pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-    @readonly($isSubscriptionTerms)
+    @readonly($isManagedSlug)
     required
 >
 @if ($isSubscriptionTerms)
     <p class="admin-upload-hint">{{ __('This page is shown on the subscription checkout terms step (/subscribe/terms). The slug cannot be changed.') }}</p>
+@elseif ($isFaq)
+    <p class="admin-upload-hint">{{ __('This page is shown at /faq and linked in the site header and footer. The slug cannot be changed.') }}</p>
 @else
     <p class="admin-upload-hint">{{ __('Lowercase letters, numbers, and hyphens only. Used in the URL: /legal/your-slug') }}</p>
 @endif

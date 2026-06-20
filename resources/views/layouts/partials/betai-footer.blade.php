@@ -1,8 +1,11 @@
 <footer>
     <div class="container footer-inner">
         <span>{{ config('app.name') }}</span>
-        @if (! empty($legalPages))
+        @if ($faqPage || ! empty($legalPages))
             <nav class="footer-legal" aria-label="{{ __('Legal') }}">
+                @if ($faqPage)
+                    <a href="{{ route('faq') }}">{{ $faqPage->title }}</a>
+                @endif
                 @foreach ($legalPages as $legalPage)
                     <a href="{{ route('legal.show', $legalPage->slug) }}">{{ $legalPage->title }}</a>
                 @endforeach

@@ -5,7 +5,7 @@
         <div class="admin-page-header">
             <div>
                 <h1 class="admin-page-title">{{ __('Legal Pages') }}</h1>
-                <p class="admin-page-meta">{{ __('Manage public legal pages and the subscription checkout terms shown at /subscribe/terms.') }}</p>
+                <p class="admin-page-meta">{{ __('Manage public legal pages, the FAQ at /faq, and the subscription checkout terms shown at /subscribe/terms.') }}</p>
             </div>
             <a href="{{ route('admin.legal-pages.create') }}" class="btn btn-primary">{{ __('New page') }}</a>
         </div>
@@ -34,6 +34,8 @@
                                     {{ $page->title }}
                                     @if ($page->slug === config('subscriptions.terms.slug'))
                                         <div class="admin-table-sub">{{ __('Subscription checkout terms') }}</div>
+                                    @elseif ($page->slug === config('legal.faq.slug'))
+                                        <div class="admin-table-sub">{{ __('Site FAQ (/faq)') }}</div>
                                     @endif
                                 </td>
                                 <td><code>{{ $page->slug }}</code></td>

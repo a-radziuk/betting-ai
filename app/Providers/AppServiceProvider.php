@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\LegalPage;
+use App\Support\FaqPageContent;
 use App\Models\User;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
@@ -37,16 +38,26 @@ class AppServiceProvider extends ServiceProvider
 
         Blade::if('feature', fn (string $name): bool => feature($name));
 
-        View::composer('layouts.partials.betai-footer', function ($view): void {
+        View::composer(['layouts.partials.betai-footer', 'layouts.partials.betai-header'], function ($view): void {
             $legalPages = collect();
+            $faqPage = null;
 
             if (Schema::hasTable('legal_pages')) {
+                $faqPage = FaqPageContent::page();
+
                 $legalPages = LegalPage::query()
+                    ->when(
+                        $faqPage !== null,
+                        fn ($query) => $query->where('slug', '!=', FaqPageContent::slug()),
+                    )
                     ->orderBy('title')
                     ->get(['id', 'title', 'slug']);
             }
 
-            $view->with('legalPages', $legalPages);
+            $view->with([
+                'legalPages' => $legalPages,
+                'faqPage' => $faqPage,
+            ]);
         });
     }
 }
