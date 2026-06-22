@@ -99,6 +99,10 @@ class AdminLegalPagesController extends Controller
                 Rule::unique('legal_pages', 'slug')->ignore($page?->id),
             ],
             'content' => ['required', 'string'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:320'],
+            'og_title' => ['nullable', 'string', 'max:255'],
+            'og_description' => ['nullable', 'string', 'max:320'],
         ];
     }
 }

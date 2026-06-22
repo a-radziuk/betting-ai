@@ -62,8 +62,8 @@ final class HomepageFeaturedBets
         $bets = self::latestResolvedQuery()
             ->with([
                 'user.wallet',
-                'event.homeTeam.translations',
-                'event.awayTeam.translations',
+                'event.homeTeam',
+                'event.awayTeam',
                 'odd.selection.market',
             ])
             ->limit(self::MAX_SCAN)

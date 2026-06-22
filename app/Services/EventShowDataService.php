@@ -26,9 +26,9 @@ class EventShowDataService
     public function get(Event $event): array
     {
         $event->load([
-            'homeTeam.translations',
-            'awayTeam.translations',
-            'tournament.translations',
+            'homeTeam',
+            'awayTeam',
+            'tournament',
             'markets' => fn ($query) => $query
                 ->where('is_supported_market', true)
                 ->with([

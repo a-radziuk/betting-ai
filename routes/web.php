@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminLegalPagesController;
+use App\Http\Controllers\AdminSeoPagesController;
+use App\Http\Controllers\AdminSiteTextsController;
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
 use App\Http\Controllers\AdminUploadAnalysisController;
@@ -61,7 +63,7 @@ Route::get('/tournaments/{tournament}/results', function (Tournament $tournament
     if (Schema::hasTable('event_results')) {
         $allEventResults = EventResult::query()
             ->where('tournament_id', $tournament->id)
-            ->with(['homeTeam.translations', 'awayTeam.translations'])
+            ->with(['homeTeam', 'awayTeam'])
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->get();
@@ -232,6 +234,26 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.legal-pages.update');
     Route::delete('/legal-pages/{legalPage}', [AdminLegalPagesController::class, 'destroy'])
         ->name('admin.legal-pages.destroy');
+
+    Route::get('/site-texts', [AdminSiteTextsController::class, 'index'])
+        ->name('admin.site-texts');
+    Route::get('/site-texts/create', [AdminSiteTextsController::class, 'create'])
+        ->name('admin.site-texts.create');
+    Route::post('/site-texts', [AdminSiteTextsController::class, 'store'])
+        ->name('admin.site-texts.store');
+    Route::get('/site-texts/{siteText}/edit', [AdminSiteTextsController::class, 'edit'])
+        ->name('admin.site-texts.edit');
+    Route::put('/site-texts/{siteText}', [AdminSiteTextsController::class, 'update'])
+        ->name('admin.site-texts.update');
+    Route::delete('/site-texts/{siteText}', [AdminSiteTextsController::class, 'destroy'])
+        ->name('admin.site-texts.destroy');
+
+    Route::get('/seo-pages', [AdminSeoPagesController::class, 'index'])
+        ->name('admin.seo-pages');
+    Route::get('/seo-pages/{seoPage}/edit', [AdminSeoPagesController::class, 'edit'])
+        ->name('admin.seo-pages.edit');
+    Route::put('/seo-pages/{seoPage}', [AdminSeoPagesController::class, 'update'])
+        ->name('admin.seo-pages.update');
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');

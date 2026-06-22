@@ -90,11 +90,6 @@ class HomepageCacheTest extends TestCase
         app()->setLocale('en');
         $this->get('/')->assertOk();
         $this->assertTrue(Cache::store('array')->has($cache->cacheKey('en')));
-
-        config(['app.locale' => 'ru']);
-        app()->setLocale('ru');
-        $this->get('/')->assertOk();
-        $this->assertTrue(Cache::store('array')->has($cache->cacheKey('ru')));
     }
 
     public function test_cache_can_be_disabled(): void

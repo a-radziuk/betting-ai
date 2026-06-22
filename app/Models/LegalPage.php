@@ -10,5 +10,9 @@ class LegalPage extends Model
         'title',
         'slug',
         'content',
+        'meta_title',
+        'meta_description',
+        'og_title',
+        'og_description',
     ];
 }

@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $pageTitle ?? app_name() }}</title>
+    @if (! empty($seo))
+        @include('layouts.partials.seo-meta', ['seo' => $seo])
+    @else
+        <title>{{ $pageTitle ?? app_name() }}</title>
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')
 

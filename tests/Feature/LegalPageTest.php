@@ -22,6 +22,21 @@ class LegalPageTest extends TestCase
             ->assertSee('Privacy policy content goes here.', false);
     }
 
+    public function test_legal_page_renders_seo_metadata(): void
+    {
+        LegalPage::query()
+            ->where('slug', 'privacy-policy')
+            ->update([
+                'meta_title' => 'Privacy SEO Title',
+                'meta_description' => 'Privacy SEO Description',
+            ]);
+
+        $this->get(route('legal.show', 'privacy-policy'))
+            ->assertOk()
+            ->assertSee('<title>Privacy SEO Title</title>', false)
+            ->assertSee('name="description" content="Privacy SEO Description"', false);
+    }
+
     public function test_unknown_legal_page_returns_not_found(): void
     {
         $this->get(route('legal.show', 'missing-page'))

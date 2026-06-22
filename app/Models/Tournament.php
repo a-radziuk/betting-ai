@@ -49,38 +49,8 @@ class Tournament extends Model
         return $this->hasMany(Team::class);
     }
 
-    /**
-     * @return HasMany<TournamentTranslation, $this>
-     */
-    public function translations(): HasMany
-    {
-        return $this->hasMany(TournamentTranslation::class);
-    }
-
-    public function translationForCurrentLocale(): ?TournamentTranslation
-    {
-        $locale = app()->getLocale();
-
-        if ($this->relationLoaded('translations')) {
-            /** @var Collection<int, TournamentTranslation> $translations */
-            $translations = $this->getRelation('translations');
-
-            return $translations->firstWhere('locale', $locale);
-        }
-
-        return $this->translations()
-            ->where('locale', $locale)
-            ->first();
-    }
-
     public function localizedName(): string
     {
-        $translation = $this->translationForCurrentLocale();
-
-        if ($translation !== null && $translation->name !== null && $translation->name !== '') {
-            return (string) $translation->name;
-        }
-
         return (string) $this->name;
     }
 
@@ -153,7 +123,7 @@ class Tournament extends Model
     {
         $teams = $this->relationLoaded('teams')
             ? $this->teams
-            : $this->teams()->with('translations')->get();
+            : $this->teams()->get();
 
         $labelMap = [];
         foreach ($teams as $team) {

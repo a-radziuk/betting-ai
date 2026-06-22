@@ -1,4 +1,4 @@
-<x-guest-layout :page-title="app_page_title('Register')">
+<x-guest-layout :seo="$seo">
     <x-slot name="subtitle">{{ app_brand('Create an account to continue with :app.') }}</x-slot>
     <form method="POST" action="{{ route('register') }}" class="relative">
         @csrf

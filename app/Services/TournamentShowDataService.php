@@ -24,7 +24,7 @@ class TournamentShowDataService
      */
     public function get(Tournament $tournament): array
     {
-        $tournament->loadMissing('translations');
+        $tournament->loadMissing('teams');
 
         $standingsPromrel = $tournament->standings_promrel;
 
@@ -33,9 +33,9 @@ class TournamentShowDataService
         if (Schema::hasTable('events') && Schema::hasColumn('events', 'tournament_id')) {
             $upcomingEvents = Event::query()
                 ->with([
-                    'homeTeam.translations',
-                    'awayTeam.translations',
-                    'tournament.translations',
+                    'homeTeam',
+                    'awayTeam',
+                    'tournament',
                 ])
                 ->withCount(['userBets as user_bets_count' => function ($query): void {
                     $query->whereHas('user', fn ($userQuery) => $userQuery->visibleOnSite());
@@ -62,7 +62,7 @@ class TournamentShowDataService
         if (Schema::hasTable('event_results')) {
             $recentEventResults = EventResult::query()
                 ->where('tournament_id', $tournament->id)
-                ->with(['homeTeam.translations', 'awayTeam.translations'])
+                ->with(['homeTeam', 'awayTeam'])
                 ->orderByDesc('date')
                 ->orderByDesc('id')
                 ->limit(5)

@@ -38,7 +38,7 @@ class TournamentShowCache
 
     public function forgetAllLocales(Tournament $tournament): void
     {
-        foreach (['en', 'ru', 'ge'] as $locale) {
+        foreach (['en'] as $locale) {
             $this->forget($tournament, $locale);
         }
     }

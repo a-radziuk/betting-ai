@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\PlayerShowCache;
+use App\Support\PageSeo;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -15,6 +16,7 @@ class PlayerShowController extends Controller
 
         return view('player-stats', [
             'mainHtml' => $playerShowCache->mainContentHtml($user, $page),
+            'seo' => PageSeo::forPlayerShow($user),
         ]);
     }
 }

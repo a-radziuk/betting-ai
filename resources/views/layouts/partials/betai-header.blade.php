@@ -4,7 +4,7 @@
             @include('layouts.partials.app-logo')
         </a>
         <div class="header-right">
-            <span class="header-tag">{{ __('AI-Powered Football Betting Insights') }}</span>
+            <span class="header-tag">{{ site_text('header.tagline', default: __('AI-Powered Football Betting Insights')) }}</span>
             @if ($faqPage)
                 <a class="header-link" href="{{ route('faq') }}">{{ $faqPage->title }}</a>
             @endif

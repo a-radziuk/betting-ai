@@ -1,4 +1,4 @@
-<x-guest-layout :page-title="app_page_title('Login')">
+<x-guest-layout :seo="$seo">
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 

@@ -1,4 +1,4 @@
-<x-guest-layout :page-title="app_page_title('Forgot password')">
+<x-guest-layout :seo="$seo">
     <x-slot name="subtitle">{{ __('Request a password reset link.') }}</x-slot>
     <div class="mb-4 text-sm text-[#9fb0d3]">
         {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}

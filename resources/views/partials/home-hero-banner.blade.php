@@ -2,10 +2,10 @@
     <div class="home-hero-banner-pitch" aria-hidden="true"></div>
     <div class="home-hero-banner-inner">
         <div class="home-hero-banner-content">
-            <p class="home-hero-banner-eyebrow">{{ __('AI-powered insights') }}</p>
-            <h1 id="home-hero-title" class="home-hero-banner-title">{{ __('Smart football bets with AI') }}</h1>
+            <p class="home-hero-banner-eyebrow">{{ site_text('home.hero.eyebrow', default: __('AI-powered insights')) }}</p>
+            <h1 id="home-hero-title" class="home-hero-banner-title">{{ site_text('home.hero.title', default: __('Smart football bets with AI')) }}</h1>
             <p class="home-hero-banner-lead">
-                {{ __('Get your best betting tips, sharper match reads, and data-driven picks for every fixture on the board.') }}
+                {{ site_text('home.hero.lead', default: __('Get your best betting tips, sharper match reads, and data-driven picks for every fixture on the board.')) }}
             </p>
             <div class="home-hero-banner-actions">
                 <a href="#upcoming-events" class="btn btn-primary">{{ __('Browse fixtures') }}</a>

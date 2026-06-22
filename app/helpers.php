@@ -42,3 +42,23 @@ if (! function_exists('feature')) {
         return (bool) $flags[$name];
     }
 }
+
+if (! function_exists('site_text')) {
+    /**
+     * @param  array<string, string>  $replace
+     */
+    function site_text(string $key, array $replace = [], ?string $default = null): string
+    {
+        $value = app(\App\Services\SiteTextRepository::class)->value($key, $default);
+
+        if ($value === null) {
+            $value = $default ?? $key;
+        }
+
+        foreach (['app' => app_name()] + $replace as $name => $replacement) {
+            $value = str_replace(':'.$name, (string) $replacement, $value);
+        }
+
+        return $value;
+    }
+}

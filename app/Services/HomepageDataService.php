@@ -29,9 +29,9 @@ class HomepageDataService
         if (Schema::hasTable('events')) {
             $events = Event::query()
                 ->with([
-                    'homeTeam.translations',
-                    'awayTeam.translations',
-                    'tournament.translations',
+                    'homeTeam',
+                    'awayTeam',
+                    'tournament',
                 ])
                 ->withCount(['userBets as user_bets_count' => function ($query): void {
                     $query->whereHas('user', fn ($userQuery) => $userQuery->visibleOnSite());
@@ -55,7 +55,6 @@ class HomepageDataService
         $topTournaments = collect();
         if (Schema::hasTable('tournaments')) {
             $topTournaments = Tournament::query()
-                ->with('translations')
                 ->where('rank', 1)
                 ->orderBy('name')
                 ->get();

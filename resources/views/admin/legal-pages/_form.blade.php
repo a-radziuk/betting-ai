@@ -46,3 +46,6 @@
     spellcheck="false"
     required
 >{{ old('content', $page?->content) }}</textarea>
+
+<h2 class="admin-page-title" style="font-size: 1rem; margin-top: 1.5rem;">{{ __('SEO metadata') }}</h2>
+@include('admin.partials.seo-fields', ['record' => $page])
