@@ -28,6 +28,7 @@
                 ['label' => __('Site Texts'), 'route' => 'admin.site-texts', 'active' => 'admin.site-texts*'],
                 ['label' => __('SEO Pages'), 'route' => 'admin.seo-pages', 'active' => 'admin.seo-pages*'],
                 ['label' => __('Legal Pages'), 'route' => 'admin.legal-pages', 'active' => 'admin.legal-pages*'],
+                ['label' => __('Blog'), 'route' => 'admin.blogs', 'active' => 'admin.blogs*'],
             ], fn (array $item): bool => ! isset($item['feature']) || feature($item['feature'])) as $item)
                 <li>
                     <a

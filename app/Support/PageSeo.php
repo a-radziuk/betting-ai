@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\BlogPost;
 use App\Models\Event;
 use App\Models\LegalPage;
 use App\Models\SeoPage;
@@ -79,6 +80,39 @@ final class PageSeo
     public static function forForgotPassword(): array
     {
         return self::forKey(SeoPage::KEY_FORGOT_PASSWORD);
+    }
+
+    /**
+     * @return array{title: string, description: string|null, og_title: string|null, og_description: string|null}
+     */
+    public static function forBlogIndex(): array
+    {
+        return self::merge([
+            'title' => app_page_title('Blog'),
+            'description' => null,
+            'og_title' => app_page_title('Blog'),
+            'og_description' => null,
+        ], self::defaults());
+    }
+
+    /**
+     * @return array{title: string, description: string|null, og_title: string|null, og_description: string|null}
+     */
+    public static function forBlogPost(BlogPost $post): array
+    {
+        $title = $post->meta_title
+            ?: app_page_title(':title', ['title' => $post->title]);
+
+        $description = $post->meta_description;
+        $ogTitle = $post->og_title ?: $post->meta_title ?: $post->title;
+        $ogDescription = $post->og_description ?: $post->meta_description;
+
+        return self::merge([
+            'title' => $title,
+            'description' => $description,
+            'og_title' => $ogTitle,
+            'og_description' => $ogDescription,
+        ], self::defaults());
     }
 
     /**

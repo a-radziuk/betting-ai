@@ -1,16 +1,17 @@
 <footer>
     <div class="container footer-inner">
         <span>{{ config('app.name') }}</span>
-        @if ($faqPage || ! empty($legalPages))
-            <nav class="footer-legal" aria-label="{{ __('Legal') }}">
+        <nav class="footer-legal" aria-label="{{ __('Site links') }}">
+            <a href="{{ route('blog.index') }}">{{ __('Blog') }}</a>
+            @if ($faqPage || ! empty($legalPages))
                 @if ($faqPage)
                     <a href="{{ route('faq') }}">{{ $faqPage->title }}</a>
                 @endif
                 @foreach ($legalPages as $legalPage)
                     <a href="{{ route('legal.show', $legalPage->slug) }}">{{ $legalPage->title }}</a>
                 @endforeach
-            </nav>
-        @endif
+            @endif
+        </nav>
         <span>{{ site_text('footer.tagline', default: __('Smart football markets, live opportunities, better decisions.')) }}</span>
         <span>{{ now()->format('Y') }}</span>
     </div>

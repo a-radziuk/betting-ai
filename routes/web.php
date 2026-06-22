@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminBlogsController;
 use App\Http\Controllers\AdminLegalPagesController;
 use App\Http\Controllers\AdminSeoPagesController;
 use App\Http\Controllers\AdminSiteTextsController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\AdminUploadStandingsController;
 use App\Http\Controllers\AdminUploadTournamentController;
 use App\Http\Controllers\AdminUserBetsController;
 use App\Http\Controllers\AdminUsersController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CookieConsentController;
 use App\Http\Controllers\CryptoWebhookController;
 use App\Http\Controllers\EventShowController;
@@ -50,6 +52,9 @@ use Illuminate\Support\Facades\Schema;
 Route::get('/', HomeController::class);
 
 Route::get('/faq', FaqController::class)->name('faq');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/legal/{slug}', [LegalPageController::class, 'show'])
     ->name('legal.show');
@@ -254,6 +259,23 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.seo-pages.edit');
     Route::put('/seo-pages/{seoPage}', [AdminSeoPagesController::class, 'update'])
         ->name('admin.seo-pages.update');
+
+    Route::get('/blogs', [AdminBlogsController::class, 'index'])
+        ->name('admin.blogs');
+    Route::get('/blogs/create', [AdminBlogsController::class, 'create'])
+        ->name('admin.blogs.create');
+    Route::post('/blogs', [AdminBlogsController::class, 'store'])
+        ->name('admin.blogs.store');
+    Route::get('/blogs/create-from-json', [AdminBlogsController::class, 'createFromJson'])
+        ->name('admin.blogs.create-from-json');
+    Route::post('/blogs/create-from-json', [AdminBlogsController::class, 'storeFromJson'])
+        ->name('admin.blogs.store-from-json');
+    Route::get('/blogs/{blog}/edit', [AdminBlogsController::class, 'edit'])
+        ->name('admin.blogs.edit');
+    Route::put('/blogs/{blog}', [AdminBlogsController::class, 'update'])
+        ->name('admin.blogs.update');
+    Route::delete('/blogs/{blog}', [AdminBlogsController::class, 'destroy'])
+        ->name('admin.blogs.destroy');
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');
