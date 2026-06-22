@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\EventPrediction;
+use App\Models\Market;
 use App\Services\EventOddsExportPayload;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,7 @@ class PredictionsForEventCommand extends Command
 
         $body = [
             'type' => $predictionType,
-            'event' => EventOddsExportPayload::build($event),
+            'event' => EventOddsExportPayload::build($event, [Market::TYPE_CORRECT_SCORE]),
         ];
 
         $url = config('services.predictions.odds_url');

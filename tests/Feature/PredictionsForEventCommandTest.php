@@ -113,6 +113,64 @@ class PredictionsForEventCommandTest extends TestCase
         });
     }
 
+    public function test_excludes_correct_score_markets_from_api_payload(): void
+    {
+        $this->seedFutureEventWithOdds();
+
+        $correctScoreMarket = Market::query()->create([
+            'id' => 88005,
+            'event_id' => 88001,
+            'type' => Market::TYPE_CORRECT_SCORE,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        $correctScoreSelection = Selection::query()->create([
+            'id' => 88006,
+            'market_id' => $correctScoreMarket->id,
+            'name' => '1-0',
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+
+        Odd::query()->create([
+            'id' => 88007,
+            'selection_id' => $correctScoreSelection->id,
+            'odds' => 8.5,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        Http::fake([
+            'http://127.0.0.1:7999/api/odds' => Http::response([
+                'oddsId' => 88004,
+                'bankPercentage' => 3,
+                'explanation' => 'Value on HOME.',
+            ], 200),
+        ]);
+
+        $exit = Artisan::call('predictions:for-event', ['eventId' => 88001]);
+
+        $this->assertSame(0, $exit);
+
+        Http::assertSent(function ($request) {
+            $odds = $request->data()['event']['odds'] ?? [];
+
+            if (! is_array($odds)) {
+                return false;
+            }
+
+            $types = array_column($odds, 'type');
+
+            return ! in_array(Market::TYPE_CORRECT_SCORE, $types, true)
+                && in_array(Market::TYPE_MATCH_RESULT, $types, true);
+        });
+    }
+
     public function test_stores_confidence_from_api_response(): void
     {
         $this->seedFutureEventWithOdds();
