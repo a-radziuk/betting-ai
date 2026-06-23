@@ -23,7 +23,7 @@ class EnsureAdminAccess
             return redirect()->guest(route('login'));
         }
 
-        if (! $user->isSuperadmin()) {
+        if (! $user->canAccessAdmin()) {
             abort(403);
         }
 

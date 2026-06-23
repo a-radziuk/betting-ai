@@ -23,6 +23,7 @@
             </div>
         </form>
 
+        @if (auth()->user()->canDeleteInAdmin())
         <form
             method="post"
             action="{{ route('admin.blogs.destroy', $post) }}"
@@ -33,5 +34,6 @@
             @method('DELETE')
             <button type="submit" class="btn btn-secondary">{{ __('Delete') }}</button>
         </form>
+        @endif
     </section>
 @endsection

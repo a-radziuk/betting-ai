@@ -9,8 +9,8 @@
                 <a class="header-link" href="{{ route('faq') }}">{{ $faqPage->title }}</a>
             @endif
             @auth
-                @if (auth()->user()->isSuperadmin())
-                    <a class="header-link" href="{{ route('admin') }}">{{ __('Admin') }}</a>
+                @if (auth()->user()->canAccessAdmin())
+                    <a class="header-link" href="{{ route(\App\Support\AdminNavigation::homeRouteName(auth()->user())) }}">{{ __('Admin') }}</a>
                 @endif
                 <a class="header-link" href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
                 <a class="header-link" href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>

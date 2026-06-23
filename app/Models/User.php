@@ -25,6 +25,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public const PRIVELEGE_PLACE_BETS = 'PLACE_BETS';
 
+    public const PRIVELEGE_EDITOR = 'EDITOR';
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -41,6 +43,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuperadmin(): bool
     {
         return (bool) $this->is_superadmin;
+    }
+
+    public function canAccessAdmin(): bool
+    {
+        return $this->isSuperadmin() || $this->hasPrivelege(self::PRIVELEGE_EDITOR);
+    }
+
+    public function canDeleteInAdmin(): bool
+    {
+        return $this->isSuperadmin();
     }
 
     public function isHidden(): bool
@@ -78,6 +90,10 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasPrivelege(string $privelege): bool
     {
+        if ($privelege === self::PRIVELEGE_EDITOR) {
+            return $this->hasStoredPrivelege($privelege);
+        }
+
         if ($this->isSuperadmin()) {
             return true;
         }
@@ -86,6 +102,11 @@ class User extends Authenticatable implements MustVerifyEmail
             return false;
         }
 
+        return $this->hasStoredPrivelege($privelege);
+    }
+
+    private function hasStoredPrivelege(string $privelege): bool
+    {
         if ($this->priveleges === null || $this->priveleges === '') {
             return false;
         }

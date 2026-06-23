@@ -164,68 +164,70 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
-    Route::get('/', function () {
-        return view('admin.index');
-    })->name('admin');
+    Route::middleware('superadmin')->group(function (): void {
+        Route::get('/', function () {
+            return view('admin.index');
+        })->name('admin');
 
-    Route::get('/users', [AdminUsersController::class, 'index'])
-        ->name('admin.users');
-    Route::get('/users/create', [AdminUsersController::class, 'create'])
-        ->name('admin.users.create');
-    Route::post('/users', [AdminUsersController::class, 'store'])
-        ->name('admin.users.store');
-    Route::get('/users/{user}/edit', [AdminUsersController::class, 'edit'])
-        ->name('admin.users.edit');
-    Route::put('/users/{user}', [AdminUsersController::class, 'update'])
-        ->name('admin.users.update');
-    Route::patch('/users/{user}/metrics-availability', [AdminUsersController::class, 'updateMetricsAvailability'])
-        ->name('admin.users.metrics-availability');
-    Route::delete('/users/{user}', [AdminUsersController::class, 'destroy'])
-        ->name('admin.users.destroy');
+        Route::get('/users', [AdminUsersController::class, 'index'])
+            ->name('admin.users');
+        Route::get('/users/create', [AdminUsersController::class, 'create'])
+            ->name('admin.users.create');
+        Route::post('/users', [AdminUsersController::class, 'store'])
+            ->name('admin.users.store');
+        Route::get('/users/{user}/edit', [AdminUsersController::class, 'edit'])
+            ->name('admin.users.edit');
+        Route::put('/users/{user}', [AdminUsersController::class, 'update'])
+            ->name('admin.users.update');
+        Route::patch('/users/{user}/metrics-availability', [AdminUsersController::class, 'updateMetricsAvailability'])
+            ->name('admin.users.metrics-availability');
+        Route::delete('/users/{user}', [AdminUsersController::class, 'destroy'])
+            ->name('admin.users.destroy');
 
-    Route::get('/user-bets', [AdminUserBetsController::class, 'index'])
-        ->name('admin.user-bets');
-    Route::delete('/user-bets/{bet}', [AdminUserBetsController::class, 'destroy'])
-        ->name('admin.user-bets.destroy');
+        Route::get('/user-bets', [AdminUserBetsController::class, 'index'])
+            ->name('admin.user-bets');
+        Route::delete('/user-bets/{bet}', [AdminUserBetsController::class, 'destroy'])
+            ->name('admin.user-bets.destroy');
 
-    Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
-        ->name('admin.upload-events');
-    Route::post('/upload-events', [AdminUploadEventsController::class, 'store'])
-        ->name('admin.upload-events.store');
+        Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
+            ->name('admin.upload-events');
+        Route::post('/upload-events', [AdminUploadEventsController::class, 'store'])
+            ->name('admin.upload-events.store');
 
-    Route::get('/upload-tournament', [AdminUploadTournamentController::class, 'show'])
-        ->name('admin.upload-tournament');
-    Route::post('/upload-tournament', [AdminUploadTournamentController::class, 'store'])
-        ->name('admin.upload-tournament.store');
+        Route::get('/upload-tournament', [AdminUploadTournamentController::class, 'show'])
+            ->name('admin.upload-tournament');
+        Route::post('/upload-tournament', [AdminUploadTournamentController::class, 'store'])
+            ->name('admin.upload-tournament.store');
 
-    Route::get('/upload-standings', [AdminUploadStandingsController::class, 'show'])
-        ->name('admin.upload-standings');
-    Route::post('/upload-standings', [AdminUploadStandingsController::class, 'store'])
-        ->name('admin.upload-standings.store');
+        Route::get('/upload-standings', [AdminUploadStandingsController::class, 'show'])
+            ->name('admin.upload-standings');
+        Route::post('/upload-standings', [AdminUploadStandingsController::class, 'store'])
+            ->name('admin.upload-standings.store');
 
-    Route::get('/upload-analysis', [AdminUploadAnalysisController::class, 'show'])
-        ->name('admin.upload-analysis');
-    Route::post('/upload-analysis', [AdminUploadAnalysisController::class, 'store'])
-        ->name('admin.upload-analysis.store');
+        Route::get('/upload-analysis', [AdminUploadAnalysisController::class, 'show'])
+            ->name('admin.upload-analysis');
+        Route::post('/upload-analysis', [AdminUploadAnalysisController::class, 'store'])
+            ->name('admin.upload-analysis.store');
 
-    Route::get('/upload-predictions', [AdminUploadPredictionsController::class, 'show'])
-        ->name('admin.upload-predictions');
-    Route::post('/upload-predictions', [AdminUploadPredictionsController::class, 'store'])
-        ->name('admin.upload-predictions.store');
+        Route::get('/upload-predictions', [AdminUploadPredictionsController::class, 'show'])
+            ->name('admin.upload-predictions');
+        Route::post('/upload-predictions', [AdminUploadPredictionsController::class, 'store'])
+            ->name('admin.upload-predictions.store');
 
-    Route::get('/resolve-event', [AdminResolveEventController::class, 'index'])
-        ->name('admin.resolve-event');
-    Route::get('/resolve-event/{event}', [AdminResolveEventController::class, 'show'])
-        ->name('admin.resolve-event.show');
-    Route::post('/resolve-event/{event}', [AdminResolveEventController::class, 'store'])
-        ->name('admin.resolve-event.store');
-    Route::post('/resolve-event/{event}/abandon', [AdminResolveEventController::class, 'abandon'])
-        ->name('admin.resolve-event.abandon');
+        Route::get('/resolve-event', [AdminResolveEventController::class, 'index'])
+            ->name('admin.resolve-event');
+        Route::get('/resolve-event/{event}', [AdminResolveEventController::class, 'show'])
+            ->name('admin.resolve-event.show');
+        Route::post('/resolve-event/{event}', [AdminResolveEventController::class, 'store'])
+            ->name('admin.resolve-event.store');
+        Route::post('/resolve-event/{event}/abandon', [AdminResolveEventController::class, 'abandon'])
+            ->name('admin.resolve-event.abandon');
 
-    Route::get('/simple-crypto-payments', [AdminSimpleCryptoPaymentsController::class, 'index'])
-        ->name('admin.simple-crypto-payments');
-    Route::post('/simple-crypto-payments/{payment}/approve', [AdminSimpleCryptoPaymentsController::class, 'approve'])
-        ->name('admin.simple-crypto-payments.approve');
+        Route::get('/simple-crypto-payments', [AdminSimpleCryptoPaymentsController::class, 'index'])
+            ->name('admin.simple-crypto-payments');
+        Route::post('/simple-crypto-payments/{payment}/approve', [AdminSimpleCryptoPaymentsController::class, 'approve'])
+            ->name('admin.simple-crypto-payments.approve');
+    });
 
     Route::get('/legal-pages', [AdminLegalPagesController::class, 'index'])
         ->name('admin.legal-pages');
@@ -237,8 +239,10 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.legal-pages.edit');
     Route::put('/legal-pages/{legalPage}', [AdminLegalPagesController::class, 'update'])
         ->name('admin.legal-pages.update');
-    Route::delete('/legal-pages/{legalPage}', [AdminLegalPagesController::class, 'destroy'])
-        ->name('admin.legal-pages.destroy');
+    Route::middleware('superadmin')->group(function (): void {
+        Route::delete('/legal-pages/{legalPage}', [AdminLegalPagesController::class, 'destroy'])
+            ->name('admin.legal-pages.destroy');
+    });
 
     Route::get('/site-texts', [AdminSiteTextsController::class, 'index'])
         ->name('admin.site-texts');
@@ -250,8 +254,10 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.site-texts.edit');
     Route::put('/site-texts/{siteText}', [AdminSiteTextsController::class, 'update'])
         ->name('admin.site-texts.update');
-    Route::delete('/site-texts/{siteText}', [AdminSiteTextsController::class, 'destroy'])
-        ->name('admin.site-texts.destroy');
+    Route::middleware('superadmin')->group(function (): void {
+        Route::delete('/site-texts/{siteText}', [AdminSiteTextsController::class, 'destroy'])
+            ->name('admin.site-texts.destroy');
+    });
 
     Route::get('/seo-pages', [AdminSeoPagesController::class, 'index'])
         ->name('admin.seo-pages');
@@ -274,8 +280,10 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         ->name('admin.blogs.edit');
     Route::put('/blogs/{blog}', [AdminBlogsController::class, 'update'])
         ->name('admin.blogs.update');
-    Route::delete('/blogs/{blog}', [AdminBlogsController::class, 'destroy'])
-        ->name('admin.blogs.destroy');
+    Route::middleware('superadmin')->group(function (): void {
+        Route::delete('/blogs/{blog}', [AdminBlogsController::class, 'destroy'])
+            ->name('admin.blogs.destroy');
+    });
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');

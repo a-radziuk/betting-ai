@@ -20,6 +20,8 @@ class UserPrivelegesTest extends TestCase
         $this->assertTrue($user->isSuperadmin());
         $this->assertTrue($user->hasPrivelege(User::PRIVELEGE_SEE_TIPS));
         $this->assertTrue($user->hasPrivelege(User::PRIVELEGE_PLACE_BETS));
+        $this->assertFalse($user->hasPrivelege(User::PRIVELEGE_EDITOR));
+        $this->assertTrue($user->canAccessAdmin());
     }
 
     public function test_user_with_priveleges_string(): void
@@ -43,6 +45,19 @@ class UserPrivelegesTest extends TestCase
 
         $this->assertFalse($user->hasPrivelege(User::PRIVELEGE_SEE_TIPS));
         $this->assertFalse($user->hasPrivelege(User::PRIVELEGE_PLACE_BETS));
+    }
+
+    public function test_editor_privilege_grants_admin_access_without_superadmin(): void
+    {
+        $user = User::factory()->create([
+            'is_superadmin' => false,
+            'priveleges' => User::PRIVELEGE_EDITOR,
+        ]);
+
+        $this->assertFalse($user->isSuperadmin());
+        $this->assertTrue($user->hasPrivelege(User::PRIVELEGE_EDITOR));
+        $this->assertTrue($user->canAccessAdmin());
+        $this->assertFalse($user->hasPrivelege(User::PRIVELEGE_SEE_TIPS));
     }
 
     public function test_has_privelege_is_case_sensitive(): void

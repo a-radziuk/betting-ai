@@ -14,6 +14,7 @@ final class UserPriveleges
         return [
             User::PRIVELEGE_SEE_TIPS => __('See tips'),
             User::PRIVELEGE_PLACE_BETS => __('Place bets'),
+            User::PRIVELEGE_EDITOR => __('Editor'),
         ];
     }
 

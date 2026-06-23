@@ -23,7 +23,7 @@
             </div>
         </form>
 
-        @if ($page->slug !== config('subscriptions.terms.slug'))
+        @if (auth()->user()->canDeleteInAdmin() && $page->slug !== config('subscriptions.terms.slug'))
             <form
                 method="post"
                 action="{{ route('admin.legal-pages.destroy', $page) }}"
