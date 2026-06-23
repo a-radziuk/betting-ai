@@ -114,6 +114,60 @@ class PromocodeRedemptionTest extends TestCase
         $this->assertNull($promocode->fresh()->used_at);
     }
 
+    public function test_login_and_register_show_notice_when_pending_promocode_is_active(): void
+    {
+        $promocode = PromocodeGenerator::generateUnique(3);
+
+        $this->from('/')
+            ->post(route('subscribe.promocode'), [
+                'code' => $promocode->code,
+            ])
+            ->assertRedirect(route('login'));
+
+        $message = __('A :days-day tips promocode is ready and will be applied after you :action.', [
+            'days' => 3,
+            'action' => __('sign in'),
+        ]);
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee($message, false);
+
+        $registerMessage = __('A :days-day tips promocode is ready and will be applied after you :action.', [
+            'days' => 3,
+            'action' => __('register'),
+        ]);
+
+        $this->get(route('register'))
+            ->assertOk()
+            ->assertSee($registerMessage, false);
+    }
+
+    public function test_login_and_register_hide_notice_when_pending_promocode_is_used(): void
+    {
+        $user = User::factory()->create();
+        $promocode = Promocode::query()->create([
+            'code' => PromocodeGenerator::prefix().'USEDCODE',
+            'days' => 3,
+            'used_at' => now(),
+            'used_by_user_id' => $user->id,
+        ]);
+
+        $this->withSession([
+            PendingPromocodeSession::SESSION_KEY => $promocode->code,
+        ])
+            ->get(route('login'))
+            ->assertOk()
+            ->assertDontSee('tips promocode is ready', false);
+
+        $this->withSession([
+            PendingPromocodeSession::SESSION_KEY => $promocode->code,
+        ])
+            ->get(route('register'))
+            ->assertOk()
+            ->assertDontSee('tips promocode is ready', false);
+    }
+
     public function test_guest_promocode_is_redeemed_after_login(): void
     {
         Carbon::setTestNow('2026-06-10 12:00:00');

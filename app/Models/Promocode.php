@@ -10,6 +10,7 @@ class Promocode extends Model
     protected $fillable = [
         'code',
         'days',
+        'telegram_id',
         'used_at',
         'used_by_user_id',
     ];

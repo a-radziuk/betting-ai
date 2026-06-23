@@ -1,5 +1,8 @@
 <x-guest-layout :seo="$seo">
     <x-slot name="subtitle">{{ app_brand('Create an account to continue with :app.') }}</x-slot>
+
+    <x-pending-promocode-notice class="mb-4" :action="__('register')" />
+
     <form method="POST" action="{{ route('register') }}" class="relative">
         @csrf
         <x-honeypot />

@@ -34,6 +34,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="HONEYPOT_ENABLED" value="false"/>
         <env name="ADMIN_ENABLED" value="true"/>
+        <env name="TELEGRAM_PROMOBOT_API_SECRET" value="test-telegram-promobot-secret"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
     </php>
 </phpunit>

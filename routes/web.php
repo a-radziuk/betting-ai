@@ -29,6 +29,7 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\SubscribePromocodeController;
 use App\Http\Controllers\SubscribeTermsController;
+use App\Http\Controllers\TelegramPromocodeLandingController;
 use App\Http\Controllers\SubscriptionCryptoPaymentController;
 use App\Http\Controllers\SubscriptionPaymentCompleteController;
 use App\Http\Controllers\SubscriptionPaymentController;
@@ -58,6 +59,10 @@ Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/legal/{slug}', [LegalPageController::class, 'show'])
     ->name('legal.show');
+
+Route::get('/integration/telegram/promocode/{promocode}', TelegramPromocodeLandingController::class)
+    ->where('promocode', '[A-Za-z0-9\-]+')
+    ->name('integration.telegram.promocode');
 
 Route::post('/cookie-consent', [CookieConsentController::class, 'store'])
     ->name('cookie-consent.store');

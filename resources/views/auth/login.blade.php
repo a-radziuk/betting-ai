@@ -1,4 +1,6 @@
 <x-guest-layout :seo="$seo">
+    <x-pending-promocode-notice class="mb-4" :action="__('sign in')" />
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
