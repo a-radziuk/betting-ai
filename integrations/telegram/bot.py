@@ -1,6 +1,6 @@
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from config import Settings
@@ -23,23 +23,12 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     client: PlatformClient = context.application.bot_data["platform_client"]
 
     try:
-        link = client.request_registration_link(update.to_dict())
+        client.request_registration_link(update.to_dict())
     except PlatformClientError as exc:
         logger.warning("Failed to create promocode for tg_id=%s: %s", user.id, exc)
         await message.reply_text(
             "Sorry, we could not prepare your access link right now. Please try again in a moment."
         )
-        return
-
-    keyboard = InlineKeyboardMarkup(
-        [[InlineKeyboardButton(text="Register and activate access", url=link)]]
-    )
-
-    await message.reply_text(
-        "Tap the button below to register. Your promocode will be applied automatically after signup.",
-        reply_markup=keyboard,
-        disable_web_page_preview=False,
-    )
 
 
 def build_application(settings: Settings) -> Application:

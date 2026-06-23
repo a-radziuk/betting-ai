@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Http\Middleware\EnsureTelegramPromobotApiAuth;
 use App\Models\Promocode;
+use App\Models\SiteText;
 use App\Models\User;
 use App\Support\PendingPromocodeSession;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -21,8 +23,10 @@ class TelegramPromobotTest extends TestCase
 
         config([
             'app.url' => 'https://betai.example',
+            'app.name' => 'BetAI Pro',
             'telegram_promobot.days' => 3,
             'telegram_promobot.api_secret' => 'test-telegram-promobot-secret',
+            'telegram_promobot.token' => 'promobot-test-token',
         ]);
 
         URL::forceRootUrl('https://betai.example');
@@ -77,6 +81,10 @@ class TelegramPromobotTest extends TestCase
 
     public function test_start_endpoint_creates_promocode_and_returns_registration_link(): void
     {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
         $response = $this->withTelegramSecret()
             ->postJson('/api/telegram/start', $this->sampleUpdate(987654321))
             ->assertOk()
@@ -95,6 +103,33 @@ class TelegramPromobotTest extends TestCase
         $this->assertSame($link, route('integration.telegram.promocode', [
             'promocode' => $promocode->code,
         ], absolute: true));
+
+        Http::assertSent(function ($request) use ($link): bool {
+            return str_contains($request->url(), '/botpromobot-test-token/sendMessage')
+                && (int) $request['chat_id'] === 987654321
+                && str_contains((string) $request['text'], $link);
+        });
+    }
+
+    public function test_start_endpoint_uses_configurable_site_text_for_telegram_message(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        SiteText::query()->where('key', 'telegram.start.message')->update([
+            'value' => 'Custom promo for :days days at :app: :link',
+        ]);
+        app(\App\Services\SiteTextRepository::class)->forget();
+
+        $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(424242))
+            ->assertOk();
+
+        Http::assertSent(function ($request): bool {
+            return str_contains((string) $request['text'], 'Custom promo for 3 days at BetAI Pro:')
+                && str_contains((string) $request['text'], 'https://betai.example/integration/telegram/promocode/');
+        });
     }
 
     public function test_start_endpoint_is_idempotent_for_same_tg_id(): void

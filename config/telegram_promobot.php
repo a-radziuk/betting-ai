@@ -6,4 +6,6 @@ return [
 
     'api_secret' => env('TELEGRAM_PROMOBOT_API_SECRET'),
 
+    'token' => env('TELEGRAM_PROMOBOT_TOKEN'),
+
 ];
