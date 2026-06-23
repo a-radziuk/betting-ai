@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\EnsureTelegramPromobotApiAuth;
 use App\Models\Promocode;
 use App\Models\User;
 use App\Support\PendingPromocodeSession;
@@ -28,20 +29,56 @@ class TelegramPromobotTest extends TestCase
         URL::forceScheme('https');
     }
 
+    private function sampleUpdate(int $telegramId, string $text = '/start'): array
+    {
+        return [
+            'update_id' => 876543210,
+            'message' => [
+                'message_id' => 1,
+                'from' => [
+                    'id' => $telegramId,
+                    'is_bot' => false,
+                    'first_name' => 'Алексей',
+                    'last_name' => 'Петров',
+                    'username' => 'aleks_petrov',
+                    'language_code' => 'ru',
+                ],
+                'chat' => [
+                    'id' => $telegramId,
+                    'first_name' => 'Алексей',
+                    'last_name' => 'Петров',
+                    'username' => 'aleks_petrov',
+                    'type' => 'private',
+                ],
+                'date' => 1719170000,
+                'text' => $text,
+            ],
+        ];
+    }
+
+    private function withTelegramSecret(?string $secret = 'test-telegram-promobot-secret'): static
+    {
+        if ($secret === null) {
+            return $this;
+        }
+
+        return $this->withHeader(EnsureTelegramPromobotApiAuth::HEADER, $secret);
+    }
+
     public function test_start_endpoint_requires_api_secret(): void
     {
-        $this->postJson('/api/telegram/start', ['tg_id' => 12345])
+        $this->postJson('/api/telegram/start', $this->sampleUpdate(12345))
             ->assertUnauthorized();
 
-        $this->withToken('wrong-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 12345])
+        $this->withTelegramSecret('wrong-secret')
+            ->postJson('/api/telegram/start', $this->sampleUpdate(12345))
             ->assertUnauthorized();
     }
 
     public function test_start_endpoint_creates_promocode_and_returns_registration_link(): void
     {
-        $response = $this->withToken('test-telegram-promobot-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 987654321])
+        $response = $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(987654321))
             ->assertOk()
             ->assertJsonStructure(['link']);
 
@@ -62,13 +99,13 @@ class TelegramPromobotTest extends TestCase
 
     public function test_start_endpoint_is_idempotent_for_same_tg_id(): void
     {
-        $first = $this->withToken('test-telegram-promobot-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 555])
+        $first = $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(555))
             ->assertOk()
             ->json('link');
 
-        $second = $this->withToken('test-telegram-promobot-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 555])
+        $second = $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(555))
             ->assertOk()
             ->json('link');
 
@@ -76,10 +113,24 @@ class TelegramPromobotTest extends TestCase
         $this->assertSame(1, Promocode::query()->where('telegram_id', 555)->count());
     }
 
+    public function test_start_endpoint_rejects_payload_without_message_from_id(): void
+    {
+        $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', [
+                'update_id' => 1,
+                'message' => [
+                    'message_id' => 1,
+                    'text' => '/start',
+                ],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['message.from.id']);
+    }
+
     public function test_landing_link_stores_promocode_and_redirects_guest_to_register(): void
     {
-        $promocode = $this->withToken('test-telegram-promobot-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 111222333])
+        $promocode = $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(111222333))
             ->assertOk()
             ->json('link');
 
@@ -97,8 +148,8 @@ class TelegramPromobotTest extends TestCase
     {
         Carbon::setTestNow('2026-06-10 12:00:00');
 
-        $link = $this->withToken('test-telegram-promobot-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 444555666])
+        $link = $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(444555666))
             ->assertOk()
             ->json('link');
 
@@ -127,8 +178,8 @@ class TelegramPromobotTest extends TestCase
 
     public function test_used_promocode_link_redirects_to_register_with_error(): void
     {
-        $promocode = $this->withToken('test-telegram-promobot-secret')
-            ->postJson('/api/telegram/start', ['tg_id' => 777888999])
+        $promocode = $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(777888999))
             ->assertOk();
 
         $code = Promocode::query()->where('telegram_id', 777888999)->value('code');

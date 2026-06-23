@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureTelegramPromobotApiAuth
 {
+    public const HEADER = 'X-Telegram-Bot-Api-Secret-Token';
+
     /**
      * @param  Closure(Request): Response  $next
      */
@@ -19,7 +21,7 @@ class EnsureTelegramPromobotApiAuth
             abort(503, 'Telegram promobot API is not configured.');
         }
 
-        $token = $request->bearerToken();
+        $token = $request->header(self::HEADER);
 
         if (! is_string($token) || ! hash_equals($secret, $token)) {
             abort(401);

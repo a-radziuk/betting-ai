@@ -23,7 +23,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     client: PlatformClient = context.application.bot_data["platform_client"]
 
     try:
-        link = client.request_registration_link(user.id)
+        link = client.request_registration_link(update.to_dict())
     except PlatformClientError as exc:
         logger.warning("Failed to create promocode for tg_id=%s: %s", user.id, exc)
         await message.reply_text(

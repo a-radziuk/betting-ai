@@ -11,12 +11,12 @@ class PlatformClient:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
-    def request_registration_link(self, tg_id: int) -> str:
+    def request_registration_link(self, update_payload: dict) -> str:
         response = httpx.post(
             self._settings.start_endpoint,
-            json={"tg_id": tg_id},
+            json=update_payload,
             headers={
-                "Authorization": f"Bearer {self._settings.api_secret}",
+                "X-Telegram-Bot-Api-Secret-Token": self._settings.api_secret,
                 "Accept": "application/json",
             },
             timeout=15.0,
@@ -35,7 +35,10 @@ class PlatformClient:
         try:
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
-            logger.exception("Platform API error for tg_id=%s", tg_id)
+            logger.exception(
+                "Platform API error for tg_id=%s",
+                update_payload.get("message", {}).get("from", {}).get("id"),
+            )
             raise PlatformClientError("Platform API returned an unexpected error.") from exc
 
         payload = response.json()
