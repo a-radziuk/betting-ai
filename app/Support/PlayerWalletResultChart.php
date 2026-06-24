@@ -21,6 +21,7 @@ final class PlayerWalletResultChart
         public readonly ?float $min,
         public readonly ?float $max,
         public readonly ?float $latest,
+        public readonly ?float $windowResult,
         public readonly ?float $zeroLineY,
     ) {}
 
@@ -28,12 +29,14 @@ final class PlayerWalletResultChart
      * @param  list<float|int|string|null>  $values
      * @param  list<string|null>  $dates
      * @param  list<string|null>  $axisDates
+     * @param  float|null  $baselineBeforeWindow  Cumulative wallet result before the first plotted bet (when not starting at zero).
      */
     public static function fromValues(
         array $values,
         bool $startAtZero = true,
         array $dates = [],
         array $axisDates = [],
+        ?float $baselineBeforeWindow = null,
     ): self {
         $values = array_values(array_map(
             static fn ($value) => (float) $value,
@@ -41,7 +44,7 @@ final class PlayerWalletResultChart
         ));
 
         if ($values === []) {
-            return new self([], [], '', null, null, null, null);
+            return new self([], [], '', null, null, null, null, null);
         }
 
         if ($dates !== []) {
@@ -107,13 +110,19 @@ final class PlayerWalletResultChart
             $zeroLineY = self::PADDING + $plotH - ($zeroNormalized * $plotH);
         }
 
+        $latest = $values[array_key_last($values)];
+        $windowResult = $startAtZero
+            ? $latest
+            : $latest - ($baselineBeforeWindow ?? 0.0);
+
         return new self(
             $values,
             $points,
             $polylinePoints,
             $min,
             $max,
-            $values[array_key_last($values)],
+            $latest,
+            $windowResult,
             $zeroLineY,
         );
     }

@@ -17,6 +17,7 @@
     </div>
 </footer>
 
+@unless ($skipCookieConsent ?? false)
 @feature('cookie_consent')
     <div class="container footer-cookie-settings">
         <button type="button" class="footer-cookie-settings-link" data-cookie-settings-open>
@@ -26,3 +27,4 @@
 @endfeature
 
 @include('layouts.partials.cookie-consent')
+@endunless

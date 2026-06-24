@@ -32,7 +32,7 @@
     </div>
 </main>
 
-@include('layouts.partials.betai-footer')
+@include('layouts.partials.betai-footer', ['skipCookieConsent' => true])
 @stack('scripts')
 </body>
 </html>

@@ -18,6 +18,7 @@ class PlayerWalletResultChartTest extends TestCase
         $this->assertSame(10.0, $chart->points[1]['value']);
         $this->assertFalse($chart->points[3]['isOrigin']);
         $this->assertSame(20.0, $chart->latest);
+        $this->assertSame(20.0, $chart->windowResult);
         $this->assertStringContainsString(' ', $chart->polylinePoints);
     }
 
@@ -29,6 +30,7 @@ class PlayerWalletResultChartTest extends TestCase
         $this->assertSame([], $chart->points);
         $this->assertSame('', $chart->polylinePoints);
         $this->assertNull($chart->latest);
+        $this->assertNull($chart->windowResult);
     }
 
     public function test_single_bet_includes_origin_and_bet_points(): void
@@ -41,6 +43,7 @@ class PlayerWalletResultChartTest extends TestCase
         $this->assertSame(0.0, $chart->points[0]['value']);
         $this->assertSame(42.5, $chart->points[1]['value']);
         $this->assertSame(42.5, $chart->latest);
+        $this->assertSame(42.5, $chart->windowResult);
     }
 
     public function test_zero_line_when_range_crosses_zero(): void
@@ -53,12 +56,13 @@ class PlayerWalletResultChartTest extends TestCase
 
     public function test_can_start_at_first_value_without_zero_origin(): void
     {
-        $chart = PlayerWalletResultChart::fromValues([100.0, 125.0, 140.0], startAtZero: false);
+        $chart = PlayerWalletResultChart::fromValues([100.0, 125.0, 140.0], startAtZero: false, baselineBeforeWindow: 75.0);
 
         $this->assertCount(3, $chart->points);
         $this->assertFalse($chart->points[0]['isOrigin']);
         $this->assertSame(100.0, $chart->points[0]['value']);
         $this->assertSame(140.0, $chart->latest);
+        $this->assertSame(65.0, $chart->windowResult);
     }
 
     public function test_attaches_dates_to_points_and_axis_labels(): void

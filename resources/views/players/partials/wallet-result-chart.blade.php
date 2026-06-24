@@ -1,8 +1,8 @@
 @php
     /** @var \App\Support\PlayerWalletResultChart $resultChart */
     /** @var \App\Models\User|null $player */
-    $latest = $resultChart->latest;
     $isFullHistory = $isFullHistory ?? false;
+    $latest = $isFullHistory ? $resultChart->latest : $resultChart->windowResult;
     $showFullTrendLink = ($showFullTrendLink ?? true) && isset($player);
     $showChartDates = $showChartDates ?? false;
     $formatChartValue = static function (float $value, bool $isOrigin = false): string {

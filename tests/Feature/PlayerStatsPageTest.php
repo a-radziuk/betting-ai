@@ -272,6 +272,15 @@ class PlayerStatsPageTest extends TestCase
         $this->assertFalse($chart->points[0]['isOrigin']);
         $this->assertSame(20.0, $chart->points[0]['value']);
         $this->assertSame(310.0, $chart->latest);
+        $this->assertSame(300.0, $chart->windowResult);
+
+        $html = $this->get(route('players.show', $player))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('user-results-chart-latest', $html);
+        $this->assertStringContainsString('+300.00', $html);
+        $this->assertStringNotContainsString('user-results-chart-latest">+310.00', $html);
     }
 
     public function test_shows_wallet_result_chart_instead_of_balance(): void

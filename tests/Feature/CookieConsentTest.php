@@ -145,4 +145,33 @@ class CookieConsentTest extends TestCase
             ],
         ])->assertNotFound();
     }
+
+    public function test_admin_pages_do_not_load_cookie_consent_or_google_analytics(): void
+    {
+        config([
+            'features.cookie_consent' => true,
+            'cookie_consent.scripts' => [
+                'analytics' => [
+                    [
+                        'type' => 'external',
+                        'src' => 'https://www.googletagmanager.com/gtag/js?id=G-TEST123',
+                        'async' => true,
+                    ],
+                ],
+                'marketing' => [],
+            ],
+        ]);
+
+        $editor = User::factory()->create([
+            'is_superadmin' => false,
+            'priveleges' => User::PRIVELEGE_EDITOR,
+        ]);
+
+        $this->actingAs($editor)
+            ->get(route('admin.site-texts'))
+            ->assertOk()
+            ->assertDontSee('cookieConsentConfig', false)
+            ->assertDontSee('googletagmanager.com', false)
+            ->assertDontSee('Cookie settings', false);
+    }
 }
