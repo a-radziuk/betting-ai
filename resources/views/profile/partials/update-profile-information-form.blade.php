@@ -52,7 +52,8 @@
 
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" autofocus autocomplete="name" placeholder="{{ __('Add your display name') }}" />
+            <p class="mt-1 text-xs text-[#9fb0d3]">{{ __('Optional. Shown on your player page and in the app.') }}</p>
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 

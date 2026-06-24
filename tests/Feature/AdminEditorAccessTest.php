@@ -37,6 +37,10 @@ class AdminEditorAccessTest extends TestCase
         $this->actingAs($editor)
             ->get(route('admin.blogs'))
             ->assertOk();
+
+        $this->actingAs($editor)
+            ->get(route('admin.user-texts'))
+            ->assertOk();
     }
 
     public function test_editor_cannot_access_superadmin_routes(): void
@@ -69,6 +73,7 @@ class AdminEditorAccessTest extends TestCase
             ->assertOk()
             ->assertSee(route('admin.site-texts'), false)
             ->assertSee(route('admin.blogs'), false)
+            ->assertSee(route('admin.user-texts'), false)
             ->assertDontSee(route('admin.users'), false)
             ->assertDontSee('Upload Events', false);
 

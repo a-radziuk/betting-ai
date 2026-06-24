@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminUploadPredictionsController;
 use App\Http\Controllers\AdminUploadStandingsController;
 use App\Http\Controllers\AdminUploadTournamentController;
 use App\Http\Controllers\AdminUserBetsController;
+use App\Http\Controllers\AdminUserTextsController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CookieConsentController;
@@ -289,6 +290,13 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
         Route::delete('/blogs/{blog}', [AdminBlogsController::class, 'destroy'])
             ->name('admin.blogs.destroy');
     });
+
+    Route::get('/user-texts', [AdminUserTextsController::class, 'index'])
+        ->name('admin.user-texts');
+    Route::get('/user-texts/{user}/edit', [AdminUserTextsController::class, 'edit'])
+        ->name('admin.user-texts.edit');
+    Route::put('/user-texts/{user}', [AdminUserTextsController::class, 'update'])
+        ->name('admin.user-texts.update');
 });
 
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');

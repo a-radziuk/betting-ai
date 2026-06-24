@@ -25,6 +25,7 @@ final class AdminNavigation
             ['label' => __('SEO Pages'), 'route' => 'admin.seo-pages', 'active' => 'admin.seo-pages*', 'editor' => true],
             ['label' => __('Legal Pages'), 'route' => 'admin.legal-pages', 'active' => 'admin.legal-pages*', 'editor' => true],
             ['label' => __('Blog'), 'route' => 'admin.blogs', 'active' => 'admin.blogs*', 'editor' => true],
+            ['label' => __('User Texts'), 'route' => 'admin.user-texts', 'active' => 'admin.user-texts*', 'editor' => true],
         ];
     }
 

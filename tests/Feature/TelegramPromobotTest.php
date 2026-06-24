@@ -191,7 +191,6 @@ class TelegramPromobotTest extends TestCase
         $this->get($link)->assertRedirect(route('register'));
 
         $this->post('/register', [
-            'name' => 'Telegram User',
             'email' => 'telegram-user@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',

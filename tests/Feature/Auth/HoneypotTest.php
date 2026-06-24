@@ -70,7 +70,6 @@ class HoneypotTest extends TestCase
     public function test_register_rejects_filled_honeypot_field(): void
     {
         $payload = array_merge([
-            'name' => 'Bot User',
             'email' => 'bot@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
