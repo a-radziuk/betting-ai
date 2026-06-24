@@ -26,6 +26,7 @@ use App\Http\Controllers\PlayerResultTrendController;
 use App\Http\Controllers\PlayerShowController;
 use App\Http\Controllers\PlayersIndexController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReferralPromocodeLandingController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\SubscribePromocodeController;
@@ -45,6 +46,7 @@ use App\Models\UserBet;
 use App\Models\UserSubscription;
 use App\PayWithMetamask\Http\Controllers\RecordTransactionController;
 use App\Services\PlaceBetService;
+use App\Services\ReferralPromocodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +66,10 @@ Route::get('/legal/{slug}', [LegalPageController::class, 'show'])
 Route::get('/integration/telegram/promocode/{promocode}', TelegramPromocodeLandingController::class)
     ->where('promocode', '[A-Za-z0-9\-]+')
     ->name('integration.telegram.promocode');
+
+Route::get('/referral/{promocode}', ReferralPromocodeLandingController::class)
+    ->where('promocode', '[A-Za-z0-9\-]+')
+    ->name('referral.promocode');
 
 Route::post('/cookie-consent', [CookieConsentController::class, 'store'])
     ->name('cookie-consent.store');
@@ -160,12 +166,25 @@ Route::get('/dashboard', function () {
         $wallet = $user->wallet;
     }
 
+    $hasActiveSeeTips = $user->hasActiveSeeTipsAccess();
+    $referralPromocode = null;
+    $referralShareLink = null;
+
+    if ($hasActiveSeeTips) {
+        $referralPromocode = app(ReferralPromocodeService::class)->issueForUser($user);
+        $referralShareLink = $referralPromocode !== null
+            ? app(ReferralPromocodeService::class)->shareLink($referralPromocode)
+            : null;
+    }
+
     return view('dashboard', [
         'canPlaceBets' => $canPlaceBets,
         'wallet' => $wallet,
         'bets' => $bets,
-        'hasActiveSeeTips' => $user->hasActiveSeeTipsAccess(),
+        'hasActiveSeeTips' => $hasActiveSeeTips,
         'seeTipsExpiresAt' => $user->see_tips_expires_at,
+        'referralPromocode' => $referralPromocode,
+        'referralShareLink' => $referralShareLink,
     ]);
 })->middleware(['auth'])->name('dashboard');
 

@@ -10,6 +10,10 @@ use Illuminate\Validation\ValidationException;
 
 class PromocodeRedemptionService
 {
+    public function __construct(
+        private readonly ReferralPromocodeService $referralPromocodes,
+    ) {}
+
     public function redeem(User $user, string $code): Promocode
     {
         $normalizedCode = Strtoupper(trim($code));
@@ -38,6 +42,8 @@ class PromocodeRedemptionService
                 ]);
             }
 
+            $this->referralPromocodes->assertNotSelfReferral($promocode, $user);
+
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             $lockedUser->extendSeeTipsAccessForDays($promocode->days);
 
@@ -45,6 +51,17 @@ class PromocodeRedemptionService
                 'used_at' => now(),
                 'used_by_user_id' => $lockedUser->id,
             ]);
+
+            if ($promocode->owner_user_id !== null) {
+                $referrer = User::query()
+                    ->whereKey($promocode->owner_user_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($referrer !== null) {
+                    $referrer->extendSeeTipsAccessForDays($this->referralPromocodes->referrerBonusDays());
+                }
+            }
 
             return $promocode->fresh();
         });

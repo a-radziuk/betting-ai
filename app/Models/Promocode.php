@@ -11,6 +11,7 @@ class Promocode extends Model
         'code',
         'days',
         'telegram_id',
+        'owner_user_id',
         'used_at',
         'used_by_user_id',
     ];
@@ -26,6 +27,14 @@ class Promocode extends Model
     public function isUsed(): bool
     {
         return $this->used_at !== null;
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function ownerUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_user_id');
     }
 
     /**

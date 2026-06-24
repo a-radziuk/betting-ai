@@ -137,6 +137,12 @@
                 <p class="text-[#9fb0d3] text-sm mt-2 mb-0">
                     <a href="{{ route('subscribe') }}" class="text-[#5de2ff] hover:underline">{{ __('View plans') }}</a>
                 </p>
+                @if ($referralPromocode)
+                    @include('partials.referral-share', [
+                        'referralPromocode' => $referralPromocode,
+                        'referralShareLink' => $referralShareLink,
+                    ])
+                @endif
             </section>
         @else
             <section class="card card-pad">

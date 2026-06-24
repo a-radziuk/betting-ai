@@ -12,10 +12,12 @@ final class PromocodeGenerator
         return (string) config('promocodes.prefix', 'PROMO-');
     }
 
-    public static function generateUnique(int $days): Promocode
+    public static function generateUnique(int $days, ?string $prefix = null): Promocode
     {
+        $prefix ??= self::prefix();
+
         do {
-            $code = self::prefix().Str::upper(Str::random(8));
+            $code = $prefix.Str::upper(Str::random(8));
         } while (Promocode::query()->where('code', $code)->exists());
 
         return Promocode::query()->create([
