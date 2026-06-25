@@ -95,6 +95,30 @@ class ReferralProgramTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_user_cannot_redeem_referral_code_after_previous_promocode(): void
+    {
+        $referrer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+            'see_tips_expires_at' => now()->addDays(10),
+        ]);
+        $redeemer = User::factory()->create();
+        $firstPromocode = PromocodeGenerator::generateUnique(2);
+        $referralPromocode = app(ReferralPromocodeService::class)->issueForUser($referrer);
+        $this->assertNotNull($referralPromocode);
+
+        $this->actingAs($redeemer)
+            ->post(route('subscribe.promocode'), ['code' => $firstPromocode->code])
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($redeemer)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), ['code' => $referralPromocode->code])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasErrors('code');
+
+        $this->assertNull($referralPromocode->fresh()->used_at);
+    }
+
     public function test_user_cannot_redeem_own_referral_code(): void
     {
         $user = User::factory()->create([

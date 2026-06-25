@@ -64,6 +64,32 @@ class PromocodeRedemptionTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_user_cannot_redeem_a_second_promocode(): void
+    {
+        $user = User::factory()->create();
+        $firstPromocode = PromocodeGenerator::generateUnique(2);
+        $secondPromocode = PromocodeGenerator::generateUnique(3);
+
+        $this->actingAs($user)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $firstPromocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($user)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $secondPromocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasErrors('code');
+
+        $this->assertNotNull($firstPromocode->fresh()->used_at);
+        $this->assertNull($secondPromocode->fresh()->used_at);
+    }
+
     public function test_used_promocode_cannot_be_redeemed_again(): void
     {
         $first = User::factory()->create();

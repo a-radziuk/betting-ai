@@ -45,6 +45,13 @@ class PromocodeRedemptionService
             $this->referralPromocodes->assertNotSelfReferral($promocode, $user);
 
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if (Promocode::query()->where('used_by_user_id', $lockedUser->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'code' => __('You have already applied a promocode to your account.'),
+                ]);
+            }
+
             $lockedUser->extendSeeTipsAccessForDays($promocode->days);
 
             $promocode->update([
