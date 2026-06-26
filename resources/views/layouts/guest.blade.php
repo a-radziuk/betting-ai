@@ -9,6 +9,7 @@
         @include('layouts.partials.seo-meta', ['seo' => $seo])
     @else
         <title>{{ $pageTitle ?? app_name() }}</title>
+        @include('layouts.partials.favicon')
     @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('layouts.partials.betai-styles')

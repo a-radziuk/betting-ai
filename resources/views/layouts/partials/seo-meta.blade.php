@@ -5,6 +5,7 @@
     $ogTitle = $seo['og_title'] ?? $pageTitle;
     $ogDescription = $seo['og_description'] ?? $metaDescription;
 @endphp
+@include('layouts.partials.favicon')
 <title>{{ $pageTitle }}</title>
 @if (filled($metaDescription))
     <meta name="description" content="{{ $metaDescription }}">

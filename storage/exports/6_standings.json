@@ -35,7 +35,7 @@
                         "goal_difference": -1,
                         "points": 4,
                         "form": "Lost 0-2 to MexicoDrew 1-1 with CzechiaWon 1-0 against South Korea",
-                        "movement": "up",
+                        "movement": "none",
                         "team_id": null,
                         "team_display_name": null
                     },
@@ -52,7 +52,7 @@
                         "goal_difference": -1,
                         "points": 3,
                         "form": "Won 2-1 against CzechiaLost 0-1 to MexicoLost 0-1 to South Africa",
-                        "movement": "down",
+                        "movement": "none",
                         "team_id": null,
                         "team_display_name": null
                     },
@@ -69,7 +69,7 @@
                         "goal_difference": -4,
                         "points": 1,
                         "form": "Lost 1-2 to South KoreaDrew 1-1 with South AfricaLost 0-3 to Mexico",
-                        "movement": "down",
+                        "movement": "none",
                         "team_id": null,
                         "team_display_name": null
                     }
@@ -91,7 +91,7 @@
                         "goal_difference": 4,
                         "points": 7,
                         "form": "Drew 1-1 with QatarWon 4-1 against Bosnia and HerzegovinaWon 2-1 against Canada",
-                        "movement": "up",
+                        "movement": "none",
                         "team_id": null,
                         "team_display_name": null
                     },
@@ -108,7 +108,7 @@
                         "goal_difference": 5,
                         "points": 4,
                         "form": "Drew 1-1 with Bosnia and HerzegovinaWon 6-0 against QatarLost 1-2 to Switzerland",
-                        "movement": "down",
+                        "movement": "none",
                         "team_id": null,
                         "team_display_name": null
                     },
@@ -900,5 +900,5 @@
             "positivity": 5
         }
     },
-    "standings_updated_at": "2026-06-25T04:32:24+00:00"
+    "standings_updated_at": "2026-06-25T19:43:27+00:00"
 }

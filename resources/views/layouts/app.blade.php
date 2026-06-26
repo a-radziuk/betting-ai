@@ -6,6 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ app_name() }}</title>
+        @include('layouts.partials.favicon')
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @include('layouts.partials.betai-styles')
