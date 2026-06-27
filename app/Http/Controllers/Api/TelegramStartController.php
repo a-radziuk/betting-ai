@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\TelegramInteractionService;
 use App\Services\TelegramPromobotMessenger;
 use App\Services\TelegramPromocodeService;
 use App\Support\TelegramPromoDigitalCodes;
@@ -14,11 +15,15 @@ class TelegramStartController extends Controller
 {
     public function __invoke(
         Request $request,
+        TelegramInteractionService $telegramInteractionService,
         TelegramPromocodeService $telegramPromocodeService,
         TelegramPromobotMessenger $telegramPromobotMessenger,
     ): JsonResponse {
-        $telegramId = TelegramStartUpdate::telegramUserId($request);
-        $text = TelegramStartUpdate::messageText($request);
+        $validated = TelegramStartUpdate::validated($request);
+        $telegramInteractionService->recordLastInteraction($validated);
+
+        $telegramId = (int) data_get($validated, 'message.from.id');
+        $text = trim((string) data_get($validated, 'message.text', ''));
 
         if (TelegramPromoDigitalCodes::isStartCommand($text)) {
             $telegramPromobotMessenger->sendWelcomeMessage($telegramId);

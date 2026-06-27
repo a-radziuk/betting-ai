@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\EnsureTelegramPromobotApiAuth;
 use App\Models\Promocode;
 use App\Models\SiteText;
+use App\Models\TelegramInteraction;
 use App\Models\User;
 use App\Support\PendingPromocodeSession;
 use Carbon\Carbon;
@@ -85,6 +86,8 @@ class TelegramPromobotTest extends TestCase
             'api.telegram.org/*' => Http::response(['ok' => true], 200),
         ]);
 
+        Carbon::setTestNow('2026-06-27 10:00:00');
+
         $this->withTelegramSecret()
             ->postJson('/api/telegram/start', $this->sampleUpdate(987654321, '/start'))
             ->assertOk()
@@ -94,6 +97,26 @@ class TelegramPromobotTest extends TestCase
             ->assertJsonMissing(['link']);
 
         $this->assertNull(Promocode::query()->where('telegram_id', 987654321)->first());
+
+        $interaction = TelegramInteraction::query()->where('telegram_id', 987654321)->first();
+
+        $this->assertNotNull($interaction);
+
+        $this->assertDatabaseHas(
+            'telegram_interactions',
+            [
+                'telegram_id' => 987654321,
+                'is_bot' => false,
+                'first_name' => 'Алексей',
+                'last_name' => 'Петров',
+                'username' => 'aleks_petrov',
+                'language_code' => 'ru',
+                'text' => '/start',
+                'created_at' => '2026-06-27 10:00:00',
+            ]
+        );
+
+        Carbon::setTestNow();
 
         Http::assertSent(function ($request): bool {
             return str_contains($request->url(), '/botpromobot-test-token/sendMessage')
@@ -180,6 +203,38 @@ class TelegramPromobotTest extends TestCase
             return str_contains((string) $request['text'], 'Custom promo for 3 days at BetAI Pro:')
                 && str_contains((string) $request['text'], 'https://betai.example/integration/telegram/promocode/');
         });
+    }
+
+    public function test_start_endpoint_updates_existing_telegram_interaction(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        Carbon::setTestNow('2026-06-27 10:00:00');
+
+        $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(555, '/start'))
+            ->assertOk();
+
+        Carbon::setTestNow('2026-06-27 11:00:00');
+
+        $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(555, '55504'))
+            ->assertOk();
+
+        $this->assertSame(1, TelegramInteraction::query()->where('telegram_id', 555)->count());
+
+        $this->assertDatabaseHas(
+            'telegram_interactions',
+            [
+                'telegram_id' => 555,
+                'text' => '55504',
+                'created_at' => '2026-06-27 11:00:00',
+            ]
+        );
+
+        Carbon::setTestNow();
     }
 
     public function test_start_endpoint_is_idempotent_for_same_tg_id(): void
