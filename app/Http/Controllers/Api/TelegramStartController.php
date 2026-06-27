@@ -39,7 +39,7 @@ class TelegramStartController extends Controller
             $partnerCode = TelegramPartnerCodes::matchPartnerCode($text);
 
             if ($partnerCode !== null) {
-                $referralLink = $this->trialRegistrationLink($telegramPromocodeService, $telegramId);
+                $referralLink = $this->trialRegistrationLink($telegramPromocodeService, $telegramId, $partnerCode);
                 $telegramPromobotMessenger->sendPartnerMatchedMessage($telegramId, $partnerCode, $referralLink);
 
                 return response()->json([
@@ -67,9 +67,12 @@ class TelegramStartController extends Controller
         ]);
     }
 
-    private function trialRegistrationLink(TelegramPromocodeService $telegramPromocodeService, int $telegramId): string
-    {
-        $promocode = $telegramPromocodeService->issueForTelegramId($telegramId);
+    private function trialRegistrationLink(
+        TelegramPromocodeService $telegramPromocodeService,
+        int $telegramId,
+        ?string $partnerCode = null,
+    ): string {
+        $promocode = $telegramPromocodeService->issueForTelegramId($telegramId, $partnerCode);
 
         return $telegramPromocodeService->registrationLink($promocode);
     }

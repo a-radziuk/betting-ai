@@ -7,7 +7,7 @@ use App\Support\PromocodeGenerator;
 
 class TelegramPromocodeService
 {
-    public function issueForTelegramId(int $telegramId): Promocode
+    public function issueForTelegramId(int $telegramId, ?string $partnerCode = null): Promocode
     {
         $existing = Promocode::query()
             ->where('telegram_id', $telegramId)
@@ -16,11 +16,20 @@ class TelegramPromocodeService
             ->first();
 
         if ($existing !== null) {
+            if ($partnerCode !== null) {
+                $existing->update(['partner_code' => $partnerCode]);
+
+                return $existing->fresh();
+            }
+
             return $existing;
         }
 
         $promocode = PromocodeGenerator::generateUnique($this->days());
-        $promocode->update(['telegram_id' => $telegramId]);
+        $promocode->update([
+            'telegram_id' => $telegramId,
+            'partner_code' => $partnerCode,
+        ]);
 
         return $promocode->fresh();
     }

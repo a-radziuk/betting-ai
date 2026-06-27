@@ -230,6 +230,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * @return HasOne<Promocode, $this>
+     */
+    public function redeemedPromocode(): HasOne
+    {
+        return $this->hasOne(Promocode::class, 'used_by_user_id');
+    }
+
+    /**
      * @return HasMany<UserBet, $this>
      */
     public function bets(): HasMany

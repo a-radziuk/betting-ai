@@ -11,6 +11,7 @@ class Promocode extends Model
         'code',
         'days',
         'telegram_id',
+        'partner_code',
         'owner_user_id',
         'used_at',
         'used_by_user_id',

@@ -14,6 +14,7 @@ class AdminUserTextsController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         $users = User::query()
+            ->with('redeemedPromocode')
             ->when($search !== '', function ($query) use ($search): void {
                 $query->whereLike('name', '%'.$search.'%');
             })
