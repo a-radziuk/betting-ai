@@ -14,43 +14,62 @@ class TelegramPromobotMessenger
         return is_string($token) && $token !== '';
     }
 
-    public function sendWelcomeMessage(int $chatId): bool
+    public function sendWelcomeMessage(int $chatId, string $trialLink): bool
     {
         $text = site_text('telegram.start.welcome', [
             'app' => config('app.name'),
-        ], default: "👋 Welcome to :app!\n\nEnter your 5-digit promotion code here to unlock your trial access.\n\nDon't have a code? Send any message and we'll share our standard free trial.");
+        ], default: "👋 <b>Welcome to :app!</b>\n\nIf a friend invited you, please <b>type their 5-digit code</b> below to activate your joint bonus.\n\nDon't have a code? No problem! Just tap the button below to get your standard free trial:");
 
-        return $this->sendMessage($chatId, $text);
+        return $this->sendMessage(
+            $chatId,
+            $text,
+            $trialLink,
+            site_text('telegram.start.trial_button', [], default: '⚡️ Claim Free 3-Day Trial'),
+        );
     }
 
-    public function sendPromoMatchedMessage(int $chatId, int $days, string $link): bool
+    public function sendPartnerMatchedMessage(int $chatId, string $partnerCode, string $referralLink): bool
     {
-        $text = site_text('telegram.start.promo_matched', [
-            'days' => (string) $days,
+        $text = site_text('telegram.start.partner_matched', [
+            'code' => $partnerCode,
             'app' => config('app.name'),
-            'link' => $link,
-        ], default: "🚀 Your trial is ready!\n\nHere is your instant access to the :app AI football analytics platform.\n\nTap the link below to create your account and enjoy :days days fully free:\n:link");
+        ], default: "🤝 <b>Invite verified!</b>\nPartner code <b>#:code</b> accepted. Bonus access has been credited to your friend.\n\nAs a thank-you for joining via a member invite, you've been upgraded to a <b>3-Day VIP Guest Pass</b>. Your portal is ready:");
 
-        return $this->sendMessage($chatId, $text, $link);
+        return $this->sendMessage(
+            $chatId,
+            $text,
+            $referralLink,
+            site_text('telegram.start.partner_button', [], default: 'Register and activate access'),
+        );
     }
 
-    public function sendPromoNotFoundMessage(int $chatId, string $link): bool
+    public function sendPromoNotFoundMessage(int $chatId, string $trialLink): bool
     {
         $text = site_text('telegram.start.promo_not_found', [
             'app' => config('app.name'),
-            'link' => $link,
-        ], default: "⚠️ Code not found.\n\nPlease check the digits and try again.\n\nOr grab your standard free access below:\n:link");
+        ], default: "⚠️ <b>Code not found.</b>\n\nPlease check the digits and try typing them again. Or simply grab your standard free access below:");
 
-        return $this->sendMessage($chatId, $text, $link);
+        return $this->sendMessage(
+            $chatId,
+            $text,
+            $trialLink,
+            site_text('telegram.start.trial_button', [], default: '⚡️ Claim Free 3-Day Trial'),
+        );
     }
 
-    /** @deprecated Use sendPromoMatchedMessage() */
+    /** @deprecated Use sendPartnerMatchedMessage() */
+    public function sendPromoMatchedMessage(int $chatId, int $days, string $link): bool
+    {
+        return $this->sendPartnerMatchedMessage($chatId, (string) $days, $link);
+    }
+
+    /** @deprecated Use sendWelcomeMessage() with trial link */
     public function sendStartMessage(int $chatId, int $days, string $link): bool
     {
-        return $this->sendPromoMatchedMessage($chatId, $days, $link);
+        return $this->sendWelcomeMessage($chatId, $link);
     }
 
-    public function sendMessage(int $chatId, string $text, ?string $link = null): bool
+    public function sendMessage(int $chatId, string $text, ?string $link = null, ?string $buttonText = null): bool
     {
         if (! $this->isConfigured()) {
             return false;
@@ -61,13 +80,17 @@ class TelegramPromobotMessenger
         $payload = [
             'chat_id' => $chatId,
             'text' => $text,
+            'parse_mode' => 'HTML',
         ];
 
         if ($link !== null && $link !== '') {
             $payload['reply_markup'] = json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => __('Register and activate access'), 'url' => $link],
+                        [
+                            'text' => $buttonText ?? __('Register and activate access'),
+                            'url' => $link,
+                        ],
                     ],
                 ],
             ], JSON_THROW_ON_ERROR);
