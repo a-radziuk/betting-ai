@@ -39,7 +39,7 @@ class TelegramStartController extends Controller
             $partnerCode = TelegramPartnerCodes::matchPartnerCode($text);
 
             if ($partnerCode !== null) {
-                $referralLink = TelegramPartnerCodes::referralLink($partnerCode);
+                $referralLink = $this->trialRegistrationLink($telegramPromocodeService, $telegramId);
                 $telegramPromobotMessenger->sendPartnerMatchedMessage($telegramId, $partnerCode, $referralLink);
 
                 return response()->json([
