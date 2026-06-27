@@ -8,6 +8,6 @@ return [
 
     'token' => env('TELEGRAM_PROMOBOT_TOKEN'),
 
-    'partner_codes' => ['48201', '55501', '84920'],
+    'partner_codes' => ['55502', '55501', '55503', '55504'],
 
 ];
