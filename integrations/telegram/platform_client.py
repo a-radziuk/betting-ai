@@ -11,7 +11,7 @@ class PlatformClient:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
-    def request_registration_link(self, update_payload: dict) -> str:
+    def notify_platform(self, update_payload: dict) -> dict:
         response = httpx.post(
             self._settings.start_endpoint,
             json=update_payload,
@@ -42,6 +42,14 @@ class PlatformClient:
             raise PlatformClientError("Platform API returned an unexpected error.") from exc
 
         payload = response.json()
+
+        if not isinstance(payload, dict):
+            raise PlatformClientError("Platform API response was not a JSON object.")
+
+        return payload
+
+    def request_registration_link(self, update_payload: dict) -> str:
+        payload = self.notify_platform(update_payload)
         link = payload.get("link")
 
         if not isinstance(link, str) or link.strip() == "":

@@ -1,7 +1,7 @@
 import logging
 
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 from config import Settings
 from platform_client import PlatformClient, PlatformClientError
@@ -13,21 +13,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = update.effective_message
     user = update.effective_user
 
-    if message is None or user is None:
+    if message is None or user is None or not message.text:
         return
 
     client: PlatformClient = context.application.bot_data["platform_client"]
 
     try:
-        client.request_registration_link(update.to_dict())
+        client.notify_platform(update.to_dict())
     except PlatformClientError as exc:
-        logger.warning("Failed to create promocode for tg_id=%s: %s", user.id, exc)
+        logger.warning("Failed to process message for tg_id=%s: %s", user.id, exc)
         await message.reply_text(
-            "Sorry, we could not prepare your access link right now. Please try again in a moment."
+            "Sorry, we could not process your message right now. Please try again in a moment."
         )
 
 
@@ -39,7 +39,7 @@ def build_application(settings: Settings) -> Application:
     )
 
     application.bot_data["platform_client"] = PlatformClient(settings)
-    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(MessageHandler(filters.TEXT, handle_text_message))
 
     return application
 

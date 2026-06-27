@@ -30,8 +30,19 @@ final class TelegramStartUpdate
 
     public static function telegramUserId(Request $request): int
     {
-        $validated = $request->validate(self::rules());
+        return (int) data_get(self::validated($request), 'message.from.id');
+    }
 
-        return (int) data_get($validated, 'message.from.id');
+    public static function messageText(Request $request): string
+    {
+        return trim((string) data_get(self::validated($request), 'message.text', ''));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function validated(Request $request): array
+    {
+        return $request->validate(self::rules());
     }
 }
