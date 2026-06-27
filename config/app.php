@@ -30,6 +30,8 @@ return [
         default => 'A',
     },
 
+    'is_beta' => filter_var(env('IS_BETA', false), FILTER_VALIDATE_BOOLEAN),
+
     /*
     |--------------------------------------------------------------------------
     | Admin Panel

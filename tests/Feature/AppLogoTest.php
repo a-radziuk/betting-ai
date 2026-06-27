@@ -38,4 +38,23 @@ class AppLogoTest extends TestCase
 
         $this->assertSame('A', config('app.logo'));
     }
+
+    public function test_header_shows_beta_badge_when_is_beta_enabled(): void
+    {
+        config(['app.is_beta' => true]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('class="logo-beta"', false)
+            ->assertSee('>BETA<', false);
+    }
+
+    public function test_header_hides_beta_badge_when_is_beta_disabled(): void
+    {
+        config(['app.is_beta' => false]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('class="logo-beta"', false);
+    }
 }

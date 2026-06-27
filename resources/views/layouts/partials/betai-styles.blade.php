@@ -109,6 +109,22 @@
         gap: 0.65rem;
     }
 
+    .logo-beta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.35rem;
+        font-size: 0.55rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        line-height: 1;
+        color: var(--accent);
+        border: 1px solid rgba(93, 226, 255, 0.45);
+        background: rgba(93, 226, 255, 0.08);
+    }
+
     .header-tag {
         color: var(--muted);
         font-size: 0.9rem;
