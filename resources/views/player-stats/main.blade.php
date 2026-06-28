@@ -90,7 +90,7 @@
             <span class="user-results-in-play-meta">
                 {{ number_format($pendingBetCount) }} {{ $pendingBetCount === 1 ? __('bet') : __('bets') }}
             </span>
-            <a href="{{ route('players.current', ['user' => $player->id]) }}" class="subbar-back" style="margin-top: 6px;">
+            <a href="{{ route('players.current', ['user' => $player->id]) }}" class="btn btn-primary player-in-play-see-bets-btn">
                 {{ __('See bets') }}
             </a>
         </span>
