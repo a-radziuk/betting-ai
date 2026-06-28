@@ -30,6 +30,55 @@ final class PlayerResolvedBets
     /**
      * @return Builder<UserBet>
      */
+    public static function listingQueryForAdmin(?string $search = null): Builder
+    {
+        $search = trim((string) $search);
+
+        return UserBet::query()
+            ->where('status', '!=', UserBet::STATUS_PENDING)
+            ->when($search !== '', fn (Builder $query): Builder => self::applyEventNameSearch($query, $search))
+            ->orderByResolvedSettlementDesc()
+            ->with([
+                'user',
+                'event.homeTeam',
+                'event.awayTeam',
+                'event.tournament',
+                'odd.selection.market',
+            ]);
+    }
+
+    /**
+     * @param  Builder<UserBet>  $query
+     * @return Builder<UserBet>
+     */
+    public static function applyEventNameSearch(Builder $query, string $search): Builder
+    {
+        return $query->whereHas('event', function (Builder $eventQuery) use ($search): void {
+            $eventQuery->where(function (Builder $match) use ($search): void {
+                $match
+                    ->whereHas('homeTeam', fn (Builder $teamQuery): Builder => self::applyTeamNameSearch($teamQuery, $search))
+                    ->orWhereHas('awayTeam', fn (Builder $teamQuery): Builder => self::applyTeamNameSearch($teamQuery, $search));
+            });
+        });
+    }
+
+    /**
+     * @param  Builder<\App\Models\Team>  $query
+     * @return Builder<\App\Models\Team>
+     */
+    private static function applyTeamNameSearch(Builder $query, string $search): Builder
+    {
+        return $query->where(function (Builder $teamQuery) use ($search): void {
+            $teamQuery
+                ->whereLike('name', '%'.$search.'%')
+                ->orWhereLike('display_name', '%'.$search.'%')
+                ->orWhereLike('short_name', '%'.$search.'%');
+        });
+    }
+
+    /**
+     * @return Builder<UserBet>
+     */
     public static function csvQuery(User $user): Builder
     {
         return self::listingQuery($user);

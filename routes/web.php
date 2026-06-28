@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminBlogsController;
 use App\Http\Controllers\AdminLegalPagesController;
 use App\Http\Controllers\AdminSeoPagesController;
 use App\Http\Controllers\AdminSiteTextsController;
+use App\Http\Controllers\AdminResolvedBetsController;
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
 use App\Http\Controllers\AdminUploadAnalysisController;
@@ -213,6 +214,9 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
             ->name('admin.user-bets');
         Route::delete('/user-bets/{bet}', [AdminUserBetsController::class, 'destroy'])
             ->name('admin.user-bets.destroy');
+
+        Route::get('/resolved-bets', [AdminResolvedBetsController::class, 'index'])
+            ->name('admin.resolved-bets');
 
         Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
             ->name('admin.upload-events');

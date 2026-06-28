@@ -71,6 +71,7 @@ class AdminPageTest extends TestCase
             ->assertSee('hello superadmin', false)
             ->assertSee('Users', false)
             ->assertSee('User Bets', false)
+            ->assertSee('Resolved Bets', false)
             ->assertSee('Upload Events', false)
             ->assertSee('Upload Analysis', false)
             ->assertSee('Upload Predictions', false)
