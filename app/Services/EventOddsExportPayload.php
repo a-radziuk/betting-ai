@@ -27,6 +27,8 @@ final class EventOddsExportPayload
     }
 
     /**
+     * Unfinished events whose kickoff is still in the future.
+     *
      * @return Builder<Event>
      */
     public static function unresolvedEventsQuery(): Builder
@@ -38,6 +40,7 @@ final class EventOddsExportPayload
                 'markets.selections.odds' => fn ($q) => $q->orderBy('id'),
             ])
             ->where('status', '!=', Event::STATUS_FINISHED)
+            ->where('start_time', '>', now())
             ->orderBy('start_time')
             ->orderBy('id');
     }

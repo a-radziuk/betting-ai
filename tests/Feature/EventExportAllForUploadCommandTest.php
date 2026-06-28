@@ -38,6 +38,13 @@ class EventExportAllForUploadCommandTest extends TestCase
             'status' => Event::STATUS_FINISHED,
             'score' => '1-0',
         ]);
+        $pastUnfinished = Event::query()->create([
+            'id' => 88003,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->subHour(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
 
         $market = Market::query()->create([
             'id' => 88010,
@@ -92,6 +99,7 @@ class EventExportAllForUploadCommandTest extends TestCase
 
         $eventIds = array_column($data['events'], 'id');
         $this->assertNotContains(88002, $eventIds);
+        $this->assertNotContains(88003, $eventIds);
 
         unlink($path);
         Carbon::setTestNow();

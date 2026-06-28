@@ -40,7 +40,7 @@ class PredictionsBetCommand extends Command
                 continue;
             }
 
-            if ($event->status !== Event::STATUS_SCHEDULED || $event->start_time->isPast()) {
+            if ($event->status !== Event::STATUS_SCHEDULED) {
                 $this->components->warn("Prediction {$prediction->id}: event is not open for betting. Skipping.");
 
                 continue;

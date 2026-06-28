@@ -12,7 +12,7 @@ class EventExportAllForUploadCommand extends Command
 {
     protected $signature = 'event:export-all-for-upload';
 
-    protected $description = 'Export all unresolved events with markets, selections, and odds to storage/app/export_<Y-m-d>.json';
+    protected $description = 'Export unfinished upcoming events with markets, selections, and odds to storage/app/export_<Y-m-d>.json';
 
     public function handle(): int
     {
@@ -51,7 +51,7 @@ class EventExportAllForUploadCommand extends Command
         }
 
         $eventCount = count($payload['events']);
-        $this->components->info("Wrote {$eventCount} unresolved event(s) to {$path}");
+        $this->components->info("Wrote {$eventCount} upcoming unfinished event(s) to {$path}");
 
         return self::SUCCESS;
     }
