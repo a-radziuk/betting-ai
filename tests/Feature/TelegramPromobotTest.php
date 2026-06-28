@@ -135,7 +135,7 @@ class TelegramPromobotTest extends TestCase
         });
     }
 
-    public function test_partner_code_returns_referral_link_and_partner_message(): void
+    public function test_partner_code_stores_partner_code_on_promocode_and_returns_trial_link(): void
     {
         Http::fake([
             'api.telegram.org/*' => Http::response(['ok' => true], 200),
@@ -152,8 +152,14 @@ class TelegramPromobotTest extends TestCase
 
         $link = $response->json('link');
 
-        $this->assertSame('https://betai.example/referral/REF-55501', $link);
-        $this->assertNull(Promocode::query()->where('telegram_id', 987654321)->first());
+        $promocode = Promocode::query()->where('telegram_id', 987654321)->first();
+
+        $this->assertNotNull($promocode);
+        $this->assertSame('55501', $promocode->partner_code);
+        $this->assertStringStartsWith('https://betai.example/integration/telegram/promocode/', $link);
+        $this->assertSame($link, route('integration.telegram.promocode', [
+            'promocode' => $promocode->code,
+        ], absolute: true));
 
         Http::assertSent(function ($request) use ($link): bool {
             $markup = json_decode((string) $request['reply_markup'], true);
@@ -163,6 +169,33 @@ class TelegramPromobotTest extends TestCase
                 && $markup['inline_keyboard'][0][0]['url'] === $link
                 && $markup['inline_keyboard'][0][0]['text'] === 'Register and activate access';
         });
+    }
+
+    public function test_partner_code_updates_existing_unused_promocode_with_partner_code(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(987654321, '/start'))
+            ->assertOk();
+
+        $promocode = Promocode::query()->where('telegram_id', 987654321)->firstOrFail();
+        $this->assertNull($promocode->partner_code);
+
+        $this->withTelegramSecret()
+            ->postJson('/api/telegram/start', $this->sampleUpdate(987654321, '84920'))
+            ->assertOk()
+            ->assertJson([
+                'status' => 'partner_matched',
+                'partner_code' => '84920',
+            ]);
+
+        $promocode->refresh();
+
+        $this->assertSame('84920', $promocode->partner_code);
+        $this->assertSame(1, Promocode::query()->where('telegram_id', 987654321)->count());
     }
 
     public function test_invalid_five_digit_code_sends_not_found_message_with_trial_link(): void

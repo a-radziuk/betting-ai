@@ -48,6 +48,7 @@
                             <th>{{ __('ID') }}</th>
                             <th>{{ __('Name') }}</th>
                             <th>{{ __('Email') }}</th>
+                            <th>{{ __('Partner code') }}</th>
                             <th>{{ __('Tagline') }}</th>
                             <th>{{ __('Updated') }}</th>
                             <th class="admin-table-actions">{{ __('Actions') }}</th>
@@ -59,6 +60,7 @@
                                 <td class="admin-table-nowrap">{{ $user->id }}</td>
                                 <td>{{ $user->name ?: '—' }}</td>
                                 <td>{{ $user->email }}</td>
+                                <td class="admin-table-nowrap">{{ $user->redeemedPromocode?->partner_code ?? '' }}</td>
                                 <td>{{ $user->tagline ?: '—' }}</td>
                                 <td class="admin-table-nowrap">{{ $user->updated_at?->format('Y-m-d H:i') ?? '—' }}</td>
                                 <td class="admin-table-actions">

@@ -129,4 +129,46 @@ class AdminUserTextsTest extends TestCase
             ->assertSee('Bob Builder', false)
             ->assertDontSee('alice@example.com', false);
     }
+
+    public function test_user_texts_list_shows_partner_code_from_redeemed_promocode(): void
+    {
+        $editor = User::factory()->create([
+            'is_superadmin' => false,
+            'priveleges' => User::PRIVELEGE_EDITOR,
+        ]);
+        $userWithPartner = User::factory()->create([
+            'name' => 'Partner Player',
+            'email' => 'partner@example.com',
+        ]);
+        $userWithoutPartner = User::factory()->create([
+            'name' => 'Plain Player',
+            'email' => 'plain@example.com',
+        ]);
+
+        \App\Models\Promocode::query()->create([
+            'code' => 'PROMO-PARTNER1',
+            'days' => 3,
+            'partner_code' => '55501',
+            'used_at' => now(),
+            'used_by_user_id' => $userWithPartner->id,
+        ]);
+        \App\Models\Promocode::query()->create([
+            'code' => 'PROMO-PLAIN1',
+            'days' => 3,
+            'used_at' => now(),
+            'used_by_user_id' => $userWithoutPartner->id,
+        ]);
+
+        $this->actingAs($editor)
+            ->get(route('admin.user-texts'))
+            ->assertOk()
+            ->assertSee('55501', false)
+            ->assertSee('partner@example.com', false);
+
+        $this->actingAs($editor)
+            ->get(route('admin.user-texts.edit', $userWithPartner))
+            ->assertOk()
+            ->assertDontSee('55501', false)
+            ->assertDontSee(__('Partner code'), false);
+    }
 }
