@@ -30,3 +30,5 @@ Thumbs.db
 procure_tournament.sh
 predictions_upload.sh
 download_db.sh
+/storage/exports
+/storage/dumps
