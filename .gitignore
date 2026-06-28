@@ -29,3 +29,4 @@ Thumbs.db
 .automation/
 procure_tournament.sh
 predictions_upload.sh
+download_db.sh

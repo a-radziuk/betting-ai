@@ -77,4 +77,5 @@ mysqldump_args+=("$DB_DATABASE")
 echo "==> Dumping ${DB_DATABASE} to ${DUMP_FILE}"
 mysqldump "${mysqldump_args[@]}" > "$DUMP_FILE"
 
+echo "DUMP_FILE=${DUMP_FILE}"
 echo "Done."
