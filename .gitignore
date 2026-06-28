@@ -32,3 +32,5 @@ predictions_upload.sh
 download_db.sh
 /storage/exports
 /storage/dumps
+/storage/exports/*
+/storage/dumps/*
