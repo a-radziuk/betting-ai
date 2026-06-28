@@ -100,7 +100,6 @@ class PlayerShowDataService
         return PlayerWalletResultChart::fromValues(
             $series['values'],
             startAtZero: $startAtZero,
-            baselineBeforeWindow: $series['baseline'],
         );
     }
 
@@ -114,7 +113,6 @@ class PlayerShowDataService
      *     values: list<float|int|string|null>,
      *     dates: list<string|null>,
      *     axisDates: list<string|null>,
-     *     baseline: float
      * }
      */
     private function resolvedBetChartSeries(User $user, ?int $limit, bool $withDates = false): array
@@ -146,25 +144,7 @@ class PlayerShowDataService
             'values' => $rows->pluck('wallet_total_result')->values()->all(),
             'dates' => [],
             'axisDates' => [],
-            'baseline' => 0.0,
         ];
-
-        if ($limit !== null && $rows->isNotEmpty()) {
-            $firstBet = $rows->first();
-            $series['baseline'] = (float) (UserBet::query()
-                ->where('user_bets.user_id', $user->id)
-                ->where('user_bets.status', '!=', UserBet::STATUS_PENDING)
-                ->where(function ($query) use ($firstBet): void {
-                    $query->where('user_bets.resolved_order', '<', $firstBet->resolved_order)
-                        ->orWhere(function ($query) use ($firstBet): void {
-                            $query->where('user_bets.resolved_order', $firstBet->resolved_order)
-                                ->where('user_bets.id', '<', $firstBet->id);
-                        });
-                })
-                ->orderByDesc('user_bets.resolved_order')
-                ->orderByDesc('user_bets.id')
-                ->value('wallet_total_result') ?? 0);
-        }
 
         if (! $withDates) {
             return $series;

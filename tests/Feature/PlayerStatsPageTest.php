@@ -272,14 +272,14 @@ class PlayerStatsPageTest extends TestCase
         $this->assertFalse($chart->points[0]['isOrigin']);
         $this->assertSame(20.0, $chart->points[0]['value']);
         $this->assertSame(310.0, $chart->latest);
-        $this->assertSame(300.0, $chart->windowResult);
+        $this->assertSame(290.0, $chart->trendDelta);
 
         $html = $this->get(route('players.show', $player))
             ->assertOk()
             ->getContent();
 
         $this->assertStringContainsString('user-results-chart-latest', $html);
-        $this->assertStringContainsString('+300.00', $html);
+        $this->assertStringContainsString('+290.00', $html);
         $this->assertStringNotContainsString('user-results-chart-latest">+310.00', $html);
     }
 

@@ -2,7 +2,7 @@
     /** @var \App\Support\PlayerWalletResultChart $resultChart */
     /** @var \App\Models\User|null $player */
     $isFullHistory = $isFullHistory ?? false;
-    $latest = $isFullHistory ? $resultChart->latest : $resultChart->windowResult;
+    $trendValue = $resultChart->trendDelta;
     $showFullTrendLink = ($showFullTrendLink ?? true) && isset($player);
     $showChartDates = $showChartDates ?? false;
     $formatChartValue = static function (float $value, bool $isOrigin = false): string {
@@ -49,11 +49,11 @@
             'user-results-value',
             'user-results-chart-latest',
             'player-stats-result-value',
-            'player-stats-result-value--pos' => ($latest ?? 0) > 0.000001,
-            'player-stats-result-value--neg' => ($latest ?? 0) < -0.000001,
-            'player-stats-result-value--neutral' => $latest === null || abs($latest) <= 0.000001,
+            'player-stats-result-value--pos' => ($trendValue ?? 0) > 0.000001,
+            'player-stats-result-value--neg' => ($trendValue ?? 0) < -0.000001,
+            'player-stats-result-value--neutral' => $trendValue === null || abs($trendValue) <= 0.000001,
         ])>
-            {{ $formatChartValue($latest) }}
+            {{ $formatChartValue($trendValue) }}
         </span>
         <div @class(['user-results-chart-wrap', 'user-results-chart-wrap--dates' => $showChartDates])>
         <svg
