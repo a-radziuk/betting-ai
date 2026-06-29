@@ -185,12 +185,19 @@ trait ExportsScheduledEventsForDate
 Above is the odds for {$numberOfEvents} games that are happening {$dayWord}. Out of these games find:
 1/ the safest bet
 For the safest strategy, do not consider odds below 1.20
+The stake must be 30
 
 2/ the best bet
 The best bet is typically the one between 1.5 and 3
+The stake must be 20
 
 3/ the potential upset bet
 The upsetter goes for odds that are typically between 3 and 5, but in some cases can be higher. But don't go for long-shot upsets and unrealistic results
+The stake must be 10
+
+4/ the best bet for odds between 1.5 & 1.9
+The most realistic bet exactly between these odds
+The stake must be 50
 
 {$this->fifaRankingsInstructionParagraph()}
 If the event JSON includes a "standings" array, you must use it before choosing a bet. Each row describes one club in the competition table: league position, team name, matches played and results (won/drawn/lost), goals for and against, goal difference, total points, a textual "outcome" describing what that position currently means (e.g. title race, European qualification, mid-table, relegation), an "outcome_positivity" score reflecting how desirable or urgent that situation is (higher for title or European chase, lower or negative for relegation danger), plus "remaining_games" and "potential_points" showing how much can still change in the table.
@@ -201,7 +208,7 @@ Give me those bets as JSON in the following format:
     odd_id: // id from the JSON
     stake: // percent from 1000
     description: // explain why you want to bet
-    type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET
+    type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET, GPT_MANUAL_{$type}_2x1
     confidence: // how confident you are that this bet will win, int from 1 to 10
 }
 TXT;
