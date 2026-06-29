@@ -1265,6 +1265,25 @@
         font-variant-numeric: tabular-nums;
     }
 
+    .player-in-play-see-bets-btn {
+        width: 100%;
+        margin-top: 0.65rem;
+        padding: 0.9rem 1.15rem;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        box-shadow:
+            0 14px 34px rgba(93, 226, 255, 0.24),
+            0 0 0 1px rgba(93, 226, 255, 0.18) inset;
+    }
+
+    .player-in-play-see-bets-btn:hover {
+        box-shadow:
+            0 18px 40px rgba(93, 226, 255, 0.32),
+            0 0 0 1px rgba(93, 226, 255, 0.28) inset;
+    }
+
     .user-results-item--chart {
         min-height: 8.5rem;
     }
