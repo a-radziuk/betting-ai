@@ -29,6 +29,7 @@ class EventPrediction extends Model
         'prediction_type',
         'odds_id',
         'bank_percentage',
+        'stake',
         'explanation',
         'confidence',
         'is_active',
@@ -39,6 +40,7 @@ class EventPrediction extends Model
         return [
             'odds_id' => 'integer',
             'bank_percentage' => 'integer',
+            'stake' => 'decimal:2',
             'confidence' => 'integer',
             'is_active' => 'boolean',
         ];

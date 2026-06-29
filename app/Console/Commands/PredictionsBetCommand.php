@@ -89,12 +89,15 @@ class PredictionsBetCommand extends Command
                     continue;
                 }
 
-                $startBalance = (float) $wallet->start_balance;
-                $stakeRaw = $startBalance * ($prediction->bank_percentage / 100);
-                $stakeStr = number_format($stakeRaw, 2, '.', '');
+                $stakeStr = $this->resolveStake($prediction, $wallet);
+                if ($stakeStr === null) {
+                    $this->components->warn("User {$userId}: could not determine stake (set stake or bank_percentage on prediction {$prediction->id}). Skipping.");
+
+                    continue;
+                }
 
                 if (bccomp($stakeStr, '0.01', 2) < 0) {
-                    $this->components->warn("User {$userId}: computed stake {$stakeStr} is below minimum (check start_balance and bank_percentage). Skipping.");
+                    $this->components->warn("User {$userId}: computed stake {$stakeStr} is below minimum. Skipping.");
 
                     continue;
                 }
@@ -124,5 +127,20 @@ class PredictionsBetCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function resolveStake(EventPrediction $prediction, UserWallet $wallet): ?string
+    {
+        if ($prediction->stake !== null) {
+            return number_format((float) $prediction->stake, 2, '.', '');
+        }
+
+        if ($prediction->bank_percentage === null) {
+            return null;
+        }
+
+        $stakeRaw = (float) $wallet->start_balance * ($prediction->bank_percentage / 100);
+
+        return number_format($stakeRaw, 2, '.', '');
     }
 }

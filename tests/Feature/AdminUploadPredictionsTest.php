@@ -57,7 +57,8 @@ class AdminUploadPredictionsTest extends TestCase
         $this->assertSame('CUSTOM_TYPE', $prediction->prediction_type);
         $this->assertSame('Because form.', $prediction->explanation);
         $this->assertSame($oddId, $prediction->odds_id);
-        $this->assertSame(250, $prediction->bank_percentage);
+        $this->assertNull($prediction->bank_percentage);
+        $this->assertSame('2500.00', (string) $prediction->stake);
         $this->assertTrue($prediction->is_active);
     }
 

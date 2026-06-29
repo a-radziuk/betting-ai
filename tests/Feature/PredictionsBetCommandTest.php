@@ -81,6 +81,37 @@ class PredictionsBetCommandTest extends TestCase
         return ['event' => $event, 'odd' => $odd];
     }
 
+    public function test_places_bet_for_subscriber_using_direct_stake_when_set(): void
+    {
+        ['event' => $event, 'odd' => $odd] = $this->seedScheduledEventWithOdd();
+
+        EventPrediction::query()->create([
+            'event_id' => $event->id,
+            'prediction_type' => EventPrediction::PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT,
+            'odds_id' => $odd->id,
+            'stake' => '35.50',
+            'explanation' => 'Fixed stake pick.',
+            'is_active' => true,
+        ]);
+
+        $user = User::factory()->create();
+        UserPredictionSubscription::query()->create([
+            'user_id' => $user->id,
+            'prediction_type' => EventPrediction::PREDICTION_TYPE_GET_ONE_BEST_FOR_EVENT_DEFAULT,
+        ]);
+        UserWallet::query()->where('user_id', $user->id)->update([
+            'start_balance' => '200.00',
+            'balance' => '500.00',
+        ]);
+
+        Artisan::call('predictions:bet');
+
+        $bet = UserBet::query()->first();
+        $this->assertNotNull($bet);
+        $this->assertSame('35.50', (string) $bet->stake);
+        $this->assertSame('464.50', UserWallet::query()->where('user_id', $user->id)->value('balance'));
+    }
+
     public function test_places_bet_for_subscriber_using_start_balance_percent(): void
     {
         ['event' => $event, 'odd' => $odd] = $this->seedScheduledEventWithOdd();

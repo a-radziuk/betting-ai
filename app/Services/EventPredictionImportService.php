@@ -62,8 +62,14 @@ final class EventPredictionImportService
             return false;
         }
 
-        $bankPercentage = (int) round((float) ($row['stake'] / 1000) * 100);
-        $bankPercentage = max(0, min(65535, $bankPercentage));
+        if (! is_numeric($row['stake'])) {
+            return false;
+        }
+
+        $stake = (float) $row['stake'];
+        if ($stake < 0.01) {
+            return false;
+        }
 
         $confidence = null;
         if (array_key_exists('confidence', $row)) {
@@ -81,7 +87,8 @@ final class EventPredictionImportService
             'prediction_type' => (string) $row['type'],
             'explanation' => (string) $row['description'],
             'odds_id' => $oddId,
-            'bank_percentage' => $bankPercentage,
+            'bank_percentage' => null,
+            'stake' => number_format($stake, 2, '.', ''),
             'confidence' => $confidence,
             'is_active' => true,
         ]);

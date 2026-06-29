@@ -193,7 +193,8 @@ class PredictionsExportCommandTest extends TestCase
         $this->assertSame('CUSTOM_TYPE', $prediction->prediction_type);
         $this->assertSame('Round trip.', $prediction->explanation);
         $this->assertSame($oddId, $prediction->odds_id);
-        $this->assertSame(100, $prediction->bank_percentage);
+        $this->assertNull($prediction->bank_percentage);
+        $this->assertSame('1000.00', (string) $prediction->stake);
         $this->assertSame(7, $prediction->confidence);
         $this->assertTrue($prediction->is_active);
 

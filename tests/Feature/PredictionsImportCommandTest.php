@@ -103,7 +103,8 @@ class PredictionsImportCommandTest extends TestCase
             $this->assertSame('Because form.', $p->explanation);
             $this->assertSame($oddId, $p->odds_id);
             $this->assertSame(910001, $p->event_id);
-            $this->assertSame(250, $p->bank_percentage);
+            $this->assertNull($p->bank_percentage);
+            $this->assertSame('2500.00', (string) $p->stake);
             $this->assertTrue($p->is_active);
             $this->assertNull($p->confidence);
         } finally {

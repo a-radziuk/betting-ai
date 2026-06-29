@@ -43,14 +43,15 @@ class PredictionsListCommand extends Command
                 $event?->start_time?->format('Y-m-d H:i') ?? '—',
                 (string) $prediction->prediction_type,
                 $prediction->odds_id,
-                $prediction->bank_percentage,
+                $prediction->stake !== null ? number_format((float) $prediction->stake, 2) : '—',
+                $prediction->bank_percentage ?? '—',
                 $prediction->confidence ?? '—',
                 Str::limit((string) $prediction->explanation, 60),
             ];
         })->all();
 
         $this->table(
-            ['ID', 'Event ID', 'Event', 'Status', 'Start', 'Type', 'Odds ID', 'Bank %', 'Conf', 'Explanation'],
+            ['ID', 'Event ID', 'Event', 'Status', 'Start', 'Type', 'Odds ID', 'Stake', 'Bank %', 'Conf', 'Explanation'],
             $rows,
         );
 
