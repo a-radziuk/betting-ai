@@ -15,6 +15,7 @@ final class AdminNavigation
             ['label' => __('Users'), 'route' => 'admin.users', 'active' => 'admin.users*'],
             ['label' => __('User Bets'), 'route' => 'admin.user-bets', 'active' => 'admin.user-bets*'],
             ['label' => __('Resolved Bets'), 'route' => 'admin.resolved-bets', 'active' => 'admin.resolved-bets*'],
+            ['label' => __('Prediction Subscriptions'), 'route' => 'admin.prediction-subscriptions', 'active' => 'admin.prediction-subscriptions*'],
             ['label' => __('Simple Crypto Payments'), 'route' => 'admin.simple-crypto-payments', 'active' => 'admin.simple-crypto-payments*', 'feature' => 'simple_crypto_payment'],
             ['label' => __('Upload Events'), 'route' => 'admin.upload-events', 'active' => 'admin.upload-events*'],
             ['label' => __('Upload Tournament'), 'route' => 'admin.upload-tournament', 'active' => 'admin.upload-tournament*'],

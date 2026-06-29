@@ -66,6 +66,10 @@ class AdminEditorAccessTest extends TestCase
         $this->actingAs($editor)
             ->get(route('admin.resolved-bets'))
             ->assertForbidden();
+
+        $this->actingAs($editor)
+            ->get(route('admin.prediction-subscriptions'))
+            ->assertForbidden();
     }
 
     public function test_editor_sees_limited_sidebar_and_admin_link(): void

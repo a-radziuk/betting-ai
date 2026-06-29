@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminUploadPredictionsController;
 use App\Http\Controllers\AdminUploadStandingsController;
 use App\Http\Controllers\AdminUploadTournamentController;
 use App\Http\Controllers\AdminUserBetsController;
+use App\Http\Controllers\AdminUserPredictionSubscriptionsController;
 use App\Http\Controllers\AdminUserTextsController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\BlogController;
@@ -217,6 +218,19 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
 
         Route::get('/resolved-bets', [AdminResolvedBetsController::class, 'index'])
             ->name('admin.resolved-bets');
+
+        Route::get('/prediction-subscriptions', [AdminUserPredictionSubscriptionsController::class, 'index'])
+            ->name('admin.prediction-subscriptions');
+        Route::get('/prediction-subscriptions/create', [AdminUserPredictionSubscriptionsController::class, 'create'])
+            ->name('admin.prediction-subscriptions.create');
+        Route::post('/prediction-subscriptions', [AdminUserPredictionSubscriptionsController::class, 'store'])
+            ->name('admin.prediction-subscriptions.store');
+        Route::get('/prediction-subscriptions/{subscription}/edit', [AdminUserPredictionSubscriptionsController::class, 'edit'])
+            ->name('admin.prediction-subscriptions.edit');
+        Route::put('/prediction-subscriptions/{subscription}', [AdminUserPredictionSubscriptionsController::class, 'update'])
+            ->name('admin.prediction-subscriptions.update');
+        Route::delete('/prediction-subscriptions/{subscription}', [AdminUserPredictionSubscriptionsController::class, 'destroy'])
+            ->name('admin.prediction-subscriptions.destroy');
 
         Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
             ->name('admin.upload-events');
