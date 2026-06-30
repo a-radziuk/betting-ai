@@ -14,6 +14,7 @@ class Tournament extends Model
         'name',
         'rank',
         'country',
+        'is_playoff',
         'stoiximan_url',
         'guardian_standings_url',
         'guardian_results_url',
@@ -26,6 +27,7 @@ class Tournament extends Model
     {
         return [
             'rank' => 'integer',
+            'is_playoff' => 'boolean',
             'standings' => 'array',
             'standings_updated_at' => 'datetime',
             'standings_promrel' => AsStandingsPromrel::class,

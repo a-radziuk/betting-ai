@@ -55,6 +55,7 @@ final class TournamentImportService
             'name',
             'rank',
             'country',
+            'is_playoff',
             'stoiximan_url',
             'guardian_standings_url',
             'guardian_results_url',

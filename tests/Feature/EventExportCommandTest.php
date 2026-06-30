@@ -111,6 +111,49 @@ class EventExportCommandTest extends TestCase
         $this->assertSame(2.5, $row['odds']);
     }
 
+    public function test_playoff_tournament_omits_standings(): void
+    {
+        $tournament = Tournament::query()->create([
+            'name' => 'Champions League Playoffs',
+            'is_playoff' => true,
+            'standings' => [
+                'rows' => [
+                    ['position' => 1, 'team' => 'Alpha United', 'played' => 3, 'points' => 9],
+                ],
+            ],
+        ]);
+        $home = Team::query()->create([
+            'name' => 'H',
+            'short_name' => 'H',
+            'league' => 'Europe',
+            'tournament_id' => $tournament->id,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'A',
+            'short_name' => 'A',
+            'league' => 'Europe',
+            'tournament_id' => $tournament->id,
+        ]);
+
+        Event::query()->create([
+            'id' => 99005,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => Carbon::parse('2026-06-15 18:30:00', 'UTC'),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $exit = Artisan::call('event:export', ['eventId' => 99005, '--no-odds' => true]);
+        $this->assertSame(0, $exit);
+
+        $decoded = json_decode(Artisan::output(), true);
+        $this->assertIsArray($decoded);
+        $this->assertSame('Champions League Playoffs', $decoded['eventTournament']);
+        $this->assertArrayHasKey('standings', $decoded);
+        $this->assertNull($decoded['standings']);
+    }
+
     public function test_exports_grouped_standings_with_group_labels(): void
     {
         $tournament = Tournament::query()->create([

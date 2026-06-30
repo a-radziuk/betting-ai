@@ -72,6 +72,8 @@ class AdminPageTest extends TestCase
             ->assertSee('Users', false)
             ->assertSee('User Bets', false)
             ->assertSee('Resolved Bets', false)
+            ->assertSee('Prediction Subscriptions', false)
+            ->assertSee('Tournaments', false)
             ->assertSee('Upload Events', false)
             ->assertSee('Upload Analysis', false)
             ->assertSee('Upload Predictions', false)
@@ -84,6 +86,11 @@ class AdminPageTest extends TestCase
         $admin = User::factory()->create([
             'is_superadmin' => true,
         ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.tournaments'))
+            ->assertOk()
+            ->assertSee('Tournaments', false);
 
         $this->actingAs($admin)
             ->get(route('admin.upload-events'))

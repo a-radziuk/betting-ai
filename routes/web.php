@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminSiteTextsController;
 use App\Http\Controllers\AdminResolvedBetsController;
 use App\Http\Controllers\AdminResolveEventController;
 use App\Http\Controllers\AdminSimpleCryptoPaymentsController;
+use App\Http\Controllers\AdminTournamentsController;
 use App\Http\Controllers\AdminUploadAnalysisController;
 use App\Http\Controllers\AdminUploadEventsController;
 use App\Http\Controllers\AdminUploadPredictionsController;
@@ -231,6 +232,19 @@ Route::middleware(['admin.access'])->prefix('admin')->group(function (): void {
             ->name('admin.prediction-subscriptions.update');
         Route::delete('/prediction-subscriptions/{subscription}', [AdminUserPredictionSubscriptionsController::class, 'destroy'])
             ->name('admin.prediction-subscriptions.destroy');
+
+        Route::get('/tournaments', [AdminTournamentsController::class, 'index'])
+            ->name('admin.tournaments');
+        Route::get('/tournaments/create', [AdminTournamentsController::class, 'create'])
+            ->name('admin.tournaments.create');
+        Route::post('/tournaments', [AdminTournamentsController::class, 'store'])
+            ->name('admin.tournaments.store');
+        Route::get('/tournaments/{tournament}/edit', [AdminTournamentsController::class, 'edit'])
+            ->name('admin.tournaments.edit');
+        Route::put('/tournaments/{tournament}', [AdminTournamentsController::class, 'update'])
+            ->name('admin.tournaments.update');
+        Route::delete('/tournaments/{tournament}', [AdminTournamentsController::class, 'destroy'])
+            ->name('admin.tournaments.destroy');
 
         Route::get('/upload-events', [AdminUploadEventsController::class, 'show'])
             ->name('admin.upload-events');
