@@ -68,9 +68,7 @@ class StoiximanScraper
                 $this->clearEventMarkets($eventId);
                 $stats['events']++;
 
-                foreach ($parsed['markets'] as $marketData) {
-                    $marketId = $this->toBigIntId('market', $parsed['external_id'].'|'.$marketData['external_id']);
-
+                foreach ($this->deduplicateMarketsForEvent($parsed['markets'], $parsed['home_team'], $parsed['away_team']) as $marketData) {
                     $rawType = $this->replaceTeamNamesInText(
                         $marketData['type'],
                         $parsed['home_team'],
@@ -81,12 +79,17 @@ class StoiximanScraper
                         continue;
                     }
 
+                    $period = $marketData['period'] ?? Market::PERIOD_FULL_TIME;
+                    $line = $marketData['line'];
+
+                    $marketId = $this->toBigIntId('market', $parsed['external_id'].'|'.$marketData['external_id']);
+
                     Market::query()->create([
                         'id' => $marketId,
                         'event_id' => $eventId,
                         'type' => $type,
-                        'period' => $marketData['period'] ?? Market::PERIOD_FULL_TIME,
-                        'line' => $marketData['line'],
+                        'period' => $period,
+                        'line' => $line,
                         'status' => Market::STATUS_OPEN,
                         'is_supported_market' => in_array($type, Market::SUPPORTED_TYPES),
                     ]);
@@ -497,12 +500,63 @@ class StoiximanScraper
         $unique = [];
         $seen = [];
         foreach ($markets as $market) {
-            $key = $market['external_id'].'|'.$market['type'].'|'.$market['period'].'|'.(string) $market['line'];
+            $period = $market['period'] ?? Market::PERIOD_FULL_TIME;
+            $line = $market['line'];
+            $key = $this->normalizeMarketType($market['type']).'|'.$period.'|'.(string) ($line ?? '');
             if (isset($seen[$key])) {
                 continue;
             }
             $seen[$key] = true;
             $unique[] = $market;
+        }
+
+        return $unique;
+    }
+
+    /**
+     * @param  array<int, array{
+     *   external_id:string,
+     *   type:string,
+     *   period:string,
+     *   line:float|null,
+     *   selections:array<int,array{
+     *      external_id:string,
+     *      name:string,
+     *      odds:float,
+     *      handicap:float|null
+     *   }>
+     * }>  $markets
+     * @return array<int, array{
+     *   external_id:string,
+     *   type:string,
+     *   period:string,
+     *   line:float|null,
+     *   selections:array<int,array{
+     *      external_id:string,
+     *      name:string,
+     *      odds:float,
+     *      handicap:float|null
+     *   }>
+     * }>
+     */
+    private function deduplicateMarketsForEvent(array $markets, string $homeTeam, string $awayTeam): array
+    {
+        $unique = [];
+        $seen = [];
+
+        foreach ($markets as $marketData) {
+            $rawType = $this->replaceTeamNamesInText($marketData['type'], $homeTeam, $awayTeam);
+            $type = $this->normalizeMarketType($rawType);
+            $period = $marketData['period'] ?? Market::PERIOD_FULL_TIME;
+            $line = $marketData['line'];
+            $key = $type.'|'.$period.'|'.(string) ($line ?? '');
+
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $unique[] = $marketData;
         }
 
         return $unique;
