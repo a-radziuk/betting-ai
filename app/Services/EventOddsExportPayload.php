@@ -132,17 +132,16 @@ final class EventOddsExportPayload
         $tournament = $event->tournament;
         $promrel = $tournament?->standings_promrel ?? [];
 
-        $standings = null;
-        if ($tournament !== null && ! $tournament->is_playoff) {
-            $standings = self::prepareStandings($tournament->standings, $promrel);
-        }
-
         $payload = [
             'eventId' => (string) $event->id,
             'eventName' => $eventName,
             'eventTournament' => $eventTournament,
             'eventDateTime' => $event->start_time?->toIso8601String(),
-            'standings' => $standings,
+            'standings' => self::prepareStandings(
+                $tournament?->standings,
+                $promrel,
+                (bool) ($tournament?->is_playoff ?? false),
+            ),
             'odds' => array_values($rows),
         ];
 
@@ -227,7 +226,7 @@ final class EventOddsExportPayload
      * @param  array<string, mixed>  $standings_promrel
      * @return list<array<string, mixed>>|null
      */
-    private static function prepareStandings(?array $standings, array $standings_promrel): ?array
+    private static function prepareStandings(?array $standings, array $standings_promrel, bool $isPlayoff = false): ?array
     {
         if ($standings === null) {
             return null;
@@ -247,7 +246,7 @@ final class EventOddsExportPayload
                 }
 
                 $totalGamesInGroup = max(count($rows) - 1, 0) * 1;
-                foreach (self::prepareStandingsRows($rows, $standings_promrel, $totalGamesInGroup) as $row) {
+                foreach (self::prepareStandingsRows($rows, $standings_promrel, $totalGamesInGroup, $isPlayoff) as $row) {
                     if ($groupName !== '') {
                         $row['group'] = $groupName;
                     }
@@ -264,7 +263,7 @@ final class EventOddsExportPayload
 
         $totalGamesInTheTournament = max(count($standings['rows']) - 1, 0) * 2;
 
-        return self::prepareStandingsRows($standings['rows'], $standings_promrel, $totalGamesInTheTournament);
+        return self::prepareStandingsRows($standings['rows'], $standings_promrel, $totalGamesInTheTournament, $isPlayoff);
     }
 
     /**
@@ -272,14 +271,24 @@ final class EventOddsExportPayload
      * @param  array<string, mixed>  $standings_promrel
      * @return list<array<string, mixed>>
      */
-    private static function prepareStandingsRows(array $rows, array $standings_promrel, int $totalGamesInTheTournament): array
+    private static function prepareStandingsRows(array $rows, array $standings_promrel, int $totalGamesInTheTournament, bool $isPlayoff = false): array
     {
-        return array_map(function ($row) use ($standings_promrel, $totalGamesInTheTournament) {
+        return array_map(function ($row) use ($standings_promrel, $totalGamesInTheTournament, $isPlayoff) {
             if (! is_array($row)) {
                 return $row;
             }
             $row['team'] = $row['team_display_name'] ?? $row['team'] ?? '';
             unset($row['team_path'], $row['form'], $row['movement'], $row['team_id'], $row['team_display_name']);
+
+            if ($isPlayoff) {
+                unset($row['outcome'], $row['outcome_positivity'], $row['remaining_games'], $row['potential_points']);
+
+                if ((int) ($row['played'] ?? 0) === 0) {
+                    $row['position'] = 0;
+                }
+
+                return $row;
+            }
 
             $played = (int) ($row['played'] ?? 0);
             if ($played === 0) {

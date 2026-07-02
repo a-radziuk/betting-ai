@@ -402,6 +402,54 @@ class EventExportTodayCommandTest extends TestCase
         }
     }
 
+    public function test_full_with_playoff_tournament_includes_notice_and_is_playoff_flag(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-10-01 10:00:00', $tz));
+        $jsonPath = storage_path('app/2026-10-01.json');
+        $txtPath = storage_path('app/2026-10-01.txt');
+
+        try {
+            $t = Tournament::query()->create([
+                'name' => 'Europa Playoffs',
+                'is_playoff' => true,
+                'standings' => [
+                    'rows' => [
+                        ['position' => 1, 'team' => 'Playoff FC', 'played' => 2, 'points' => 6],
+                    ],
+                ],
+            ]);
+            $h = Team::query()->create(['name' => 'HP', 'short_name' => 'HP', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'AP', 'short_name' => 'AP', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(106001, 106011, 106021, 106031, $t->id, $h->id, $a->id, Carbon::parse('2026-10-01 14:00:00', $tz));
+
+            $exit = Artisan::call('event:export-today', ['--full' => true]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($jsonPath);
+            $this->assertFileExists($txtPath);
+
+            $data = json_decode(file_get_contents($jsonPath), true);
+            $this->assertTrue($data[0]['isPlayoff']);
+            $this->assertIsArray($data[0]['standings']);
+            $this->assertSame('Playoff FC', $data[0]['standings'][0]['team']);
+            $this->assertArrayNotHasKey('outcome', $data[0]['standings'][0]);
+            $this->assertArrayNotHasKey('remaining_games', $data[0]['standings'][0]);
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('Playoff notice:', $txt);
+            $this->assertStringContainsString('"Europa Playoffs"', $txt);
+            $this->assertStringContainsString('"isPlayoff": true', $txt);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
+            }
+        }
+    }
+
     public function test_full_with_no_events_and_no_odds_writes_standings_instruction(): void
     {
         $tz = config('app.timezone');
