@@ -4,6 +4,7 @@ namespace App\Console\Commands\Concerns;
 
 use App\Models\Event;
 use App\Models\Tournament;
+use App\Support\PlayoffGameHistoryExport;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
@@ -114,17 +115,24 @@ trait ExportsScheduledEventsForDate
             }
 
             $standings = null;
-            foreach ($eventPayloads as &$exportedEvent) {
-                $standings = $exportedEvent['standings'];
-                unset($exportedEvent['standings']);
+            $gameHistory = null;
+
+            if ($isPlayoff && $tournamentId !== null && isset($tournamentById[$tournamentId])) {
+                $gameHistory = PlayoffGameHistoryExport::fromStandings($tournamentById[$tournamentId]->standings);
+            } else {
+                foreach ($eventPayloads as &$exportedEvent) {
+                    $standings = $exportedEvent['standings'];
+                    unset($exportedEvent['standings']);
+                }
+                unset($exportedEvent);
             }
-            unset($exportedEvent);
 
             $payloads[] = [
                 'tournamentId' => $tournamentId,
                 'tournamentName' => $tournamentName,
                 'isPlayoff' => $isPlayoff,
                 'standings' => $standings,
+                'game_history' => $gameHistory,
                 'events' => $eventPayloads,
             ];
         }
@@ -267,6 +275,6 @@ TXT;
             $playoffTournamentNames
         ));
 
-        return 'Playoff notice: The following tournament(s) are playoff rounds: '.$list.'. Tournament groups with "isPlayoff": true include standings for reference, but they do not represent a regular league table — interpret them as knockout or qualifying-playoff context when analysing motivation and likely outcomes.'."\n\n";
+        return 'Playoff notice: The following tournament(s) are playoff rounds: '.$list.'. Tournament groups with "isPlayoff": true include "game_history" instead of standings. Use each team\'s recent games plus goals_scored and goals_conceded totals from that history when analysing fixtures.'."\n\n";
     }
 }

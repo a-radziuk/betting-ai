@@ -402,7 +402,7 @@ class EventExportTodayCommandTest extends TestCase
         }
     }
 
-    public function test_full_with_playoff_tournament_includes_notice_and_is_playoff_flag(): void
+    public function test_full_with_playoff_tournament_exports_game_history_instead_of_standings(): void
     {
         $tz = config('app.timezone');
         Carbon::setTestNow(Carbon::parse('2026-10-01 10:00:00', $tz));
@@ -415,7 +415,10 @@ class EventExportTodayCommandTest extends TestCase
                 'is_playoff' => true,
                 'standings' => [
                     'rows' => [
-                        ['position' => 1, 'team' => 'Playoff FC', 'played' => 2, 'points' => 6],
+                        [
+                            'team' => 'Playoff FC',
+                            'form' => 'Won 2-0 against RivalsLost 1-2 to Visitors',
+                        ],
                     ],
                 ],
             ]);
@@ -431,15 +434,18 @@ class EventExportTodayCommandTest extends TestCase
 
             $data = json_decode(file_get_contents($jsonPath), true);
             $this->assertTrue($data[0]['isPlayoff']);
-            $this->assertIsArray($data[0]['standings']);
-            $this->assertSame('Playoff FC', $data[0]['standings'][0]['team']);
-            $this->assertArrayNotHasKey('outcome', $data[0]['standings'][0]);
-            $this->assertArrayNotHasKey('remaining_games', $data[0]['standings'][0]);
+            $this->assertNull($data[0]['standings']);
+            $this->assertIsArray($data[0]['game_history']);
+            $this->assertSame('Playoff FC', $data[0]['game_history'][0]['team']);
+            $this->assertCount(2, $data[0]['game_history'][0]['games']);
+            $this->assertSame(3, $data[0]['game_history'][0]['goals_scored']);
+            $this->assertSame(2, $data[0]['game_history'][0]['goals_conceded']);
+            $this->assertNull($data[0]['events'][0]['standings'] ?? null);
 
             $txt = file_get_contents($txtPath);
             $this->assertStringContainsString('Playoff notice:', $txt);
-            $this->assertStringContainsString('"Europa Playoffs"', $txt);
-            $this->assertStringContainsString('"isPlayoff": true', $txt);
+            $this->assertStringContainsString('"game_history"', $txt);
+            $this->assertStringNotContainsString('"standings": [', $txt);
         } finally {
             Carbon::setTestNow();
             foreach ([$jsonPath, $txtPath] as $p) {

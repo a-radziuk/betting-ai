@@ -111,7 +111,7 @@ class EventExportCommandTest extends TestCase
         $this->assertSame(2.5, $row['odds']);
     }
 
-    public function test_playoff_tournament_includes_standings(): void
+    public function test_playoff_tournament_omits_standings(): void
     {
         $tournament = Tournament::query()->create([
             'name' => 'Champions League Playoffs',
@@ -151,13 +151,7 @@ class EventExportCommandTest extends TestCase
         $this->assertIsArray($decoded);
         $this->assertSame('Champions League Playoffs', $decoded['eventTournament']);
         $this->assertArrayHasKey('standings', $decoded);
-        $this->assertIsArray($decoded['standings']);
-        $this->assertCount(1, $decoded['standings']);
-        $this->assertSame('Alpha United', $decoded['standings'][0]['team']);
-        $this->assertArrayNotHasKey('outcome', $decoded['standings'][0]);
-        $this->assertArrayNotHasKey('outcome_positivity', $decoded['standings'][0]);
-        $this->assertArrayNotHasKey('remaining_games', $decoded['standings'][0]);
-        $this->assertArrayNotHasKey('potential_points', $decoded['standings'][0]);
+        $this->assertNull($decoded['standings']);
     }
 
     public function test_exports_grouped_standings_with_group_labels(): void

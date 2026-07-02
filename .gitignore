@@ -37,3 +37,4 @@ download_db.sh
 /storage/dumps
 /storage/exports/*
 /storage/dumps/*
+standings.json

@@ -130,6 +130,7 @@ final class EventOddsExportPayload
         $eventTournament = $event->tournament?->name;
 
         $tournament = $event->tournament;
+        $isPlayoff = (bool) ($tournament?->is_playoff ?? false);
         $promrel = $tournament?->standings_promrel ?? [];
 
         $payload = [
@@ -137,11 +138,9 @@ final class EventOddsExportPayload
             'eventName' => $eventName,
             'eventTournament' => $eventTournament,
             'eventDateTime' => $event->start_time?->toIso8601String(),
-            'standings' => self::prepareStandings(
-                $tournament?->standings,
-                $promrel,
-                (bool) ($tournament?->is_playoff ?? false),
-            ),
+            'standings' => $isPlayoff
+                ? null
+                : self::prepareStandings($tournament?->standings, $promrel, false),
             'odds' => array_values($rows),
         ];
 
