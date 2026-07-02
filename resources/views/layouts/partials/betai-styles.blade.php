@@ -130,6 +130,13 @@
         font-size: 0.9rem;
     }
 
+    .header-user {
+        color: var(--text);
+        font-size: 0.9rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
     .header-right {
         display: flex;
         align-items: center;

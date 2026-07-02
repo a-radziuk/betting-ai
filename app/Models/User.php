@@ -191,6 +191,16 @@ class User extends Authenticatable implements MustVerifyEmail
         });
     }
 
+    public function headerDisplayName(): string
+    {
+        $name = trim((string) ($this->name ?? ''));
+        if ($name !== '') {
+            return $name;
+        }
+
+        return (string) $this->email;
+    }
+
     /**
      * Public URL for profile avatar (uploaded path on public disk, or external URL from OAuth).
      */

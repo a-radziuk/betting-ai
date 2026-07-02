@@ -9,6 +9,7 @@
                 <a class="header-link" href="{{ route('faq') }}">{{ $faqPage->title }}</a>
             @endif
             @auth
+                <span class="header-user">{{ auth()->user()->headerDisplayName() }}</span>
                 @if (auth()->user()->canAccessAdmin())
                     <a class="header-link" href="{{ route(\App\Support\AdminNavigation::homeRouteName(auth()->user())) }}">{{ __('Admin') }}</a>
                 @endif
