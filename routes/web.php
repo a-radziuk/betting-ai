@@ -186,6 +186,7 @@ Route::get('/dashboard', function () {
         'bets' => $bets,
         'hasActiveSeeTips' => $hasActiveSeeTips,
         'seeTipsExpiresAt' => $user->see_tips_expires_at,
+        'seeTipsExpirationLabel' => $user->formattedSeeTipsExpiresAt(),
         'referralPromocode' => $referralPromocode,
         'referralShareLink' => $referralShareLink,
     ]);

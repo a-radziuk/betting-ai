@@ -130,10 +130,12 @@
                 <h3 class="text-sm font-semibold uppercase tracking-wider text-[#c7d7fa] m-0">{{ __('Subscription') }}</h3>
                 <p class="text-[#eaf0ff] text-sm mt-3 mb-0">
                     {{ __('You have an active tips subscription.') }}
-                    @if ($seeTipsExpiresAt)
-                        {{ __('Access until :date.', ['date' => $seeTipsExpiresAt->timezone(config('app.timezone'))->format('Y-m-d H:i')]) }}
-                    @endif
                 </p>
+                @if ($seeTipsExpirationLabel)
+                    <p class="text-[#9fb0d3] text-sm mt-2 mb-0">
+                        {{ __('Expires on :date', ['date' => $seeTipsExpirationLabel]) }}
+                    </p>
+                @endif
                 <p class="text-[#9fb0d3] text-sm mt-2 mb-0">
                     <a href="{{ route('subscribe') }}" class="text-[#5de2ff] hover:underline">{{ __('View plans') }}</a>
                 </p>

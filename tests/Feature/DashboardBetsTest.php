@@ -188,7 +188,8 @@ class DashboardBetsTest extends TestCase
             ->assertOk()
             ->assertSee('Subscription', false)
             ->assertSee('active tips subscription', false)
-            ->assertSee($expiresAt->timezone(config('app.timezone'))->format('Y-m-d H:i'), false);
+            ->assertSee('Expires on', false)
+            ->assertSee($expiresAt->timezone(config('app.timezone'))->translatedFormat('j M Y, H:i'), false);
     }
 
     public function test_dashboard_hides_subscription_when_tips_access_expired(): void

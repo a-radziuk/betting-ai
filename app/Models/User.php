@@ -127,6 +127,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasPrivelege(self::PRIVELEGE_SEE_TIPS);
     }
 
+    public function formattedSeeTipsExpiresAt(): ?string
+    {
+        if ($this->see_tips_expires_at === null) {
+            return null;
+        }
+
+        return $this->see_tips_expires_at
+            ->timezone(config('app.timezone'))
+            ->translatedFormat('j M Y, H:i');
+    }
+
     public function grantSeeTipsTrial(int $months = 1): void
     {
         $this->grantPrivelege(self::PRIVELEGE_SEE_TIPS);
