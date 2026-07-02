@@ -147,6 +147,33 @@ class AdminResolveEventTest extends TestCase
         $this->assertSame($event->tournament_id, $eventResult->tournament_id);
     }
 
+    public function test_superadmin_can_submit_optional_aet_and_penalty_scores(): void
+    {
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        $event = $this->createResolvableEvent(97106);
+        $this->seedHomeWinBet($event->id);
+
+        $this->actingAs($admin)
+            ->post(route('admin.resolve-event.store', $event), [
+                'score' => '1:1',
+                'score_aet' => '2:2',
+                'score_pen' => '4:3',
+            ])
+            ->assertRedirect(route('admin.resolve-event'))
+            ->assertSessionHas('status');
+
+        $event->refresh();
+        $this->assertSame('1:1', $event->score);
+        $this->assertSame('2:2', $event->score_aet);
+        $this->assertSame('4:3', $event->score_pen);
+
+        $eventResult = EventResult::query()->where('event_id', $event->id)->first();
+        $this->assertNotNull($eventResult);
+        $this->assertSame('1:1', $eventResult->results);
+        $this->assertSame('2:2', $eventResult->results_aet);
+        $this->assertSame('4:3', $eventResult->results_pen);
+    }
+
     public function test_invalid_score_format_returns_validation_error(): void
     {
         $admin = User::factory()->create(['is_superadmin' => true]);

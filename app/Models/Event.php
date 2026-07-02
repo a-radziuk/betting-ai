@@ -17,6 +17,8 @@ class Event extends Model
         'start_time',
         'status',
         'score',
+        'score_aet',
+        'score_pen',
         'additional_data',
         'comment',
     ];

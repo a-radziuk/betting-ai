@@ -129,7 +129,7 @@ final class PlayerResolvedBets
     {
         $event = $bet->event;
         $eventDate = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
-        $score = filled($event?->score) ? (string) $event->score : '—';
+        $score = EventScoreDisplay::forEvent($event);
 
         $row = [
             $eventDate,

@@ -174,6 +174,26 @@ class BetEventResultCommandTest extends TestCase
         $this->assertSame('1010.00', UserWallet::query()->where('user_id', $user->id)->value('balance'));
     }
 
+    public function test_stores_optional_aet_and_penalty_scores(): void
+    {
+        $this->seedMatchResultBet(88020, 'HOME', 2.0);
+
+        $exit = Artisan::call('bet:event:result', [
+            'event_id' => 88020,
+            'result' => '1:1',
+            'additional_data' => '{}',
+            '--score-aet' => '2:2',
+            '--score-pen' => '5:4',
+        ]);
+
+        $this->assertSame(0, $exit);
+
+        $event = Event::query()->find(88020);
+        $this->assertSame('1:1', $event->score);
+        $this->assertSame('2:2', $event->score_aet);
+        $this->assertSame('5:4', $event->score_pen);
+    }
+
     public function test_settles_loss_without_wallet_credit(): void
     {
         $user = $this->seedMatchResultBet(88002, 'HOME', 2.0);

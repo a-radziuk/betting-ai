@@ -11,6 +11,8 @@ class EventResult extends Model
         'home_team_id',
         'away_team_id',
         'results',
+        'results_aet',
+        'results_pen',
         'additional_data',
         'date',
         'tournament_id',

@@ -17,8 +17,13 @@ class EventResultService
      * @param  array<string, mixed>  $additionalData
      * @return array{ok: bool, message: string}
      */
-    public function applyEventResult(int|string $eventId, string $result, array $additionalData): array
-    {
+    public function applyEventResult(
+        int|string $eventId,
+        string $result,
+        array $additionalData,
+        ?string $scoreAet = null,
+        ?string $scorePen = null,
+    ): array {
         try {
             $fullTime = $this->parseScoreString($result);
         } catch (InvalidArgumentException $e) {
@@ -30,9 +35,11 @@ class EventResultService
             return ['ok' => false, 'message' => 'Event not found.'];
         }
 
-        return DB::transaction(function () use ($event, $eventId, $result, $additionalData, $fullTime): array {
+        return DB::transaction(function () use ($event, $eventId, $result, $additionalData, $fullTime, $scoreAet, $scorePen): array {
             Event::query()->whereKey($eventId)->update([
                 'score' => $result,
+                'score_aet' => $scoreAet,
+                'score_pen' => $scorePen,
                 'additional_data' => $additionalData,
                 'status' => Event::STATUS_PROCESSING,
             ]);
@@ -53,7 +60,7 @@ class EventResultService
                 'status' => Event::STATUS_FINISHED,
             ]);
 
-            $this->recordEventResult($event->fresh(), $result, $additionalData);
+            $this->recordEventResult($event->fresh(), $result, $additionalData, $scoreAet, $scorePen);
 
             return [
                 'ok' => true,
@@ -350,7 +357,7 @@ class EventResultService
     /**
      * @return array{home: int, away: int}
      */
-    private function parseScoreString(string $raw): array
+    public function parseScoreString(string $raw): array
     {
         $raw = trim($raw);
         if (! preg_match('/^(\d+)\s*[:-–]\s*(\d+)$/u', $raw, $m)) {
@@ -366,8 +373,13 @@ class EventResultService
     /**
      * @param  array<string, mixed>  $additionalData
      */
-    private function recordEventResult(Event $event, string $result, array $additionalData): void
-    {
+    private function recordEventResult(
+        Event $event,
+        string $result,
+        array $additionalData,
+        ?string $scoreAet = null,
+        ?string $scorePen = null,
+    ): void {
         if (EventResult::query()->where('event_id', $event->id)->exists()) {
             return;
         }
@@ -400,6 +412,8 @@ class EventResultService
                 ->update([
                     'event_id' => $event->id,
                     'results' => $result,
+                    'results_aet' => $scoreAet,
+                    'results_pen' => $scorePen,
                     'additional_data' => $additionalData !== [] ? $additionalData : null,
                 ]);
 
@@ -410,6 +424,8 @@ class EventResultService
             'home_team_id' => $event->home_team_id,
             'away_team_id' => $event->away_team_id,
             'results' => $result,
+            'results_aet' => $scoreAet,
+            'results_pen' => $scorePen,
             'additional_data' => $additionalData !== [] ? $additionalData : null,
             'date' => $date,
             'tournament_id' => $tournamentId,

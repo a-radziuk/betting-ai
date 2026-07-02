@@ -47,6 +47,33 @@
                 inputmode="numeric"
             >
             <p class="admin-page-meta">{{ __('Use home:away format, e.g. 2:3 or 2-3.') }}</p>
+
+            <label class="admin-upload-label" for="score_aet">{{ __('Extra-time score') }}</label>
+            <input
+                type="text"
+                id="score_aet"
+                name="score_aet"
+                class="admin-resolve-score-input"
+                value="{{ old('score_aet') }}"
+                placeholder="1:1"
+                autocomplete="off"
+                inputmode="numeric"
+            >
+            <p class="admin-page-meta">{{ __('Optional. Use home:away format.') }}</p>
+
+            <label class="admin-upload-label" for="score_pen">{{ __('Penalty shootout score') }}</label>
+            <input
+                type="text"
+                id="score_pen"
+                name="score_pen"
+                class="admin-resolve-score-input"
+                value="{{ old('score_pen') }}"
+                placeholder="4:3"
+                autocomplete="off"
+                inputmode="numeric"
+            >
+            <p class="admin-page-meta">{{ __('Optional. Use home:away format.') }}</p>
+
             <button type="submit" class="btn btn-primary admin-upload-submit">{{ __('Submit') }}</button>
         </form>
 

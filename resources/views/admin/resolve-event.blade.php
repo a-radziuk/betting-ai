@@ -43,7 +43,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $event->status }}</td>
-                                <td>{{ filled($event->score) ? $event->score : '—' }}</td>
+                                <td>{{ filled($event->score) ? \App\Support\EventScoreDisplay::forEvent($event) : '—' }}</td>
                                 <td class="admin-table-actions">
                                     <a
                                         href="{{ route('admin.resolve-event.show', $event) }}"

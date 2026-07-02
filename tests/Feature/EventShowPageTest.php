@@ -251,6 +251,21 @@ class EventShowPageTest extends TestCase
         $this->assertStringContainsString('event-tip-card--won', $html);
     }
 
+    public function test_finished_event_displays_aet_and_penalty_scores(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92055);
+        $event->update([
+            'status' => Event::STATUS_FINISHED,
+            'score' => '1:1',
+            'score_aet' => '2:2',
+            'score_pen' => '4:3',
+        ]);
+
+        $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Final score: 1:1 (aet. 2:2) (pen. 4:3)', false);
+    }
+
     public function test_finished_event_tip_cards_show_result_borders(): void
     {
         ['event' => $event, 'odd' => $odd] = $this->seedEventWithOdd(92054);

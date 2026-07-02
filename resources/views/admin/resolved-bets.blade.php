@@ -80,7 +80,7 @@
                                         —
                                     @endif
                                 </td>
-                                <td>{{ filled($event?->score) ? $event->score : '—' }}</td>
+                                <td>{{ \App\Support\EventScoreDisplay::forEvent($event) }}</td>
                                 <td class="admin-table-nowrap">
                                     @if ($event?->start_time)
                                         <time datetime="{{ $event->start_time->toIso8601String() }}">

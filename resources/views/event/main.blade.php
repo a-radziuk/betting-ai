@@ -9,7 +9,7 @@
             {{ __('Kickoff') }}: {{ $event->start_time?->format('Y-m-d H:i') }} |
             {{ __('Status') }}: {{ $event->statusLabel() }}
             @if ($event->status === \App\Models\Event::STATUS_FINISHED && filled($event->score))
-                | {{ __('Final score') }}: {{ $event->score }}
+                | {{ __('Final score') }}: {{ \App\Support\EventScoreDisplay::forEvent($event) }}
             @endif
         </p>
     </section>

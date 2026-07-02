@@ -56,14 +56,31 @@ class AdminResolveEventController extends Controller
                 'string',
                 'regex:/^\d+\s*[:-–]\s*\d+$/u',
             ],
+            'score_aet' => [
+                'nullable',
+                'string',
+                'regex:/^\d+\s*[:-–]\s*\d+$/u',
+            ],
+            'score_pen' => [
+                'nullable',
+                'string',
+                'regex:/^\d+\s*[:-–]\s*\d+$/u',
+            ],
         ], [
             'score.regex' => __('Invalid score format. Use e.g. 2:3 or 2-3.'),
+            'score_aet.regex' => __('Invalid extra-time score format. Use e.g. 2:3 or 2-3.'),
+            'score_pen.regex' => __('Invalid penalty score format. Use e.g. 4:3 or 4-3.'),
         ]);
+
+        $scoreAet = filled($validated['score_aet'] ?? null) ? trim($validated['score_aet']) : null;
+        $scorePen = filled($validated['score_pen'] ?? null) ? trim($validated['score_pen']) : null;
 
         $result = $eventResultService->applyEventResult(
             $event->id,
             trim($validated['score']),
-            []
+            [],
+            $scoreAet,
+            $scorePen,
         );
 
         if (! $result['ok']) {

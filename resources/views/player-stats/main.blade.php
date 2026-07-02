@@ -221,7 +221,7 @@
                                 ? $event->homeTeam->resolvedDisplayName() . ' — ' . $event->awayTeam->resolvedDisplayName()
                                 : '—';
                             $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
-                            $eventScore = filled($event?->score) ? $event->score : '—';
+                            $eventScore = \App\Support\EventScoreDisplay::forEvent($event);
 
                             $selection = $bet->odd?->selection?->displayName($event) ?? '—';
                             $market = $bet->odd?->selection?->market?->typeLabel();

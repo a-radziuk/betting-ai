@@ -37,7 +37,7 @@
                                     {{ $result->awayTeam?->resolvedDisplayName() ?? __('Team #:id', ['id' => $result->away_team_id]) }}
                                 </div>
                             </td>
-                            <td class="welcome-result-score-col welcome-odds">{{ $result->results }}</td>
+                            <td class="welcome-result-score-col welcome-odds">{{ \App\Support\EventScoreDisplay::forEventResult($result) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

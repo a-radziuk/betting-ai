@@ -76,7 +76,7 @@
                                                 </a>
                                                 @if ($bet->event->status !== \App\Models\Event::STATUS_SCHEDULED)
                                                     <div class="text-xs text-[#9fb0d3] mt-1 tabular-nums">
-                                                        {{ filled($bet->event->score) ? $bet->event->score : '—' }}
+                                                        {{ \App\Support\EventScoreDisplay::forEvent($bet->event) }}
                                                     </div>
                                                 @endif
                                                 <div class="text-xs text-[#9fb0d3] mt-1">
