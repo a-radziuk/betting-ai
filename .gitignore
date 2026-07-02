@@ -31,6 +31,7 @@ procure_tournament.sh
 predictions_upload.sh
 event_export_tomorrow_clipboard.sh
 update_metrics.sh
+push.sh
 download_db.sh
 /storage/exports
 /storage/dumps

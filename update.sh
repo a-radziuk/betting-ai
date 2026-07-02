@@ -13,7 +13,7 @@ echo "==> Pulling latest changes"
 git pull
 
 echo "==> Installing PHP dependencies"
-composer install
+composer install --no-interaction
 
 echo "==> Installing Node dependencies"
 npm install
