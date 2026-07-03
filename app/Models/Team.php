@@ -47,6 +47,30 @@ class Team extends Model
         return $this->resolvedDisplayName();
     }
 
+    public function hasFifaRanking(): bool
+    {
+        return $this->fifa_rank !== null || $this->fifa_points !== null;
+    }
+
+    public function fifaRankingDisplay(): ?string
+    {
+        if (! $this->hasFifaRanking()) {
+            return null;
+        }
+
+        $parts = [];
+
+        if ($this->fifa_rank !== null) {
+            $parts[] = __('FIFA rank :rank', ['rank' => $this->fifa_rank]);
+        }
+
+        if ($this->fifa_points !== null) {
+            $parts[] = __(':points pts', ['points' => number_format((float) $this->fifa_points, 2)]);
+        }
+
+        return implode(' · ', $parts);
+    }
+
     /**
      * @return BelongsTo<Tournament, $this>
      */

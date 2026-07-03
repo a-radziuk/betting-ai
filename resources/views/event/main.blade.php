@@ -12,6 +12,23 @@
                 | {{ __('Final score') }}: {{ \App\Support\EventScoreDisplay::forEvent($event) }}
             @endif
         </p>
+        @php
+            $homeFifa = $event->homeTeam?->fifaRankingDisplay();
+            $awayFifa = $event->awayTeam?->fifaRankingDisplay();
+        @endphp
+        @if ($homeFifa || $awayFifa)
+            <p class="meta event-fifa-rankings">
+                @if ($homeFifa)
+                    <span>{{ $event->homeTeam?->resolvedDisplayName() }}: {{ $homeFifa }}</span>
+                @endif
+                @if ($homeFifa && $awayFifa)
+                    <span aria-hidden="true"> | </span>
+                @endif
+                @if ($awayFifa)
+                    <span>{{ $event->awayTeam?->resolvedDisplayName() }}: {{ $awayFifa }}</span>
+                @endif
+            </p>
+        @endif
     </section>
 
     @include('partials.event-user-bets', [

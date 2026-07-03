@@ -605,4 +605,82 @@ class EventShowPageTest extends TestCase
 
         $this->assertStringNotContainsString('<article class="event-tip-card">', $html);
     }
+
+    public function test_event_page_shows_fifa_rankings_when_available(): void
+    {
+        $home = Team::query()->create([
+            'name' => 'Argentina',
+            'short_name' => 'ARG',
+            'league' => 'INT',
+            'country' => 'World',
+            'fifa_rank' => 1,
+            'fifa_points' => 1889.06,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'France',
+            'short_name' => 'FRA',
+            'league' => 'INT',
+            'country' => 'World',
+            'fifa_rank' => 2,
+            'fifa_points' => 1887.11,
+        ]);
+
+        $event = Event::query()->create([
+            'id' => 92060,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('event-fifa-rankings', false)
+            ->assertSee('Argentina: FIFA rank 1 · 1,889.06 pts', false)
+            ->assertSee('France: FIFA rank 2 · 1,887.11 pts', false);
+    }
+
+    public function test_event_page_hides_fifa_rankings_when_unavailable(): void
+    {
+        ['event' => $event] = $this->seedEventWithOdd(92061);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('event-fifa-rankings', $html);
+        $this->assertStringNotContainsString('FIFA rank', $html);
+    }
+
+    public function test_event_page_shows_partial_fifa_ranking_when_only_rank_available(): void
+    {
+        $home = Team::query()->create([
+            'name' => 'Brazil',
+            'short_name' => 'BRA',
+            'league' => 'INT',
+            'country' => 'World',
+            'fifa_rank' => 5,
+        ]);
+        $away = Team::query()->create([
+            'name' => 'Spain',
+            'short_name' => 'ESP',
+            'league' => 'INT',
+            'country' => 'World',
+        ]);
+
+        $event = Event::query()->create([
+            'id' => 92062,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $html = $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Brazil: FIFA rank 5', false)
+            ->getContent();
+
+        $this->assertStringNotContainsString('Spain: FIFA rank', $html);
+    }
 }
