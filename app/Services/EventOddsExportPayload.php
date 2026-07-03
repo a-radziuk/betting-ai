@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Event;
 use App\Models\Market;
 use App\Models\Team;
+use App\Support\PlayoffGameHistoryExport;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -115,6 +116,7 @@ final class EventOddsExportPayload
      *     eventTournament: string|null,
      *     eventDateTime: string|null,
      *     standings: array<string, mixed>|null,
+     *     game_history: array<string, mixed>|null,
      *     homeTeam?: array{fifa_rank: int, fifa_points: float},
      *     awayTeam?: array{fifa_rank: int, fifa_points: float},
      *     odds: list<array<string, mixed>>
@@ -141,6 +143,9 @@ final class EventOddsExportPayload
             'standings' => $isPlayoff
                 ? null
                 : self::prepareStandings($tournament?->standings, $promrel, false),
+            'game_history' => $isPlayoff
+                ? PlayoffGameHistoryExport::fromStandings($tournament?->standings)
+                : null,
             'odds' => array_values($rows),
         ];
 

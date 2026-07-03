@@ -94,6 +94,7 @@ class EventExportCommandTest extends TestCase
 
         $this->assertArrayHasKey('standings', $decoded);
         $this->assertIsArray($decoded['standings']);
+        $this->assertNull($decoded['game_history']);
         $this->assertTrue(array_is_list($decoded['standings']));
         $this->assertCount(1, $decoded['standings']);
         $this->assertSame(1, $decoded['standings'][0]['position']);
@@ -111,14 +112,20 @@ class EventExportCommandTest extends TestCase
         $this->assertSame(2.5, $row['odds']);
     }
 
-    public function test_playoff_tournament_omits_standings(): void
+    public function test_playoff_tournament_exports_game_history_instead_of_standings(): void
     {
         $tournament = Tournament::query()->create([
             'name' => 'Champions League Playoffs',
             'is_playoff' => true,
             'standings' => [
                 'rows' => [
-                    ['position' => 1, 'team' => 'Alpha United', 'played' => 3, 'points' => 9],
+                    [
+                        'position' => 1,
+                        'team' => 'Alpha United',
+                        'played' => 3,
+                        'points' => 9,
+                        'form' => 'Won 2-0 against RivalsLost 1-2 to Visitors',
+                    ],
                 ],
             ],
         ]);
@@ -152,6 +159,11 @@ class EventExportCommandTest extends TestCase
         $this->assertSame('Champions League Playoffs', $decoded['eventTournament']);
         $this->assertArrayHasKey('standings', $decoded);
         $this->assertNull($decoded['standings']);
+        $this->assertIsArray($decoded['game_history']);
+        $this->assertSame('Alpha United', $decoded['game_history'][0]['team']);
+        $this->assertCount(2, $decoded['game_history'][0]['games']);
+        $this->assertSame(3, $decoded['game_history'][0]['goals_scored']);
+        $this->assertSame(2, $decoded['game_history'][0]['goals_conceded']);
     }
 
     public function test_exports_grouped_standings_with_group_labels(): void

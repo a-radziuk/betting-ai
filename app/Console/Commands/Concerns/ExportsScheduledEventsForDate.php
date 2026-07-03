@@ -76,6 +76,7 @@ trait ExportsScheduledEventsForDate
 
         $payloads = [];
         $playoffTournamentNames = [];
+        $hasRegularTournaments = false;
 
         foreach ($sortedGroups as $rawTournamentKey => $eventGroup) {
             $tournamentId = null;
@@ -93,6 +94,8 @@ trait ExportsScheduledEventsForDate
 
             if ($isPlayoff) {
                 $playoffTournamentNames[] = $tournamentName;
+            } else {
+                $hasRegularTournaments = true;
             }
 
             $eventPayloads = [];
@@ -157,7 +160,12 @@ trait ExportsScheduledEventsForDate
 
         if ($this->option('full')) {
             $txtPath = storage_path('app/'.$date.'.txt');
-            $instruction = $this->fullExportInstructionTextDaily($eventCount, $dayWord, $playoffTournamentNames);
+            $instruction = $this->fullExportInstructionTextDaily(
+                $eventCount,
+                $dayWord,
+                $playoffTournamentNames,
+                $hasRegularTournaments,
+            );
             $txtBody = $json."\n\n".$instruction;
             if (file_put_contents($txtPath, $txtBody) === false) {
                 $this->components->error('Could not write to '.$txtPath);
@@ -193,10 +201,21 @@ trait ExportsScheduledEventsForDate
     /**
      * @param  list<string>  $playoffTournamentNames
      */
-    private function fullExportInstructionTextDaily(int $numberOfEvents, string $dayWord, array $playoffTournamentNames = []): string
-    {
+    private function fullExportInstructionTextDaily(
+        int $numberOfEvents,
+        string $dayWord,
+        array $playoffTournamentNames = [],
+        bool $hasRegularTournaments = true,
+    ): string {
+        $hasPlayoffTournaments = $playoffTournamentNames !== [];
+
         if ($this->option('no-odds')) {
-            return $this->fullExportInstructionTextDailyWithoutOdds($numberOfEvents, $dayWord, $playoffTournamentNames);
+            return $this->fullExportInstructionTextDailyWithoutOdds(
+                $numberOfEvents,
+                $dayWord,
+                $playoffTournamentNames,
+                $hasRegularTournaments,
+            );
         }
 
         $type = 'DAILY';
@@ -219,12 +238,12 @@ The stake must be 10
 The most realistic bet exactly between these odds
 The stake must be 50
 
-{$this->fifaRankingsInstructionParagraph()}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}If the event JSON includes a "standings" array, you must use it before choosing a bet. Each row describes one club in the competition table: league position, team name, matches played and results (won/drawn/lost), goals for and against, goal difference, total points, a textual "outcome" describing what that position currently means (e.g. title race, European qualification, mid-table, relegation), an "outcome_positivity" score reflecting how desirable or urgent that situation is (higher for title or European chase, lower or negative for relegation danger), plus "remaining_games" and "potential_points" showing how much can still change in the table.
-Match each side in the fixture (from event name and context) to its standings row. Infer motivation and likely approach: teams fighting for the title or a European spot often press for wins; those in a relegation battle may be desperate or tight; clubs with little left to play for may rotate, conserve energy, or lack intensity; late-season gaps between points and potential_points reveal whether a result is must-win, enough for a draw, or largely irrelevant.
-Weave this motivation analysis into your probability estimates and into the explanation when standings are present. If "standings" is missing or empty, state that limitation briefly and rely on odds and match context only.
-Give me those bets as JSON in the following format:
+{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
 {
     odd_id: // id from the JSON
+    odd_value: // value of the odd
+    market: // name of the market
+    selection: // name of the selection
     stake: // percent from 1000
     description: // explain why you want to bet
     type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET, GPT_MANUAL_{$type}_2x1
@@ -236,24 +255,75 @@ TXT;
     /**
      * @param  list<string>  $playoffTournamentNames
      */
-    private function fullExportInstructionTextDailyWithoutOdds(int $numberOfEvents, string $dayWord, array $playoffTournamentNames = []): string
-    {
+    private function fullExportInstructionTextDailyWithoutOdds(
+        int $numberOfEvents,
+        string $dayWord,
+        array $playoffTournamentNames = [],
+        bool $hasRegularTournaments = true,
+    ): string {
+        $hasPlayoffTournaments = $playoffTournamentNames !== [];
         $gamesLabel = $numberOfEvents === 1 ? 'game' : 'games';
 
         return <<<TXT
 Above are {$numberOfEvents} {$gamesLabel} happening {$dayWord} (fixture list and tournament context only — no betting odds are included).
 
-{$this->fifaRankingsInstructionParagraph()}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}For each game, state the most likely outcome (home win, draw, or away win), how many goals will be scored approximately based primarily on the tournament standings. Analyse the standings thoroughly: match each club in the fixture to its table row and infer motivation (title race, European qualification, relegation fight, mid-table comfort, dead rubbers, etc.) using position, points, goal difference, remaining games, potential points, and the outcome / outcome_positivity fields where present.
-When analysing motivation of each team, also consider other teams who have plus-minus the same amount of points and a similar outcome based on their position in the table. . If there is some other game or games provided in the list of events that can influence this game in any way, please mention them in the description and in the "influenced_by" field
-Explain your reasoning per fixture in terms of what each team is playing for and how that shapes the probable result. If standings are missing or empty for a competition, say so briefly and use only the fixture names and any other context in the JSON.
-
-Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
+{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithoutOdds($hasRegularTournaments, $hasPlayoffTournaments)}Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
 TXT;
     }
 
-    private function fifaRankingsInstructionParagraph(): string
+    private function fifaRankingsInstructionParagraph(bool $hasRegularTournaments, bool $hasPlayoffTournaments): string
     {
-        return 'If an event object includes "homeTeam" and/or "awayTeam" with "fifa_rank" and "fifa_points", those fields contain the official FIFA men\'s world ranking position and points for that national team. Use them as a signal of relative team strength when analysing fixtures, alongside standings and odds where present.';
+        $contextParts = [];
+        if ($hasRegularTournaments) {
+            $contextParts[] = 'standings';
+        }
+        if ($hasPlayoffTournaments) {
+            $contextParts[] = 'game_history';
+        }
+
+        $contextLabel = $contextParts === []
+            ? 'match context'
+            : implode(' and ', $contextParts);
+
+        return 'If an event object includes "homeTeam" and/or "awayTeam" with "fifa_rank" and "fifa_points", those fields contain the official FIFA men\'s world ranking position and points for that national team. Use them as a signal of relative team strength when analysing fixtures, alongside '.$contextLabel.' and odds where present.';
+    }
+
+    private function contextAnalysisInstructionParagraphWithOdds(bool $hasRegularTournaments, bool $hasPlayoffTournaments): string
+    {
+        $parts = [];
+
+        if ($hasRegularTournaments) {
+            $parts[] = 'If a tournament group includes a "standings" array, you must use it before choosing a bet for fixtures in that group. Each row describes one club in the competition table: league position, team name, matches played and results (won/drawn/lost), goals for and against, goal difference, total points, a textual "outcome" describing what that position currently means (e.g. title race, European qualification, mid-table, relegation), an "outcome_positivity" score reflecting how desirable or urgent that situation is (higher for title or European chase, lower or negative for relegation danger), plus "remaining_games" and "potential_points" showing how much can still change in the table. Match each side in the fixture (from event name and context) to its standings row. Infer motivation and likely approach: teams fighting for the title or a European spot often press for wins; those in a relegation battle may be desperate or tight; clubs with little left to play for may rotate, conserve energy, or lack intensity; late-season gaps between points and potential_points reveal whether a result is must-win, enough for a draw, or largely irrelevant. Weave this motivation analysis into your probability estimates and into the explanation when standings are present. If "standings" is missing or empty for a non-playoff competition, state that limitation briefly and rely on odds and match context only.';
+        }
+
+        if ($hasPlayoffTournaments) {
+            $parts[] = 'For tournament groups with "isPlayoff": true, use the "game_history" array instead of standings. Each entry is one team with a list of recent games. Every game has result (win, loss, or draw), summary (readable text such as "Won 2-0 against Rivals"), score, opponent, goals_scored, and goals_conceded for that match. Each team entry also includes aggregate goals_scored and goals_conceded across those recent games. Match each side in the fixture to its team entry and use recent form, scoring rate, and defensive record from game_history when estimating probabilities and writing your explanation. If game_history is missing or empty for a playoff competition, state that limitation briefly and rely on odds and match context only.';
+        }
+
+        if ($parts === []) {
+            return '';
+        }
+
+        return implode("\n", $parts)."\n";
+    }
+
+    private function contextAnalysisInstructionParagraphWithoutOdds(bool $hasRegularTournaments, bool $hasPlayoffTournaments): string
+    {
+        $parts = [];
+
+        if ($hasRegularTournaments) {
+            $parts[] = 'For each non-playoff game, state the most likely outcome (home win, draw, or away win) and approximate goals scored based primarily on the tournament standings. Analyse the standings thoroughly: match each club in the fixture to its table row and infer motivation (title race, European qualification, relegation fight, mid-table comfort, dead rubbers, etc.) using position, points, goal difference, remaining games, potential points, and the outcome / outcome_positivity fields where present. When analysing motivation of each team, also consider other teams who have plus-minus the same amount of points and a similar outcome based on their position in the table. If there is some other game or games provided in the list of events that can influence this game in any way, please mention them in the description and in the "influenced_by" field. Explain your reasoning per fixture in terms of what each team is playing for and how that shapes the probable result. If standings are missing or empty for a non-playoff competition, say so briefly and use only the fixture names and any other context in the JSON.';
+        }
+
+        if ($hasPlayoffTournaments) {
+            $parts[] = 'For each playoff game (tournament groups with "isPlayoff": true), state the most likely outcome and approximate goals using the "game_history" array instead of standings. Match each club to its team entry and analyse recent games: result, summary, score, opponent, per-game goals_scored and goals_conceded, plus the team totals goals_scored and goals_conceded. Use that recent form to judge attacking and defensive strength. If game_history is missing or empty for a playoff competition, say so briefly and use only the fixture names and any other context in the JSON.';
+        }
+
+        if ($parts === []) {
+            return '';
+        }
+
+        return implode("\n", $parts)."\n";
     }
 
     /**
@@ -275,6 +345,6 @@ TXT;
             $playoffTournamentNames
         ));
 
-        return 'Playoff notice: The following tournament(s) are playoff rounds: '.$list.'. Tournament groups with "isPlayoff": true include "game_history" instead of standings. Use each team\'s recent games plus goals_scored and goals_conceded totals from that history when analysing fixtures.'."\n\n";
+        return 'Playoff notice: The following tournament(s) are playoff rounds: '.$list.'. Tournament groups with "isPlayoff": true include "game_history" instead of standings.'."\n\n";
     }
 }

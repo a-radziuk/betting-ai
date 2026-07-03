@@ -326,6 +326,8 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertStringContainsString('odd_id: // id from the JSON', $txt);
             $this->assertStringContainsString('stake: // percent from 1000', $txt);
             $this->assertStringContainsString('description: // explain why you want to bet', $txt);
+            $this->assertStringContainsString('"standings" array', $txt);
+            $this->assertStringNotContainsString('"game_history" array', $txt);
         } finally {
             Carbon::setTestNow();
             foreach ([$jsonPath, $txtPath] as $p) {
@@ -360,6 +362,7 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertStringContainsString('fifa_rank', $txt);
             $this->assertStringContainsString('fifa_points', $txt);
             $this->assertStringContainsString('Analyse the standings thoroughly', $txt);
+            $this->assertStringNotContainsString('"game_history" array', $txt);
             $this->assertStringContainsString('motivation', $txt);
             $this->assertStringNotContainsString('1/ the safest bet', $txt);
             $this->assertStringNotContainsString('odd_id: // id from the JSON', $txt);
@@ -445,7 +448,9 @@ class EventExportTodayCommandTest extends TestCase
             $txt = file_get_contents($txtPath);
             $this->assertStringContainsString('Playoff notice:', $txt);
             $this->assertStringContainsString('"game_history"', $txt);
+            $this->assertStringContainsString('"game_history" array', $txt);
             $this->assertStringNotContainsString('"standings": [', $txt);
+            $this->assertStringNotContainsString('"standings" array', $txt);
         } finally {
             Carbon::setTestNow();
             foreach ([$jsonPath, $txtPath] as $p) {
@@ -469,7 +474,8 @@ class EventExportTodayCommandTest extends TestCase
 
             $txt = file_get_contents($txtPath);
             $this->assertStringContainsString('Above are 0 games happening today', $txt);
-            $this->assertStringContainsString('most likely outcome', $txt);
+            $this->assertStringNotContainsString('Analyse the standings thoroughly', $txt);
+            $this->assertStringNotContainsString('"game_history" array', $txt);
             $this->assertStringNotContainsString('1/ the safest bet', $txt);
         } finally {
             Carbon::setTestNow();
