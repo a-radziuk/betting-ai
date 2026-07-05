@@ -30,6 +30,7 @@ Thumbs.db
 procure_tournament.sh
 predictions_upload.sh
 event_export_tomorrow_clipboard.sh
+event_export_today_clipboard.sh
 update_metrics.sh
 push.sh
 download_db.sh
