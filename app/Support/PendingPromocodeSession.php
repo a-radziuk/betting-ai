@@ -37,6 +37,11 @@ final class PendingPromocodeSession
             return null;
         }
 
+        $user = auth()->user();
+        if ($user !== null && $promocode->hasBeenUsedByUser($user)) {
+            return null;
+        }
+
         return $promocode;
     }
 

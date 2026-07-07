@@ -12,7 +12,7 @@ final class PromocodeGenerator
         return (string) config('promocodes.prefix', 'PROMO-');
     }
 
-    public static function generateUnique(int $days, ?string $prefix = null): Promocode
+    public static function generateUnique(int $days, ?string $prefix = null, bool $isMultiple = false): Promocode
     {
         $prefix ??= self::prefix();
 
@@ -23,6 +23,12 @@ final class PromocodeGenerator
         return Promocode::query()->create([
             'code' => $code,
             'days' => $days,
+            'is_multiple' => $isMultiple,
         ]);
+    }
+
+    public static function generateUniqueMulti(int $days, ?string $prefix = null): Promocode
+    {
+        return self::generateUnique($days, $prefix, true);
     }
 }

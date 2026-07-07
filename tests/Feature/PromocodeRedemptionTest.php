@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Promocode;
+use App\Models\PromocodeRedemption;
 use App\Models\User;
 use App\Support\PendingPromocodeSession;
 use App\Support\PromocodeGenerator;
@@ -295,5 +296,90 @@ class PromocodeRedemptionTest extends TestCase
             ->assertSee('name="code"', false)
             ->assertSee(route('subscribe.promocode'), false)
             ->assertSee(__('Apply promocode'), false);
+    }
+
+    public function test_multiple_users_can_redeem_same_multi_use_promocode(): void
+    {
+        Carbon::setTestNow('2026-07-07 12:00:00');
+
+        $promocode = PromocodeGenerator::generateUniqueMulti(3);
+        $firstUser = User::factory()->create();
+        $secondUser = User::factory()->create();
+
+        $this->actingAs($firstUser)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $promocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($secondUser)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $promocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasNoErrors();
+
+        $promocode->refresh();
+
+        $this->assertNull($promocode->used_at);
+        $this->assertNull($promocode->used_by_user_id);
+        $this->assertSame(2, PromocodeRedemption::query()->where('promocode_id', $promocode->id)->count());
+        $this->assertTrue($firstUser->fresh()->hasActiveSeeTipsAccess());
+        $this->assertTrue($secondUser->fresh()->hasActiveSeeTipsAccess());
+
+        Carbon::setTestNow();
+    }
+
+    public function test_user_cannot_redeem_same_multi_use_promocode_twice(): void
+    {
+        $promocode = PromocodeGenerator::generateUniqueMulti(2);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $promocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($user)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $promocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasErrors('code');
+
+        $this->assertSame(1, PromocodeRedemption::query()->where('promocode_id', $promocode->id)->count());
+    }
+
+    public function test_user_cannot_redeem_a_second_promocode_after_multi_use_redemption(): void
+    {
+        $firstPromocode = PromocodeGenerator::generateUniqueMulti(2);
+        $secondPromocode = PromocodeGenerator::generateUniqueMulti(3);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $firstPromocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($user)
+            ->from(route('subscribe'))
+            ->post(route('subscribe.promocode'), [
+                'code' => $secondPromocode->code,
+            ])
+            ->assertRedirect(route('subscribe'))
+            ->assertSessionHasErrors('code');
+
+        $this->assertSame(1, PromocodeRedemption::query()->where('used_by_user_id', $user->id)->count());
+        $this->assertSame(0, PromocodeRedemption::query()->where('promocode_id', $secondPromocode->id)->count());
     }
 }

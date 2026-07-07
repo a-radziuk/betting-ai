@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Promocode;
+use App\Models\PromocodeRedemption;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -36,7 +37,13 @@ class PromocodeRedemptionService
                 ]);
             }
 
-            if ($promocode->isUsed()) {
+            if ($promocode->isMultiple()) {
+                if ($promocode->redemptions()->where('used_by_user_id', $user->id)->exists()) {
+                    throw ValidationException::withMessages([
+                        'code' => __('You have already used this promocode.'),
+                    ]);
+                }
+            } elseif ($promocode->isUsed()) {
                 throw ValidationException::withMessages([
                     'code' => __('This promocode has already been used.'),
                 ]);
@@ -46,7 +53,7 @@ class PromocodeRedemptionService
 
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
 
-            if (Promocode::query()->where('used_by_user_id', $lockedUser->id)->exists()) {
+            if ($this->userHasRedeemedAnyPromocode($lockedUser)) {
                 throw ValidationException::withMessages([
                     'code' => __('You have already applied a promocode to your account.'),
                 ]);
@@ -54,10 +61,18 @@ class PromocodeRedemptionService
 
             $lockedUser->extendSeeTipsAccessForDays($promocode->days);
 
-            $promocode->update([
-                'used_at' => now(),
-                'used_by_user_id' => $lockedUser->id,
-            ]);
+            if ($promocode->isMultiple()) {
+                PromocodeRedemption::query()->create([
+                    'promocode_id' => $promocode->id,
+                    'used_by_user_id' => $lockedUser->id,
+                    'used_at' => now(),
+                ]);
+            } else {
+                $promocode->update([
+                    'used_at' => now(),
+                    'used_by_user_id' => $lockedUser->id,
+                ]);
+            }
 
             if ($promocode->owner_user_id !== null) {
                 $referrer = User::query()
@@ -81,5 +96,16 @@ class PromocodeRedemptionService
                 ?->timezone(config('app.timezone'))
                 ->format('Y-m-d H:i'),
         ]);
+    }
+
+    private function userHasRedeemedAnyPromocode(User $user): bool
+    {
+        if (Promocode::query()->where('used_by_user_id', $user->id)->exists()) {
+            return true;
+        }
+
+        return PromocodeRedemption::query()
+            ->where('used_by_user_id', $user->id)
+            ->exists();
     }
 }

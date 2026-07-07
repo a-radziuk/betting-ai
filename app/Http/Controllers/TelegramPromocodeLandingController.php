@@ -28,6 +28,14 @@ class TelegramPromocodeLandingController extends Controller
 
         $user = auth()->user();
 
+        if ($user !== null && $record->hasBeenUsedByUser($user)) {
+            return redirect()
+                ->route('dashboard')
+                ->withErrors([
+                    'code' => __('You have already used this promocode.'),
+                ]);
+        }
+
         if ($user !== null) {
             try {
                 $promocodeRedemptionService->redeem($user, $record->code);
