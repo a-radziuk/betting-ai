@@ -34,6 +34,7 @@ event_export_today_clipboard.sh
 update_metrics.sh
 push.sh
 download_db.sh
+art.sh
 /storage/exports
 /storage/dumps
 /storage/exports/*
