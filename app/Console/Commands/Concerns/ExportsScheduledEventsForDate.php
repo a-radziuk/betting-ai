@@ -238,7 +238,7 @@ The stake must be 10
 The most realistic bet exactly between these odds
 The stake must be 50
 
-{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
+{$this->handicapInstructionParagraph()}{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
 {
     odd_id: // id from the JSON
     odd_value: // value of the odd
@@ -268,6 +268,14 @@ TXT;
 Above are {$numberOfEvents} {$gamesLabel} happening {$dayWord} (fixture list and tournament context only — no betting odds are included).
 
 {$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithoutOdds($hasRegularTournaments, $hasPlayoffTournaments)}Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
+TXT;
+    }
+
+    private function handicapInstructionParagraph(): string
+    {
+        return <<<'TXT'
+Handicap note: Handicap markets in this export use European-style settlement. The handicap is applied to the full-time score and every selection wins or loses — there is no push and the stake is never returned on a draw after the handicap is applied. Example: for Handicap Home +1, if the home team loses 0-1 (a one-goal defeat), the adjusted score is 1-1. That is a draw on the handicap line, but under European rules the bet still loses; the stake is not returned. Compare this to Asian handicap, where that result would often void the bet — here it does not.
+
 TXT;
     }
 

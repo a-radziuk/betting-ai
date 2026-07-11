@@ -155,6 +155,7 @@ class EventExportTomorrowCommandTest extends TestCase
             $txt = file_get_contents($txtPath);
             $this->assertStringStartsWith($json, $txt);
             $this->assertStringContainsString('Above is the odds for 1 games that are happening tomorrow.', $txt);
+            $this->assertStringContainsString('Handicap note:', $txt);
         } finally {
             Carbon::setTestNow();
             foreach ([$jsonPath, $txtPath] as $p) {

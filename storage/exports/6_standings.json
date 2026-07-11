@@ -17,7 +17,7 @@
                         "goals_against": 0,
                         "goal_difference": 6,
                         "points": 9,
-                        "form": "Won 2-0 against South AfricaWon 1-0 against South KoreaWon 3-0 against CzechiaWon 2-0 against Ecuador",
+                        "form": "Won 2-0 against South AfricaWon 1-0 against South KoreaWon 3-0 against CzechiaWon 2-0 against EcuadorLost 2-3 to England",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -90,7 +90,7 @@
                         "goals_against": 3,
                         "goal_difference": 4,
                         "points": 7,
-                        "form": "Drew 1-1 with QatarWon 4-1 against Bosnia and HerzegovinaWon 2-1 against CanadaWon 2-0 against Algeria",
+                        "form": "Drew 1-1 with QatarWon 4-1 against Bosnia and HerzegovinaWon 2-1 against CanadaWon 2-0 against AlgeriaDrew 0-0 with Colombia",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -163,7 +163,7 @@
                         "goals_against": 1,
                         "goal_difference": 6,
                         "points": 7,
-                        "form": "Drew 1-1 with MoroccoWon 3-0 against HaitiWon 3-0 against ScotlandWon 2-1 against Japan",
+                        "form": "Drew 1-1 with MoroccoWon 3-0 against HaitiWon 3-0 against ScotlandWon 2-1 against JapanLost 1-2 to Norway",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -180,7 +180,7 @@
                         "goals_against": 3,
                         "goal_difference": 3,
                         "points": 7,
-                        "form": "Drew 1-1 with BrazilWon 1-0 against ScotlandWon 4-2 against HaitiDrew 1-1 with NetherlandsWon 3-0 against Canada",
+                        "form": "Won 1-0 against ScotlandWon 4-2 against HaitiDrew 1-1 with NetherlandsWon 3-0 against CanadaLost 0-2 to France",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -236,7 +236,7 @@
                         "goals_against": 4,
                         "goal_difference": 4,
                         "points": 6,
-                        "form": "Won 4-1 against ParaguayWon 2-0 against AustraliaLost 2-3 to TurkeyWon 2-0 against Bosnia and Herzegovina",
+                        "form": "Won 4-1 against ParaguayWon 2-0 against AustraliaLost 2-3 to TurkeyWon 2-0 against Bosnia and HerzegovinaLost 1-4 to Belgium",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -455,7 +455,7 @@
                         "goals_against": 2,
                         "goal_difference": 4,
                         "points": 5,
-                        "form": "Drew 1-1 with EgyptDrew 0-0 with IranWon 5-1 against New ZealandWon 3-2 against Senegal",
+                        "form": "Drew 0-0 with IranWon 5-1 against New ZealandWon 3-2 against SenegalWon 4-1 against USALost 1-2 to Spain",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -472,7 +472,7 @@
                         "goals_against": 3,
                         "goal_difference": 2,
                         "points": 5,
-                        "form": "Drew 1-1 with BelgiumWon 3-1 against New ZealandDrew 1-1 with IranDrew 1-1 with Australia",
+                        "form": "Drew 1-1 with BelgiumWon 3-1 against New ZealandDrew 1-1 with IranDrew 1-1 with AustraliaLost 2-3 to Argentina",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -528,7 +528,7 @@
                         "goals_against": 0,
                         "goal_difference": 5,
                         "points": 7,
-                        "form": "Drew 0-0 with Cape VerdeWon 4-0 against Saudi ArabiaWon 1-0 against UruguayWon 3-0 against Austria",
+                        "form": "Won 4-0 against Saudi ArabiaWon 1-0 against UruguayWon 3-0 against AustriaWon 1-0 against PortugalWon 2-1 against Belgium",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -601,7 +601,7 @@
                         "goals_against": 2,
                         "goal_difference": 8,
                         "points": 9,
-                        "form": "Won 3-1 against SenegalWon 3-0 against IraqWon 4-1 against NorwayWon 3-0 against SwedenWon 1-0 against Paraguay",
+                        "form": "Won 3-0 against IraqWon 4-1 against NorwayWon 3-0 against SwedenWon 1-0 against ParaguayWon 2-0 against Morocco",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -618,7 +618,7 @@
                         "goals_against": 7,
                         "goal_difference": 1,
                         "points": 6,
-                        "form": "Won 4-1 against IraqWon 3-2 against SenegalLost 1-4 to FranceWon 2-1 against Côte d’Ivoire",
+                        "form": "Won 4-1 against IraqWon 3-2 against SenegalLost 1-4 to FranceWon 2-1 against Côte d’IvoireWon 2-1 against Brazil",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -674,7 +674,7 @@
                         "goals_against": 1,
                         "goal_difference": 7,
                         "points": 9,
-                        "form": "Won 3-0 against AlgeriaWon 2-0 against AustriaWon 3-1 against JordanWon 3-2 against Cape Verde",
+                        "form": "Won 3-0 against AlgeriaWon 2-0 against AustriaWon 3-1 against JordanWon 3-2 against Cape VerdeWon 3-2 against Egypt",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -747,7 +747,7 @@
                         "goals_against": 1,
                         "goal_difference": 3,
                         "points": 7,
-                        "form": "Won 3-1 against UzbekistanWon 1-0 against DR CongoDrew 0-0 with PortugalWon 1-0 against Ghana",
+                        "form": "Won 3-1 against UzbekistanWon 1-0 against DR CongoDrew 0-0 with PortugalWon 1-0 against GhanaDrew 0-0 with Switzerland",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -764,7 +764,7 @@
                         "goals_against": 1,
                         "goal_difference": 5,
                         "points": 5,
-                        "form": "Drew 1-1 with DR CongoWon 5-0 against UzbekistanDrew 0-0 with ColombiaWon 2-1 against Croatia",
+                        "form": "Drew 1-1 with DR CongoWon 5-0 against UzbekistanDrew 0-0 with ColombiaWon 2-1 against CroatiaLost 0-1 to Spain",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -820,7 +820,7 @@
                         "goals_against": 2,
                         "goal_difference": 4,
                         "points": 7,
-                        "form": "Won 4-2 against CroatiaDrew 0-0 with GhanaWon 2-0 against PanamaWon 2-1 against DR Congo",
+                        "form": "Won 4-2 against CroatiaDrew 0-0 with GhanaWon 2-0 against PanamaWon 2-1 against DR CongoWon 3-2 against Mexico",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -900,5 +900,5 @@
             "positivity": 5
         }
     },
-    "standings_updated_at": "2026-07-05T14:58:32+00:00"
+    "standings_updated_at": "2026-07-11T11:45:14+00:00"
 }

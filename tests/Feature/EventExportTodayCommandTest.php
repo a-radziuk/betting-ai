@@ -321,6 +321,11 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertStringStartsWith($json, $txt);
             $this->assertStringContainsString('Above is the odds for 1 games that are happening today.', $txt);
             $this->assertStringContainsString('1/ the safest bet', $txt);
+            $this->assertStringContainsString('Handicap note:', $txt);
+            $this->assertStringContainsString('European-style settlement', $txt);
+            $this->assertStringContainsString('Handicap Home +1', $txt);
+            $this->assertStringContainsString('loses 0-1', $txt);
+            $this->assertStringContainsString('stake is never returned', $txt);
             $this->assertStringContainsString('fifa_rank', $txt);
             $this->assertStringContainsString('fifa_points', $txt);
             $this->assertStringContainsString('odd_id: // id from the JSON', $txt);
@@ -365,6 +370,7 @@ class EventExportTodayCommandTest extends TestCase
             $this->assertStringNotContainsString('"game_history" array', $txt);
             $this->assertStringContainsString('motivation', $txt);
             $this->assertStringNotContainsString('1/ the safest bet', $txt);
+            $this->assertStringNotContainsString('Handicap note:', $txt);
             $this->assertStringNotContainsString('odd_id: // id from the JSON', $txt);
 
             $data = json_decode(file_get_contents($jsonPath), true);
