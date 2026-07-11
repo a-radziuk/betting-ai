@@ -34,6 +34,16 @@
     value="{{ old('country', $tournament?->country) }}"
 >
 
+<label class="admin-upload-label" for="source">{{ __('Source') }}</label>
+<input
+    type="text"
+    id="source"
+    name="source"
+    class="admin-upload-input"
+    value="{{ old('source', $tournament?->source) }}"
+    placeholder="{{ __('e.g. stoiximan, parimatch') }}"
+>
+
 <label class="admin-upload-label">
     <input
         type="checkbox"
@@ -51,6 +61,15 @@
     name="stoiximan_url"
     class="admin-upload-input"
     value="{{ old('stoiximan_url', $tournament?->stoiximan_url) }}"
+>
+
+<label class="admin-upload-label" for="parimatch_url">{{ __('Parimatch URL') }}</label>
+<input
+    type="url"
+    id="parimatch_url"
+    name="parimatch_url"
+    class="admin-upload-input"
+    value="{{ old('parimatch_url', $tournament?->parimatch_url) }}"
 >
 
 <label class="admin-upload-label" for="guardian_standings_url">{{ __('Guardian standings URL') }}</label>

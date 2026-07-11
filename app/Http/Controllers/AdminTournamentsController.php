@@ -74,8 +74,10 @@ class AdminTournamentsController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'rank' => ['nullable', 'integer', 'min:0'],
             'country' => ['nullable', 'string', 'max:255'],
+            'source' => ['nullable', 'string', 'max:255'],
             'is_playoff' => ['boolean'],
             'stoiximan_url' => ['nullable', 'string', 'max:2048'],
+            'parimatch_url' => ['nullable', 'string', 'max:2048'],
             'guardian_standings_url' => ['nullable', 'string', 'max:2048'],
             'guardian_results_url' => ['nullable', 'string', 'max:2048'],
         ]);
@@ -83,7 +85,7 @@ class AdminTournamentsController extends Controller
         $validated['is_playoff'] = $request->boolean('is_playoff');
         $validated['rank'] = filled($validated['rank'] ?? null) ? (int) $validated['rank'] : null;
 
-        foreach (['country', 'stoiximan_url', 'guardian_standings_url', 'guardian_results_url'] as $key) {
+        foreach (['country', 'source', 'stoiximan_url', 'parimatch_url', 'guardian_standings_url', 'guardian_results_url'] as $key) {
             if (array_key_exists($key, $validated) && is_string($validated[$key]) && trim($validated[$key]) === '') {
                 $validated[$key] = null;
             }

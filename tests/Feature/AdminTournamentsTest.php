@@ -46,15 +46,19 @@ class AdminTournamentsTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.tournaments.create'))
             ->assertOk()
-            ->assertSee('name="is_playoff"', false);
+            ->assertSee('name="is_playoff"', false)
+            ->assertSee('name="source"', false)
+            ->assertSee('name="parimatch_url"', false);
 
         $this->actingAs($admin)
             ->post(route('admin.tournaments.store'), [
                 'name' => 'Champions League',
                 'rank' => 2,
                 'country' => 'Europe',
+                'source' => 'stoiximan',
                 'is_playoff' => '1',
                 'stoiximan_url' => 'https://stoiximan.example/cl',
+                'parimatch_url' => 'https://parimatch.example/allsvenskan',
             ])
             ->assertRedirect(route('admin.tournaments'))
             ->assertSessionHas('status');
@@ -64,22 +68,27 @@ class AdminTournamentsTest extends TestCase
         $this->assertSame('Champions League', $tournament->name);
         $this->assertSame(2, $tournament->rank);
         $this->assertSame('Europe', $tournament->country);
+        $this->assertSame('stoiximan', $tournament->source);
         $this->assertTrue($tournament->is_playoff);
         $this->assertSame('https://stoiximan.example/cl', $tournament->stoiximan_url);
+        $this->assertSame('https://parimatch.example/allsvenskan', $tournament->parimatch_url);
 
         $this->actingAs($admin)
             ->get(route('admin.tournaments'))
             ->assertOk()
             ->assertSee('Champions League', false)
-            ->assertSee('Europe', false);
+            ->assertSee('Europe', false)
+            ->assertSee('stoiximan', false);
 
         $this->actingAs($admin)
             ->put(route('admin.tournaments.update', $tournament), [
                 'name' => 'Europa League',
                 'rank' => 3,
                 'country' => 'Europe',
+                'source' => 'parimatch',
                 'is_playoff' => '0',
                 'stoiximan_url' => '',
+                'parimatch_url' => 'https://parimatch.example/updated',
                 'guardian_standings_url' => 'https://guardian.example/standings',
                 'guardian_results_url' => '',
             ])
@@ -90,7 +99,9 @@ class AdminTournamentsTest extends TestCase
         $this->assertSame('Europa League', $tournament->name);
         $this->assertSame(3, $tournament->rank);
         $this->assertFalse($tournament->is_playoff);
+        $this->assertSame('parimatch', $tournament->source);
         $this->assertNull($tournament->stoiximan_url);
+        $this->assertSame('https://parimatch.example/updated', $tournament->parimatch_url);
         $this->assertSame('https://guardian.example/standings', $tournament->guardian_standings_url);
 
         $this->actingAs($admin)

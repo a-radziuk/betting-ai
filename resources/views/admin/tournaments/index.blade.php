@@ -24,6 +24,7 @@
                             <th>{{ __('ID') }}</th>
                             <th>{{ __('Name') }}</th>
                             <th>{{ __('Country') }}</th>
+                            <th>{{ __('Source') }}</th>
                             <th class="admin-table-num">{{ __('Rank') }}</th>
                             <th>{{ __('Playoff') }}</th>
                             <th class="admin-table-num">{{ __('Teams') }}</th>
@@ -40,6 +41,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $tournament->country ?: '—' }}</td>
+                                <td>{{ $tournament->source ?: '—' }}</td>
                                 <td class="admin-table-num">{{ $tournament->rank ?? '—' }}</td>
                                 <td>{{ $tournament->is_playoff ? __('Yes') : __('No') }}</td>
                                 <td class="admin-table-num">{{ $tournament->teams_count }}</td>
