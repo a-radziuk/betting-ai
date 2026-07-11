@@ -68,7 +68,7 @@
                 @foreach ($event->markets as $market)
                     <article class="market">
                         <div class="market-head">
-                            <span>{{ $market->typeLabel() }}</span>
+                            <span>{{ $market->typeLabelForEvent($event) }}</span>
                             <span class="period">
                                 {{ $market->period }}
                                 @if (! is_null($market->line))
@@ -85,13 +85,13 @@
                                 <div class="row">
                                     @if ($canBet)
                                         <a class="name" href="{{ route('bets.place.show', ['odd' => $odd->id]) }}">
-                                            {{ $selection->displayName($event) }}
+                                            {{ $selection->displayNameWithValue($event) }}
                                         </a>
                                         <a class="odds" href="{{ route('bets.place.show', ['odd' => $odd->id]) }}">
                                             {{ number_format((float) $odd->odds, 2) }}
                                         </a>
                                     @else
-                                        <span class="name">{{ $selection->displayName($event) }}</span>
+                                        <span class="name">{{ $selection->displayNameWithValue($event) }}</span>
                                         <span class="odds">
                                             {{ number_format(optional($odd)->odds ?? 0, 2) }}
                                         </span>

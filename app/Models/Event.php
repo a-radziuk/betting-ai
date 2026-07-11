@@ -14,6 +14,7 @@ class Event extends Model
         'home_team_id',
         'away_team_id',
         'tournament_id',
+        'source',
         'start_time',
         'status',
         'score',
@@ -39,6 +40,10 @@ class Event extends Model
     public const STATUS_PROCESSING = 'processing';
 
     public const STATUS_FINISHED = 'finished';
+
+    public const SOURCE_STOIXIMAN = 'stoiximan';
+
+    public const SOURCE_PARIMATCH = 'parimatch';
 
     public function statusLabel(): string
     {

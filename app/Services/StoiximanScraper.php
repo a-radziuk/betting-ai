@@ -60,6 +60,7 @@ class StoiximanScraper
                         'home_team_id' => $homeTeam->id,
                         'away_team_id' => $awayTeam->id,
                         'tournament_id' => $tournament->id,
+                        'source' => Event::SOURCE_STOIXIMAN,
                         'start_time' => $parsed['start_time'],
                         'status' => Event::STATUS_SCHEDULED,
                     ]
