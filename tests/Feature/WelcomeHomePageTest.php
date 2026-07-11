@@ -244,6 +244,75 @@ class WelcomeHomePageTest extends TestCase
         }
     }
 
+    public function test_home_hides_featured_tournaments_without_upcoming_events(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-01-10 10:00:00', $tz));
+        try {
+            $activeTournament = Tournament::query()->create([
+                'name' => 'Active Featured League',
+                'rank' => 1,
+                'country' => 'Testland',
+            ]);
+            $inactiveTournament = Tournament::query()->create([
+                'name' => 'Inactive Featured League',
+                'rank' => 1,
+                'country' => 'Testland',
+            ]);
+            $emptyTournament = Tournament::query()->create([
+                'name' => 'Empty Featured League',
+                'rank' => 1,
+                'country' => 'Testland',
+            ]);
+
+            $home = Team::query()->create([
+                'name' => 'Featured Home',
+                'short_name' => 'FHM',
+                'league' => 'AFL',
+                'country' => 'Testland',
+                'tournament_id' => $activeTournament->id,
+            ]);
+            $away = Team::query()->create([
+                'name' => 'Featured Away',
+                'short_name' => 'FAY',
+                'league' => 'AFL',
+                'country' => 'Testland',
+                'tournament_id' => $activeTournament->id,
+            ]);
+
+            $this->seedEventWithMatchOdds(
+                $activeTournament,
+                $home,
+                $away,
+                Carbon::parse('2026-01-12 14:30:00', $tz),
+                [
+                    'eventId' => 770401,
+                    'marketId' => 770410,
+                    'selectionIdStart' => 770440,
+                    'oddIdStart' => 770450,
+                ],
+            );
+
+            Event::query()->create([
+                'id' => 770402,
+                'home_team_id' => $home->id,
+                'away_team_id' => $away->id,
+                'tournament_id' => $inactiveTournament->id,
+                'start_time' => Carbon::parse('2026-01-09 14:30:00', $tz),
+                'status' => Event::STATUS_SCHEDULED,
+            ]);
+
+            $this->get('/')
+                ->assertOk()
+                ->assertSee('tournament-leagues-line', false)
+                ->assertSee('Active Featured League', false)
+                ->assertDontSee('Inactive Featured League', false)
+                ->assertDontSee('Empty Featured League', false);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_home_shows_user_bet_count_per_upcoming_event(): void
     {
         $tz = config('app.timezone');

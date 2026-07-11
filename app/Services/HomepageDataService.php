@@ -56,6 +56,11 @@ class HomepageDataService
         if (Schema::hasTable('tournaments')) {
             $topTournaments = Tournament::query()
                 ->where('rank', 1)
+                ->when(Schema::hasTable('events'), function ($query): void {
+                    $query->whereHas('events', function ($eventQuery): void {
+                        $eventQuery->where('start_time', '>=', now());
+                    });
+                })
                 ->orderBy('name')
                 ->get();
         }

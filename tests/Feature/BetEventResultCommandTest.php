@@ -333,4 +333,190 @@ class BetEventResultCommandTest extends TestCase
         $this->assertSame(3, UserBet::query()->where('user_id', $userTwo->id)->value('resolved_order'));
         $this->assertSame('1010.00', UserWallet::query()->where('user_id', $userOne->id)->value('balance'));
     }
+
+    /**
+     * @return array{user: User, event_id: int}
+     */
+    private function seedAsianMarketBet(
+        int $eventId,
+        string $marketType,
+        string $selectionName,
+        ?float $value = null,
+    ): array {
+        $home = Team::query()->create([
+            'name' => 'Alpha '.$eventId,
+            'short_name' => 'ALP',
+            'league' => 'T',
+        ]);
+        $away = Team::query()->create([
+            'name' => 'Beta '.$eventId,
+            'short_name' => 'BET',
+            'league' => 'T',
+        ]);
+
+        Event::query()->create([
+            'id' => $eventId,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => $eventId * 100 + 1,
+            'event_id' => $eventId,
+            'type' => $marketType,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        $selection = Selection::query()->create([
+            'id' => $eventId * 100 + 2,
+            'market_id' => $market->id,
+            'name' => $selectionName,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => $value,
+            'created_at' => now(),
+        ]);
+
+        $odd = Odd::query()->create([
+            'id' => $eventId * 100 + 3,
+            'selection_id' => $selection->id,
+            'odds' => 2.0,
+            'probability' => 0.5,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $user = User::factory()->create();
+        UserWallet::query()->where('user_id', $user->id)->update(['balance' => 990]);
+
+        UserBet::query()->create([
+            'user_id' => $user->id,
+            'event_id' => $eventId,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.0,
+            'potential_return' => 20,
+            'status' => UserBet::STATUS_PENDING,
+        ]);
+
+        return ['user' => $user, 'event_id' => $eventId];
+    }
+
+    public function test_total_asian_over_wins_and_under_loses(): void
+    {
+        $this->seedAsianMarketBet(88101, Market::TYPE_TOTAL_ASIAN, 'OVER', 2.5);
+        $this->seedAsianMarketBet(88102, Market::TYPE_TOTAL_ASIAN, 'UNDER', 2.5);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88101,
+            'result' => '2:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('event_id', 88101)->value('status'));
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88102,
+            'result' => '2:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_LOST, UserBet::query()->where('event_id', 88102)->value('status'));
+    }
+
+    public function test_total_asian_refunds_when_total_equals_whole_line(): void
+    {
+        $this->seedAsianMarketBet(88103, Market::TYPE_TOTAL_ASIAN, 'OVER', 3.0);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88103,
+            'result' => '2:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_VOID, UserBet::query()->where('event_id', 88103)->value('status'));
+    }
+
+    public function test_home_total_asian_uses_home_goals_only(): void
+    {
+        $this->seedAsianMarketBet(88104, Market::TYPE_HOME_TOTAL_ASIAN, 'UNDER', 2.0);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88104,
+            'result' => '2:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_VOID, UserBet::query()->where('event_id', 88104)->value('status'));
+    }
+
+    public function test_away_total_asian_uses_away_goals_only(): void
+    {
+        $this->seedAsianMarketBet(88105, Market::TYPE_AWAY_TOTAL_ASIAN, 'OVER', 0.5);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88105,
+            'result' => '3:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('event_id', 88105)->value('status'));
+    }
+
+    public function test_home_to_score_yes_wins_when_home_scores(): void
+    {
+        $this->seedAsianMarketBet(88106, Market::TYPE_HOME_TO_SCORE, 'YES');
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88106,
+            'result' => '1:0',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('event_id', 88106)->value('status'));
+    }
+
+    public function test_away_to_score_no_wins_when_away_does_not_score(): void
+    {
+        $this->seedAsianMarketBet(88107, Market::TYPE_AWAY_TO_SCORE, 'NO');
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88107,
+            'result' => '2:0',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('event_id', 88107)->value('status'));
+    }
+
+    public function test_handicap_asian_refunds_on_draw_after_handicap(): void
+    {
+        $this->seedAsianMarketBet(88108, Market::TYPE_HANDICAP_ASIAN, 'HOME', -1.0);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88108,
+            'result' => '2:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_VOID, UserBet::query()->where('event_id', 88108)->value('status'));
+    }
+
+    public function test_handicap_asian_away_wins_with_positive_handicap(): void
+    {
+        $this->seedAsianMarketBet(88109, Market::TYPE_HANDICAP_ASIAN, 'AWAY', 1.5);
+
+        Artisan::call('bet:event:result', [
+            'event_id' => 88109,
+            'result' => '2:1',
+            'additional_data' => '{}',
+        ]);
+
+        $this->assertSame(UserBet::STATUS_WON, UserBet::query()->where('event_id', 88109)->value('status'));
+    }
 }

@@ -161,8 +161,14 @@ class EventResultService
             Market::TYPE_OVER_UNDER_TOTAL_GOALS_EXTRA => $this->outcomeOverUnderTotal($h + $a, $market->line, $name),
             Market::TYPE_HOME_OVER_UNDER_TOTAL_GOALS => $this->outcomeOverUnderTotal($h, $market->line, $name),
             Market::TYPE_AWAY_OVER_UNDER_TOTAL_GOALS => $this->outcomeOverUnderTotal($a, $market->line, $name),
+            Market::TYPE_TOTAL_ASIAN => $this->outcomeAsianTotal($h + $a, $selection, $name),
+            Market::TYPE_HOME_TOTAL_ASIAN => $this->outcomeAsianTotal($h, $selection, $name),
+            Market::TYPE_AWAY_TOTAL_ASIAN => $this->outcomeAsianTotal($a, $selection, $name),
+            Market::TYPE_HOME_TO_SCORE => $this->outcomeTeamToScore($h, $name),
+            Market::TYPE_AWAY_TO_SCORE => $this->outcomeTeamToScore($a, $name),
             Market::TYPE_BTTS => $this->outcomeBtts($h, $a, $name),
             Market::TYPE_HANDICAP => $this->outcomeHandicapThreeWay($h, $a, $selection),
+            Market::TYPE_HANDICAP_ASIAN => $this->outcomeAsianHandicap($h, $a, $selection),
             Market::TYPE_DOUBLE_CHANCE => $this->outcomeDoubleChance($diff, $name),
             Market::TYPE_CORRECT_SCORE => $this->outcomeCorrectScore($h, $a, $name),
             Market::TYPE_DRAW_NO_BET => $this->outcomeDrawNoBet($diff, $name),
@@ -205,6 +211,78 @@ class EventResultService
         }
 
         return '';
+    }
+
+    /**
+     * @return 'win'|'lose'|'refund'
+     */
+    private function outcomeAsianTotal(int $total, Selection $selection, string $name): string
+    {
+        $line = $this->selectionLineValue($selection);
+        if ($line === null) {
+            return 'lose';
+        }
+
+        return $this->outcomeOverUnderTotal($total, $line, $name);
+    }
+
+    /**
+     * @return 'win'|'lose'|'refund'
+     */
+    private function outcomeAsianHandicap(int $h, int $a, Selection $selection): string
+    {
+        $name = strtoupper(trim($selection->name));
+        $handicap = $this->selectionLineValue($selection);
+        if ($handicap === null) {
+            return 'refund';
+        }
+
+        $adjustedDiff = match (true) {
+            str_starts_with($name, 'HOME') => ($h + $handicap) - $a,
+            str_starts_with($name, 'AWAY') => ($a + $handicap) - $h,
+            default => null,
+        };
+
+        if ($adjustedDiff === null) {
+            return 'lose';
+        }
+
+        if (abs($adjustedDiff) < 0.001) {
+            return 'refund';
+        }
+
+        return $adjustedDiff > 0 ? 'win' : 'lose';
+    }
+
+    /**
+     * @return 'win'|'lose'
+     */
+    private function outcomeTeamToScore(int $goals, string $name): string
+    {
+        $scored = $goals > 0;
+
+        if (str_starts_with($name, 'YES')) {
+            return $scored ? 'win' : 'lose';
+        }
+
+        if (str_starts_with($name, 'NO')) {
+            return $scored ? 'lose' : 'win';
+        }
+
+        return 'lose';
+    }
+
+    private function selectionLineValue(Selection $selection): ?float
+    {
+        if ($selection->value !== null && is_numeric($selection->value)) {
+            return (float) $selection->value;
+        }
+
+        if ($selection->handicap !== null && is_numeric($selection->handicap)) {
+            return (float) $selection->handicap;
+        }
+
+        return null;
     }
 
     /**
