@@ -37,6 +37,13 @@ class HomepageCache
         return Cache::store(config('page_cache.cache_store'))->forget($this->cacheKey($locale));
     }
 
+    public function forgetAllLocales(): void
+    {
+        foreach (['en'] as $locale) {
+            $this->forget($locale);
+        }
+    }
+
     private function renderMainContent(): string
     {
         return view('welcome.main', $this->homepageData->get())->render();

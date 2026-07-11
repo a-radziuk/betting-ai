@@ -76,16 +76,20 @@ class AdminTournamentsController extends Controller
             'country' => ['nullable', 'string', 'max:255'],
             'source' => ['nullable', 'string', 'max:255'],
             'is_playoff' => ['boolean'],
+            'is_active' => ['boolean'],
             'stoiximan_url' => ['nullable', 'string', 'max:2048'],
             'parimatch_url' => ['nullable', 'string', 'max:2048'],
             'guardian_standings_url' => ['nullable', 'string', 'max:2048'],
             'guardian_results_url' => ['nullable', 'string', 'max:2048'],
+            'bbc_standings_url' => ['nullable', 'string', 'max:2048'],
+            'bbc_results_url' => ['nullable', 'string', 'max:2048'],
         ]);
 
         $validated['is_playoff'] = $request->boolean('is_playoff');
+        $validated['is_active'] = $request->boolean('is_active');
         $validated['rank'] = filled($validated['rank'] ?? null) ? (int) $validated['rank'] : null;
 
-        foreach (['country', 'source', 'stoiximan_url', 'parimatch_url', 'guardian_standings_url', 'guardian_results_url'] as $key) {
+        foreach (['country', 'source', 'stoiximan_url', 'parimatch_url', 'guardian_standings_url', 'guardian_results_url', 'bbc_standings_url', 'bbc_results_url'] as $key) {
             if (array_key_exists($key, $validated) && is_string($validated[$key]) && trim($validated[$key]) === '') {
                 $validated[$key] = null;
             }

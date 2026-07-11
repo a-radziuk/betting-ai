@@ -28,6 +28,7 @@ class HomepageDataService
 
         if (Schema::hasTable('events')) {
             $events = Event::query()
+                ->fromActiveTournament()
                 ->with([
                     'homeTeam',
                     'awayTeam',
@@ -55,6 +56,7 @@ class HomepageDataService
         $topTournaments = collect();
         if (Schema::hasTable('tournaments')) {
             $topTournaments = Tournament::query()
+                ->active()
                 ->where('rank', 1)
                 ->when(Schema::hasTable('events'), function ($query): void {
                     $query->whereHas('events', function ($eventQuery): void {

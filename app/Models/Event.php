@@ -79,6 +79,17 @@ class Event extends Model
     }
 
     /**
+     * Events whose tournament is active on the public site.
+     *
+     * @param  Builder<Event>  $query
+     * @return Builder<Event>
+     */
+    public function scopeFromActiveTournament(Builder $query): Builder
+    {
+        return $query->whereHas('tournament', fn (Builder $tournamentQuery) => $tournamentQuery->where('is_active', true));
+    }
+
+    /**
      * @return HasMany<Market, $this>
      */
     public function markets(): HasMany

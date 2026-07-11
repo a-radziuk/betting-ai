@@ -54,6 +54,17 @@
     {{ __('Playoff tournament') }}
 </label>
 
+<label class="admin-upload-label">
+    <input
+        type="checkbox"
+        name="is_active"
+        value="1"
+        @checked(old('is_active', $tournament?->is_active ?? true))
+    >
+    {{ __('Active on site') }}
+</label>
+<p class="admin-upload-hint">{{ __('Inactive tournaments and their events are hidden from the public site.') }}</p>
+
 <label class="admin-upload-label" for="stoiximan_url">{{ __('Stoiximan URL') }}</label>
 <input
     type="url"
@@ -88,4 +99,22 @@
     name="guardian_results_url"
     class="admin-upload-input"
     value="{{ old('guardian_results_url', $tournament?->guardian_results_url) }}"
+>
+
+<label class="admin-upload-label" for="bbc_standings_url">{{ __('BBC standings URL') }}</label>
+<input
+    type="url"
+    id="bbc_standings_url"
+    name="bbc_standings_url"
+    class="admin-upload-input"
+    value="{{ old('bbc_standings_url', $tournament?->bbc_standings_url) }}"
+>
+
+<label class="admin-upload-label" for="bbc_results_url">{{ __('BBC results URL') }}</label>
+<input
+    type="url"
+    id="bbc_results_url"
+    name="bbc_results_url"
+    class="admin-upload-input"
+    value="{{ old('bbc_results_url', $tournament?->bbc_results_url) }}"
 >

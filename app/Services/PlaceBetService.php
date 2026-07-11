@@ -41,8 +41,13 @@ class PlaceBetService
         }
 
         $eventId = $odd->selection->market->event_id;
-        if (! Event::query()->whereKey($eventId)->exists()) {
+        $event = Event::query()->with('tournament')->find($eventId);
+        if ($event === null) {
             return ['ok' => false, 'message' => 'Event for this odd does not exist.'];
+        }
+
+        if ($event->tournament !== null && ! $event->tournament->is_active) {
+            return ['ok' => false, 'message' => 'Event tournament is not active on the site.'];
         }
 
         return DB::transaction(function () use ($userId, $odd, $oddId, $eventId, $stake, $predictionType, $explanation): array {

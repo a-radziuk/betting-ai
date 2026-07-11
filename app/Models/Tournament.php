@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Casts\AsStandingsPromrel;
+use App\Services\HomepageCache;
 use App\Services\TournamentShowCache;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,10 +18,13 @@ class Tournament extends Model
         'country',
         'source',
         'is_playoff',
+        'is_active',
         'stoiximan_url',
         'parimatch_url',
         'guardian_standings_url',
         'guardian_results_url',
+        'bbc_standings_url',
+        'bbc_results_url',
         'standings',
         'standings_updated_at',
         'standings_promrel',
@@ -30,6 +35,7 @@ class Tournament extends Model
         return [
             'rank' => 'integer',
             'is_playoff' => 'boolean',
+            'is_active' => 'boolean',
             'standings' => 'array',
             'standings_updated_at' => 'datetime',
             'standings_promrel' => AsStandingsPromrel::class,
@@ -39,10 +45,23 @@ class Tournament extends Model
     protected static function booted(): void
     {
         static::saved(function (Tournament $tournament): void {
-            if ($tournament->wasChanged(['standings', 'standings_promrel'])) {
+            if ($tournament->wasChanged(['standings', 'standings_promrel', 'is_active'])) {
                 app(TournamentShowCache::class)->forgetAllLocales($tournament);
             }
+
+            if ($tournament->wasChanged('is_active')) {
+                app(HomepageCache::class)->forgetAllLocales();
+            }
         });
+    }
+
+    /**
+     * @param  Builder<Tournament>  $query
+     * @return Builder<Tournament>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 
     /**

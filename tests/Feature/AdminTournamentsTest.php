@@ -47,8 +47,11 @@ class AdminTournamentsTest extends TestCase
             ->get(route('admin.tournaments.create'))
             ->assertOk()
             ->assertSee('name="is_playoff"', false)
+            ->assertSee('name="is_active"', false)
             ->assertSee('name="source"', false)
-            ->assertSee('name="parimatch_url"', false);
+            ->assertSee('name="parimatch_url"', false)
+            ->assertSee('name="bbc_standings_url"', false)
+            ->assertSee('name="bbc_results_url"', false);
 
         $this->actingAs($admin)
             ->post(route('admin.tournaments.store'), [
@@ -57,6 +60,7 @@ class AdminTournamentsTest extends TestCase
                 'country' => 'Europe',
                 'source' => 'stoiximan',
                 'is_playoff' => '1',
+                'is_active' => '1',
                 'stoiximan_url' => 'https://stoiximan.example/cl',
                 'parimatch_url' => 'https://parimatch.example/allsvenskan',
             ])
@@ -70,6 +74,7 @@ class AdminTournamentsTest extends TestCase
         $this->assertSame('Europe', $tournament->country);
         $this->assertSame('stoiximan', $tournament->source);
         $this->assertTrue($tournament->is_playoff);
+        $this->assertTrue($tournament->is_active);
         $this->assertSame('https://stoiximan.example/cl', $tournament->stoiximan_url);
         $this->assertSame('https://parimatch.example/allsvenskan', $tournament->parimatch_url);
 
@@ -87,10 +92,13 @@ class AdminTournamentsTest extends TestCase
                 'country' => 'Europe',
                 'source' => 'parimatch',
                 'is_playoff' => '0',
+                'is_active' => '0',
                 'stoiximan_url' => '',
                 'parimatch_url' => 'https://parimatch.example/updated',
                 'guardian_standings_url' => 'https://guardian.example/standings',
                 'guardian_results_url' => '',
+                'bbc_standings_url' => 'https://www.bbc.com/sport/football/swedish-allsvenskan/table',
+                'bbc_results_url' => 'https://www.bbc.com/sport/football/swedish-allsvenskan/scores-fixtures',
             ])
             ->assertRedirect(route('admin.tournaments'))
             ->assertSessionHas('status');
@@ -99,10 +107,13 @@ class AdminTournamentsTest extends TestCase
         $this->assertSame('Europa League', $tournament->name);
         $this->assertSame(3, $tournament->rank);
         $this->assertFalse($tournament->is_playoff);
+        $this->assertFalse($tournament->is_active);
         $this->assertSame('parimatch', $tournament->source);
         $this->assertNull($tournament->stoiximan_url);
         $this->assertSame('https://parimatch.example/updated', $tournament->parimatch_url);
         $this->assertSame('https://guardian.example/standings', $tournament->guardian_standings_url);
+        $this->assertSame('https://www.bbc.com/sport/football/swedish-allsvenskan/table', $tournament->bbc_standings_url);
+        $this->assertSame('https://www.bbc.com/sport/football/swedish-allsvenskan/scores-fixtures', $tournament->bbc_results_url);
 
         $this->actingAs($admin)
             ->delete(route('admin.tournaments.destroy', $tournament))

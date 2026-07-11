@@ -27,6 +27,7 @@
                             <th>{{ __('Source') }}</th>
                             <th class="admin-table-num">{{ __('Rank') }}</th>
                             <th>{{ __('Playoff') }}</th>
+                            <th>{{ __('Active') }}</th>
                             <th class="admin-table-num">{{ __('Teams') }}</th>
                             <th class="admin-table-actions">{{ __('Actions') }}</th>
                         </tr>
@@ -44,6 +45,7 @@
                                 <td>{{ $tournament->source ?: '—' }}</td>
                                 <td class="admin-table-num">{{ $tournament->rank ?? '—' }}</td>
                                 <td>{{ $tournament->is_playoff ? __('Yes') : __('No') }}</td>
+                                <td>{{ $tournament->is_active ? __('Yes') : __('No') }}</td>
                                 <td class="admin-table-num">{{ $tournament->teams_count }}</td>
                                 <td class="admin-table-actions">
                                     <a href="{{ route('admin.tournaments.edit', $tournament) }}" class="btn btn-primary btn-sm">{{ __('Edit') }}</a>

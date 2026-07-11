@@ -78,6 +78,10 @@ Route::post('/cookie-consent', [CookieConsentController::class, 'store'])
     ->name('cookie-consent.store');
 
 Route::get('/tournaments/{tournament}/results', function (Tournament $tournament) {
+    if (! $tournament->is_active) {
+        abort(404);
+    }
+
     /** @var Collection<int, EventResult> $allEventResults */
     $allEventResults = collect();
     if (Schema::hasTable('event_results')) {
@@ -120,6 +124,7 @@ Route::get('/players/{user}/current', function (User $user) {
         $bets = UserBet::query()
             ->where('user_id', $user->id)
             ->where('user_bets.status', UserBet::STATUS_PENDING)
+            ->whereHas('event.tournament', fn ($query) => $query->where('is_active', true))
             ->join('events', 'events.id', '=', 'user_bets.event_id')
             ->orderBy('events.start_time')
             ->select('user_bets.*')
@@ -436,6 +441,11 @@ Route::middleware('auth')->group(function () {
                 abort(404);
             }
 
+            $event->loadMissing('tournament');
+            if ($event->tournament !== null && ! $event->tournament->is_active) {
+                abort(404);
+            }
+
             if ($event->status !== Event::STATUS_SCHEDULED) {
                 abort(400, 'Event is not scheduled.');
             }
@@ -462,6 +472,11 @@ Route::middleware('auth')->group(function () {
 
             $event = $odd->selection?->market?->event;
             if ($event === null) {
+                abort(404);
+            }
+
+            $event->loadMissing('tournament');
+            if ($event->tournament !== null && ! $event->tournament->is_active) {
                 abort(404);
             }
 

@@ -11,6 +11,10 @@ class TournamentShowController extends Controller
 {
     public function __invoke(Tournament $tournament, TournamentShowCache $tournamentShowCache): View
     {
+        if (! $tournament->is_active) {
+            abort(404);
+        }
+
         return view('tournament-standings', [
             'tournament' => $tournament,
             'mainHtml' => $tournamentShowCache->mainContentHtml($tournament),
