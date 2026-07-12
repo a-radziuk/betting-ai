@@ -11,9 +11,9 @@ final class TournamentImportService
 {
     /**
      * @param  array<string, mixed>  $payload
-     * @return array{teams: int}
+     * @return array{imported: bool, teams: int, skipped_team_ids: list<int>}
      */
-    public function import(array $payload): array
+    public function import(array $payload, bool $skipExisting = false): array
     {
         $tournamentRow = $payload['tournament'] ?? null;
         $teams = $payload['teams'] ?? null;
@@ -22,12 +22,38 @@ final class TournamentImportService
             throw new InvalidArgumentException('JSON root must contain "tournament" object and "teams" array.');
         }
 
-        return DB::transaction(function () use ($tournamentRow, $teams): array {
+        if (! array_key_exists('id', $tournamentRow)) {
+            throw new InvalidArgumentException('Tournament payload is missing "id".');
+        }
+
+        $tournamentId = (int) $tournamentRow['id'];
+
+        return DB::transaction(function () use ($tournamentRow, $teams, $skipExisting, $tournamentId): array {
+            if ($skipExisting && Tournament::query()->whereKey($tournamentId)->exists()) {
+                return [
+                    'imported' => false,
+                    'teams' => 0,
+                    'skipped_team_ids' => [],
+                ];
+            }
+
             $tournament = $this->upsertTournament($tournamentRow);
 
             $teamCount = 0;
+            $skippedTeamIds = [];
             foreach ($teams as $teamRow) {
                 if (! is_array($teamRow)) {
+                    continue;
+                }
+
+                if (! array_key_exists('id', $teamRow)) {
+                    throw new InvalidArgumentException('Team payload is missing "id".');
+                }
+
+                $teamId = (int) $teamRow['id'];
+                if ($skipExisting && Team::query()->whereKey($teamId)->exists()) {
+                    $skippedTeamIds[] = $teamId;
+
                     continue;
                 }
 
@@ -35,7 +61,11 @@ final class TournamentImportService
                 $teamCount++;
             }
 
-            return ['teams' => $teamCount];
+            return [
+                'imported' => true,
+                'teams' => $teamCount,
+                'skipped_team_ids' => $skippedTeamIds,
+            ];
         });
     }
 
