@@ -494,4 +494,73 @@ class EventExportTodayCommandTest extends TestCase
             }
         }
     }
+
+    public function test_full_with_parimatch_tournament_id_omits_handicap_notice(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-19 10:00:00', $tz));
+        $jsonPath = storage_path('app/2026-09-19.json');
+        $txtPath = storage_path('app/2026-09-19.txt');
+
+        try {
+            $t = Tournament::query()->create(['name' => 'Allsvenskan', 'source' => 'parimatch']);
+            $h = Team::query()->create(['name' => 'HP', 'short_name' => 'HP', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'AP', 'short_name' => 'AP', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(107001, 107011, 107021, 107031, $t->id, $h->id, $a->id, Carbon::parse('2026-09-19 14:00:00', $tz));
+
+            $exit = Artisan::call('event:export-today', [
+                'tournamentId' => (string) $t->id,
+                '--full' => true,
+            ]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($txtPath);
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('1/ the safest bet', $txt);
+            $this->assertStringNotContainsString('Handicap note:', $txt);
+            $this->assertStringNotContainsString('European-style settlement', $txt);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
+            }
+        }
+    }
+
+    public function test_full_with_non_parimatch_tournament_id_keeps_handicap_notice(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-20 10:00:00', $tz));
+        $jsonPath = storage_path('app/2026-09-20.json');
+        $txtPath = storage_path('app/2026-09-20.txt');
+
+        try {
+            $t = Tournament::query()->create(['name' => 'Premier League', 'source' => 'stoiximan']);
+            $h = Team::query()->create(['name' => 'HP', 'short_name' => 'HP', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'AP', 'short_name' => 'AP', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(108001, 108011, 108021, 108031, $t->id, $h->id, $a->id, Carbon::parse('2026-09-20 14:00:00', $tz));
+
+            $exit = Artisan::call('event:export-today', [
+                'tournamentId' => (string) $t->id,
+                '--full' => true,
+            ]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($txtPath);
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('Handicap note:', $txt);
+            $this->assertStringContainsString('European-style settlement', $txt);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
+            }
+        }
+    }
 }

@@ -165,4 +165,38 @@ class EventExportTomorrowCommandTest extends TestCase
             }
         }
     }
+
+    public function test_full_with_parimatch_tournament_id_omits_handicap_notice(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-09-19 10:00:00', $tz));
+        $jsonPath = storage_path('app/2026-09-20.json');
+        $txtPath = storage_path('app/2026-09-20.txt');
+
+        try {
+            $t = Tournament::query()->create(['name' => 'Allsvenskan', 'source' => 'parimatch']);
+            $h = Team::query()->create(['name' => 'HP', 'short_name' => 'HP', 'league' => 'L', 'tournament_id' => $t->id]);
+            $a = Team::query()->create(['name' => 'AP', 'short_name' => 'AP', 'league' => 'L', 'tournament_id' => $t->id]);
+
+            $this->seedExportableEvent(205001, 205011, 205021, 205031, $t->id, $h->id, $a->id, Carbon::parse('2026-09-20 14:00:00', $tz));
+
+            $exit = Artisan::call('event:export-tomorrow', [
+                'tournamentId' => (string) $t->id,
+                '--full' => true,
+            ]);
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($txtPath);
+
+            $txt = file_get_contents($txtPath);
+            $this->assertStringContainsString('Above is the odds for 1 games that are happening tomorrow.', $txt);
+            $this->assertStringNotContainsString('Handicap note:', $txt);
+        } finally {
+            Carbon::setTestNow();
+            foreach ([$jsonPath, $txtPath] as $p) {
+                if (is_file($p)) {
+                    unlink($p);
+                }
+            }
+        }
+    }
 }

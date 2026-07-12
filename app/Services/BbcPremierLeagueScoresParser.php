@@ -7,11 +7,122 @@ use InvalidArgumentException;
 class BbcPremierLeagueScoresParser
 {
     /**
-     * Parsed BBC Sport scores-fixtures HTML: escaped JSON segments use \" for quotes.
+     * Parsed BBC Sport scores-fixtures HTML.
      *
      * @return list<array{homeName: string, awayName: string, homeGoals: int, awayGoals: int, status: string}>
      */
     public function parseFinishedResults(string $html): array
+    {
+        $fromMatchDivs = $this->parseFinishedResultsFromMatchDivs($html);
+        if ($fromMatchDivs !== [] || $this->hasMatchDivBlocks($html)) {
+            return $fromMatchDivs;
+        }
+
+        return $this->parseFinishedResultsFromEmbeddedJson($html);
+    }
+
+    /**
+     * @return list<array{homeName: string, awayName: string, homeGoals: int, awayGoals: int, status: string}>
+     */
+    private function parseFinishedResultsFromMatchDivs(string $html): array
+    {
+        $out = [];
+
+        foreach ($this->extractMatchDivBlocks($html) as $block) {
+            if (! str_contains($block, '>FT<')) {
+                continue;
+            }
+
+            $names = $this->extractDesktopTeamNames($block);
+            if (count($names) < 2) {
+                continue;
+            }
+
+            $scores = $this->extractScores($block);
+            if ($scores === null) {
+                continue;
+            }
+
+            $out[] = [
+                'homeName' => html_entity_decode($names[0], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                'awayName' => html_entity_decode($names[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                'homeGoals' => $scores[0],
+                'awayGoals' => $scores[1],
+                'status' => 'FT',
+            ];
+        }
+
+        return $out;
+    }
+
+    private function hasMatchDivBlocks(string $html): bool
+    {
+        return $this->extractMatchDivBlocks($html) !== [];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function extractMatchDivBlocks(string $html): array
+    {
+        if (! preg_match_all(
+            '/<div data-event-id="[^"]+" class="ssrcss-1bjtunb-GridContainer[^"]*">/s',
+            $html,
+            $matches,
+            PREG_OFFSET_CAPTURE,
+        )) {
+            return [];
+        }
+
+        $blocks = [];
+        $count = count($matches[0]);
+        $htmlLength = strlen($html);
+
+        for ($i = 0; $i < $count; $i++) {
+            $start = $matches[0][$i][1];
+            $end = ($i + 1 < $count) ? $matches[0][$i + 1][1] : $htmlLength;
+            $blocks[] = substr($html, $start, $end - $start);
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function extractDesktopTeamNames(string $block): array
+    {
+        if (! preg_match_all(
+            '/<span aria-hidden="true" class="ssrcss-1p14tic-DesktopValue[^"]*">([^<]*)<\/span>/s',
+            $block,
+            $matches,
+        )) {
+            return [];
+        }
+
+        return array_values(array_map('trim', $matches[1]));
+    }
+
+    /**
+     * @return array{0: int, 1: int}|null
+     */
+    private function extractScores(string $block): ?array
+    {
+        if (! preg_match(
+            '/<div class="ssrcss-qsbptj-HomeScore[^"]*">(\d+)<\/div>.*?<div class="ssrcss-fri5a2-AwayScore[^"]*">(\d+)<\/div>/s',
+            $block,
+            $matches,
+        )) {
+            return null;
+        }
+
+        return [(int) $matches[1], (int) $matches[2]];
+    }
+
+    /**
+     * @return list<array{homeName: string, awayName: string, homeGoals: int, awayGoals: int, status: string}>
+     */
+    private function parseFinishedResultsFromEmbeddedJson(string $html): array
     {
         $unescaped = str_replace('\\"', '"', $html);
         $needle = '"eventGroups":';

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Event;
 use App\Models\Team;
+use App\Models\Tournament;
 use App\Services\BbcPremierLeagueScoresParser;
 use App\Services\EventResultService;
 use Illuminate\Console\Command;
@@ -12,16 +13,31 @@ use Throwable;
 
 class BbcScrapeResultsCommand extends Command
 {
-    protected $signature = 'bbc:scrape-results';
+    protected $signature = 'bbc:scrape-results
+        {tournamentId : Tournament primary key (uses bbc_results_url from this row)}';
 
-    protected $description = 'Scrape BBC Premier League results for the current month and settle matching unresolved events (tournament_id = 1, Team.external_name)';
-
-    private const COUNTRY = 'England';
+    protected $description = 'Scrape BBC results for the current month and settle matching unresolved events (Team.external_name + tournament country)';
 
     public function handle(BbcPremierLeagueScoresParser $parser, EventResultService $eventResultService): int
     {
+        $tournamentId = (int) $this->argument('tournamentId');
+        $tournament = Tournament::query()->find($tournamentId);
+
+        if ($tournament === null) {
+            $this->components->error("Tournament {$tournamentId} not found.");
+
+            return self::FAILURE;
+        }
+
+        $baseUrl = rtrim(trim((string) $tournament->bbc_results_url), '/');
+        if ($baseUrl === '') {
+            $this->warn("Tournament {$tournamentId} has no bbc_results_url set.");
+
+            return self::FAILURE;
+        }
+
         $yearMonth = now()->format('Y-m');
-        $url = "https://www.bbc.com/sport/football/premier-league/scores-fixtures/{$yearMonth}?filter=results";
+        $url = "{$baseUrl}/{$yearMonth}";
 
         $this->components->info("Fetching {$url}");
 
@@ -55,27 +71,28 @@ class BbcScrapeResultsCommand extends Command
 
         $this->components->info(sprintf('Found %d finished result(s) on BBC.', count($results)));
 
+        $country = (string) $tournament->country;
         $settled = 0;
 
         foreach ($results as $row) {
             $homeTeam = Team::query()
-                ->where('country', self::COUNTRY)
+                ->where('country', $country)
                 ->where('external_name', $row['homeName'])
                 ->first();
 
             if ($homeTeam === null) {
-                $this->warn('No team with country='.self::COUNTRY." and external_name matching BBC home team \"{$row['homeName']}\".");
+                $this->warn('No team with country='.$country." and external_name matching BBC home team \"{$row['homeName']}\".");
 
                 continue;
             }
 
             $awayTeam = Team::query()
-                ->where('country', self::COUNTRY)
+                ->where('country', $country)
                 ->where('external_name', $row['awayName'])
                 ->first();
 
             if ($awayTeam === null) {
-                $this->warn('No team with country='.self::COUNTRY." and external_name matching BBC away team \"{$row['awayName']}\".");
+                $this->warn('No team with country='.$country." and external_name matching BBC away team \"{$row['awayName']}\".");
 
                 continue;
             }
@@ -83,6 +100,7 @@ class BbcScrapeResultsCommand extends Command
             $scoreString = $row['homeGoals'].':'.$row['awayGoals'];
 
             $event = Event::query()
+                ->where('tournament_id', $tournament->id)
                 ->where('home_team_id', $homeTeam->id)
                 ->where('away_team_id', $awayTeam->id)
                 ->whereNull('score')

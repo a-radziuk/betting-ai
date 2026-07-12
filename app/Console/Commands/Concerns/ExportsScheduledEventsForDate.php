@@ -28,10 +28,11 @@ trait ExportsScheduledEventsForDate
         $date = $this->exportDate(Carbon::now($tz));
         $dayWord = $this->exportDayWord();
         $tournamentIdArg = $this->argument('tournamentId');
+        $filteredTournament = null;
 
         if ($tournamentIdArg !== null && $tournamentIdArg !== '') {
             $tid = (int) $tournamentIdArg;
-            if (! Schema::hasTable('tournaments') || ! Tournament::query()->whereKey($tid)->exists()) {
+            if (! Schema::hasTable('tournaments') || ! ($filteredTournament = Tournament::query()->find($tid))) {
                 $this->components->error("Tournament [{$tid}] not found.");
 
                 return self::FAILURE;
@@ -160,11 +161,14 @@ trait ExportsScheduledEventsForDate
 
         if ($this->option('full')) {
             $txtPath = storage_path('app/'.$date.'.txt');
+            $omitHandicapNotice = $filteredTournament !== null
+                && $filteredTournament->source === 'parimatch';
             $instruction = $this->fullExportInstructionTextDaily(
                 $eventCount,
                 $dayWord,
                 $playoffTournamentNames,
                 $hasRegularTournaments,
+                $omitHandicapNotice,
             );
             $txtBody = $json."\n\n".$instruction;
             if (file_put_contents($txtPath, $txtBody) === false) {
@@ -206,6 +210,7 @@ trait ExportsScheduledEventsForDate
         string $dayWord,
         array $playoffTournamentNames = [],
         bool $hasRegularTournaments = true,
+        bool $omitHandicapNotice = false,
     ): string {
         $hasPlayoffTournaments = $playoffTournamentNames !== [];
 
@@ -238,7 +243,7 @@ The stake must be 10
 The most realistic bet exactly between these odds
 The stake must be 50
 
-{$this->handicapInstructionParagraph()}{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
+{$this->handicapInstructionParagraph($omitHandicapNotice)}{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
 {
     odd_id: // id from the JSON
     odd_value: // value of the odd
@@ -271,8 +276,12 @@ Above are {$numberOfEvents} {$gamesLabel} happening {$dayWord} (fixture list and
 TXT;
     }
 
-    private function handicapInstructionParagraph(): string
+    private function handicapInstructionParagraph(bool $omit = false): string
     {
+        if ($omit) {
+            return '';
+        }
+
         return <<<'TXT'
 Handicap note: Handicap markets in this export use European-style settlement. The handicap is applied to the full-time score and every selection wins or loses — there is no push and the stake is never returned on a draw after the handicap is applied. Example: for Handicap Home +1, if the home team loses 0-1 (a one-goal defeat), the adjusted score is 1-1. That is a draw on the handicap line, but under European rules the bet still loses; the stake is not returned. Compare this to Asian handicap, where that result would often void the bet — here it does not.
 

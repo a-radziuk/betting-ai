@@ -135,6 +135,67 @@ class PlayerStatsPageTest extends TestCase
         $this->assertLessThan($posEarly, $posLate);
     }
 
+    public function test_bet_column_shows_selection_value_for_asian_markets(): void
+    {
+        $player = User::factory()->create();
+        $home = Team::query()->create(['name' => 'Arsenal', 'short_name' => 'ARS', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Chelsea', 'short_name' => 'CHE', 'league' => 'T']);
+
+        $event = Event::query()->create([
+            'id' => 92050,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->subDay(),
+            'status' => Event::STATUS_FINISHED,
+            'score' => '2:1',
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 92051,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_TOTAL_ASIAN,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        $selection = Selection::query()->create([
+            'id' => 92052,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_OVER,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => 2.5,
+            'created_at' => now(),
+        ]);
+
+        $odd = Odd::query()->create([
+            'id' => 92053,
+            'selection_id' => $selection->id,
+            'odds' => 1.9,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        UserBet::query()->create([
+            'user_id' => $player->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 1.9,
+            'potential_return' => 19,
+            'status' => UserBet::STATUS_WON,
+            'wallet_total_result' => 9,
+            'resolved_order' => 1,
+        ]);
+
+        $this->get(route('players.show', $player))
+            ->assertOk()
+            ->assertSee('Over 2.5 (Total)', false);
+    }
+
     public function test_result_trend_chart_orders_points_by_resolved_order_asc(): void
     {
         $player = User::factory()->create();

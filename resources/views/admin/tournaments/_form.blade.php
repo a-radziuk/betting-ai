@@ -118,3 +118,24 @@
     class="admin-upload-input"
     value="{{ old('bbc_results_url', $tournament?->bbc_results_url) }}"
 >
+
+@php
+    $standingsPromrelValue = old('standings_promrel');
+    if ($standingsPromrelValue === null && isset($tournament) && $tournament->standings_promrel !== []) {
+        $standingsPromrelValue = json_encode(
+            $tournament->standings_promrel,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+        );
+    }
+@endphp
+
+<label class="admin-upload-label" for="standings_promrel">{{ __('Standings promotion / relegation zones') }}</label>
+<textarea
+    id="standings_promrel"
+    name="standings_promrel"
+    class="admin-upload-textarea"
+    rows="12"
+    spellcheck="false"
+    placeholder='{"1":{"type":"promotion","name":"Champions League","subtype":"champions-league"}}'
+>{{ $standingsPromrelValue }}</textarea>
+<p class="admin-upload-hint">{{ __('JSON map of table positions to zone metadata (type, name, optional subtype). Leave empty to clear.') }}</p>

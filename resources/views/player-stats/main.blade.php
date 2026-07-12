@@ -223,7 +223,7 @@
                             $eventTime = $event?->start_time?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '—';
                             $eventScore = \App\Support\EventScoreDisplay::forEvent($event);
 
-                            $selection = $bet->odd?->selection?->displayName($event) ?? '—';
+                            $selection = $bet->odd?->selection?->displayNameWithValue($event) ?? '—';
                             $market = $bet->odd?->selection?->market?->typeLabel();
                             $betLabel = $market ? "{$selection} ({$market})" : $selection;
 

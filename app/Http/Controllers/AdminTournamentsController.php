@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tournament;
+use App\Support\StandingsPromrelDecoder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminTournamentsController extends Controller
@@ -83,6 +85,7 @@ class AdminTournamentsController extends Controller
             'guardian_results_url' => ['nullable', 'string', 'max:2048'],
             'bbc_standings_url' => ['nullable', 'string', 'max:2048'],
             'bbc_results_url' => ['nullable', 'string', 'max:2048'],
+            'standings_promrel' => ['nullable', 'string'],
         ]);
 
         $validated['is_playoff'] = $request->boolean('is_playoff');
@@ -95,6 +98,35 @@ class AdminTournamentsController extends Controller
             }
         }
 
+        $validated['standings_promrel'] = $this->parseStandingsPromrelInput($validated['standings_promrel'] ?? null);
+
         return $validated;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>|null
+     */
+    private function parseStandingsPromrelInput(?string $raw): ?array
+    {
+        if ($raw === null || trim($raw) === '') {
+            return null;
+        }
+
+        $decoded = json_decode(trim($raw), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw ValidationException::withMessages([
+                'standings_promrel' => __('Standings promotion/relegation zones must be valid JSON.'),
+            ]);
+        }
+
+        if (! is_array($decoded)) {
+            throw ValidationException::withMessages([
+                'standings_promrel' => __('Standings promotion/relegation zones must be a JSON object.'),
+            ]);
+        }
+
+        $normalized = StandingsPromrelDecoder::decode($decoded);
+
+        return $normalized === [] ? null : $normalized;
     }
 }

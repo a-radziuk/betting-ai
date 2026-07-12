@@ -51,7 +51,8 @@ class AdminTournamentsTest extends TestCase
             ->assertSee('name="source"', false)
             ->assertSee('name="parimatch_url"', false)
             ->assertSee('name="bbc_standings_url"', false)
-            ->assertSee('name="bbc_results_url"', false);
+            ->assertSee('name="bbc_results_url"', false)
+            ->assertSee('name="standings_promrel"', false);
 
         $this->actingAs($admin)
             ->post(route('admin.tournaments.store'), [
@@ -153,5 +154,68 @@ class AdminTournamentsTest extends TestCase
 
         $this->assertNull(Tournament::query()->find($tournament->id));
         $this->assertNull($team->fresh()->tournament_id);
+    }
+
+    public function test_superadmin_can_update_standings_promrel_from_json(): void
+    {
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        $tournament = Tournament::query()->create([
+            'name' => 'Zone League',
+            'standings_promrel' => null,
+        ]);
+
+        $promrelJson = json_encode([
+            '1' => [
+                'type' => 'promotion',
+                'name' => 'Champions League',
+                'subtype' => 'champions-league',
+            ],
+            '18' => [
+                'type' => 'relegation',
+                'name' => 'Championship',
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $this->actingAs($admin)
+            ->put(route('admin.tournaments.update', $tournament), [
+                'name' => 'Zone League',
+                'rank' => '1',
+                'is_active' => '1',
+                'standings_promrel' => $promrelJson,
+            ])
+            ->assertRedirect(route('admin.tournaments'))
+            ->assertSessionHas('status');
+
+        $tournament->refresh();
+        $this->assertSame('Champions League', $tournament->standings_promrel['1']['name']);
+        $this->assertSame('Championship', $tournament->standings_promrel['18']['name']);
+
+        $this->actingAs($admin)
+            ->put(route('admin.tournaments.update', $tournament), [
+                'name' => 'Zone League',
+                'rank' => '1',
+                'is_active' => '1',
+                'standings_promrel' => '',
+            ])
+            ->assertRedirect(route('admin.tournaments'));
+
+        $this->assertSame([], $tournament->fresh()->standings_promrel);
+    }
+
+    public function test_update_rejects_invalid_standings_promrel_json(): void
+    {
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        $tournament = Tournament::query()->create(['name' => 'Zone League']);
+
+        $this->actingAs($admin)
+            ->from(route('admin.tournaments.edit', $tournament))
+            ->put(route('admin.tournaments.update', $tournament), [
+                'name' => 'Zone League',
+                'rank' => '1',
+                'is_active' => '1',
+                'standings_promrel' => '{not json',
+            ])
+            ->assertRedirect(route('admin.tournaments.edit', $tournament))
+            ->assertSessionHasErrors('standings_promrel');
     }
 }
