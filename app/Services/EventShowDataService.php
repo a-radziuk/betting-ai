@@ -6,8 +6,8 @@ use App\Models\Event;
 use App\Models\EventAnalysis;
 use App\Models\Tournament;
 use App\Models\UserBet;
+use App\Models\UserWallet;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class EventShowDataService
@@ -50,11 +50,13 @@ class EventShowDataService
 
             if (Schema::hasTable('user_wallets')) {
                 $eventBets = $eventBetsQuery
-                    ->join('users', 'users.id', '=', 'user_bets.user_id')
-                    ->leftJoin('user_wallets', 'user_wallets.user_id', '=', 'users.id')
-                    ->select('user_bets.*')
-                    ->orderByDesc(DB::raw('COALESCE(user_wallets.total_result, 0)'))
-                    ->orderBy('users.id')
+                    ->orderByDesc(
+                        UserWallet::query()
+                            ->selectRaw('COALESCE(total_result, 0)')
+                            ->whereColumn('user_wallets.user_id', 'user_bets.user_id')
+                            ->limit(1)
+                    )
+                    ->orderBy('user_bets.user_id')
                     ->orderByDesc('user_bets.id')
                     ->get();
             } else {

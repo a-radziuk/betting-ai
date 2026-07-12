@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\EventShowCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,23 @@ class UserBet extends Model
     public function odd(): BelongsTo
     {
         return $this->belongsTo(Odd::class);
+    }
+
+    protected static function booted(): void
+    {
+        $forgetEventCache = function (UserBet $bet): void {
+            if (! config('page_cache.cache_enabled') || $bet->event_id === null) {
+                return;
+            }
+
+            $event = Event::query()->find($bet->event_id);
+            if ($event !== null) {
+                app(EventShowCache::class)->forgetAllViewerVariants($event);
+            }
+        };
+
+        static::saved($forgetEventCache);
+        static::deleted($forgetEventCache);
     }
 
     /**

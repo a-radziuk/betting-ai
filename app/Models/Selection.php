@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\EventShowCache;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +35,25 @@ class Selection extends Model
 
     public $timestamps = false;
 
+    protected static function booted(): void
+    {
+        static::saved(function (Selection $selection): void {
+            if (! config('page_cache.cache_enabled')) {
+                return;
+            }
+
+            $eventId = Market::query()->whereKey($selection->market_id)->value('event_id');
+            if ($eventId === null) {
+                return;
+            }
+
+            $event = Event::query()->find($eventId);
+            if ($event !== null) {
+                app(EventShowCache::class)->forgetAllViewerVariants($event);
+            }
+        });
+    }
+
     public const NAME_HOME = 'HOME';
     public const NAME_DRAW = 'DRAW';
     public const NAME_AWAY = 'AWAY';
@@ -50,17 +70,18 @@ class Selection extends Model
     public function displayNameWithValue(?Event $event = null): string
     {
         $name = $this->displayName($event);
+        $suffix = $this->lineSuffixForDisplay();
 
-        if ($this->value === null) {
-            return $name;
+        return $suffix === null ? $name : $name.' '.$suffix;
+    }
+
+    public function lineSuffixForDisplay(): ?string
+    {
+        if ($this->getRawOriginal('value') !== null) {
+            return $this->formattedValue();
         }
 
-        $value = $this->formattedValue();
-        if ($value === null) {
-            return $name;
-        }
-
-        return $name.' '.$value;
+        return null;
     }
 
     public function exportName(): string

@@ -141,6 +141,7 @@ final class EventUploadService
             'name',
             'participant_id',
             'handicap',
+            'value',
             'handicap_home',
             'created_at',
         ]));

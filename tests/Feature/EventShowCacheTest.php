@@ -75,6 +75,64 @@ class EventShowCacheTest extends TestCase
             ->assertDontSee('Changed Home Name', false);
     }
 
+    public function test_event_cache_is_cleared_when_user_bet_is_saved(): void
+    {
+        Cache::store('array')->flush();
+
+        $home = Team::query()->create(['name' => 'Tip Home', 'short_name' => 'TH', 'league' => 'L']);
+        $away = Team::query()->create(['name' => 'Tip Away', 'short_name' => 'TA', 'league' => 'L']);
+        $event = Event::query()->create([
+            'id' => 99305,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = \App\Models\Market::query()->create([
+            'id' => 993051,
+            'event_id' => $event->id,
+            'type' => \App\Models\Market::TYPE_MATCH_RESULT,
+            'period' => \App\Models\Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => \App\Models\Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        $selection = \App\Models\Selection::query()->create([
+            'id' => 993052,
+            'market_id' => $market->id,
+            'name' => \App\Models\Selection::NAME_HOME,
+            'participant_id' => null,
+            'handicap' => null,
+            'created_at' => now(),
+        ]);
+        $odd = \App\Models\Odd::query()->create([
+            'id' => 993053,
+            'selection_id' => $selection->id,
+            'odds' => 2.0,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $cache = app(EventShowCache::class);
+
+        $this->get(route('events.show', $event))->assertOk();
+        $this->assertTrue(Cache::store('array')->has($cache->cacheKey($event)));
+
+        \App\Models\UserBet::query()->create([
+            'user_id' => User::factory()->create()->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 2.0,
+            'potential_return' => 20,
+            'status' => \App\Models\UserBet::STATUS_PENDING,
+        ]);
+
+        $this->assertFalse(Cache::store('array')->has($cache->cacheKey($event)));
+    }
+
     public function test_event_cache_key_varies_by_viewer_privileges(): void
     {
         Cache::store('array')->flush();

@@ -41,6 +41,31 @@ class EventShowCache
         );
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function viewerCacheKeys(): array
+    {
+        return [
+            'guest',
+            'auth',
+            'auth.tips',
+            'auth.place',
+            'auth.tips.place',
+        ];
+    }
+
+    public function forgetAllViewerVariants(Event $event): void
+    {
+        $store = Cache::store(config('page_cache.cache_store'));
+
+        foreach (['en'] as $locale) {
+            foreach (self::viewerCacheKeys() as $viewerKey) {
+                $store->forget($this->cacheKey($event, $locale, $viewerKey));
+            }
+        }
+    }
+
     public function viewerCacheKey(): string
     {
         $user = Auth::user();

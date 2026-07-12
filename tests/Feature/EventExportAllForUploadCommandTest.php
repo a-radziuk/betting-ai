@@ -106,6 +106,54 @@ class EventExportAllForUploadCommandTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_exports_selection_value_in_upload_payload(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-05-22 12:00:00', config('app.timezone')));
+
+        $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Away', 'short_name' => 'AWY', 'league' => 'T']);
+
+        $event = Event::query()->create([
+            'id' => 88201,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 88210,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_TOTAL_ASIAN,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        Selection::query()->create([
+            'id' => 88211,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_OVER,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => 2.5,
+            'created_at' => now(),
+        ]);
+
+        $path = storage_path('app/export_2026-05-22.json');
+        if (is_file($path)) {
+            unlink($path);
+        }
+
+        $this->assertSame(0, Artisan::call('event:export-all-for-upload'));
+
+        $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals(2.5, $data['events'][0]['markets'][0]['selections'][0]['value']);
+
+        unlink($path);
+        Carbon::setTestNow();
+    }
+
     public function test_succeeds_with_empty_export_when_no_unresolved_events(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-05-20 12:00:00', config('app.timezone')));

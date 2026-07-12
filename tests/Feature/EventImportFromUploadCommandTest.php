@@ -224,4 +224,75 @@ class EventImportFromUploadCommandTest extends TestCase
             @unlink($path);
         }
     }
+
+    public function test_imports_selection_value_from_upload_file(): void
+    {
+        $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Away', 'short_name' => 'AWY', 'league' => 'T']);
+
+        Event::query()->create([
+            'id' => 99050,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $path = sys_get_temp_dir().'/event-upload-import-'.uniqid('', true).'.json';
+        file_put_contents($path, json_encode([
+            'exportDate' => '2026-05-19',
+            'events' => [
+                [
+                    'id' => 99050,
+                    'home_team_id' => $home->id,
+                    'away_team_id' => $away->id,
+                    'start_time' => now()->addDay()->toIso8601String(),
+                    'status' => Event::STATUS_SCHEDULED,
+                    'markets' => [
+                        [
+                            'id' => 99051,
+                            'event_id' => 99050,
+                            'type' => Market::TYPE_TOTAL_ASIAN,
+                            'period' => Market::PERIOD_FULL_TIME,
+                            'line' => null,
+                            'status' => Market::STATUS_OPEN,
+                            'is_supported_market' => true,
+                            'selections' => [
+                                [
+                                    'id' => 99052,
+                                    'market_id' => 99051,
+                                    'name' => Selection::NAME_OVER,
+                                    'participant_id' => null,
+                                    'handicap' => null,
+                                    'value' => 2.5,
+                                    'created_at' => now()->format('Y-m-d H:i:s'),
+                                    'odds' => [
+                                        [
+                                            'id' => 99053,
+                                            'selection_id' => 99052,
+                                            'odds' => 1.85,
+                                            'probability' => null,
+                                            'is_active' => true,
+                                            'created_at' => now()->format('Y-m-d H:i:s'),
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        try {
+            $exit = Artisan::call('event:import-from-upload', ['filepath' => $path]);
+            $this->assertSame(0, $exit);
+
+            $selection = Selection::query()->find(99052);
+            $this->assertNotNull($selection);
+            $this->assertEquals(2.5, (float) $selection->value);
+        } finally {
+            @unlink($path);
+        }
+    }
 }
