@@ -7,6 +7,7 @@ use App\Models\Market;
 use App\Models\Odd;
 use App\Models\Selection;
 use App\Models\Team;
+use App\Models\Tournament;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -123,5 +124,60 @@ class EventExportAllForUploadCommandTest extends TestCase
 
         unlink($path);
         Carbon::setTestNow();
+    }
+
+    public function test_exports_only_events_for_given_tournament(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-05-21 12:00:00', config('app.timezone')));
+
+        $t1 = Tournament::query()->create(['name' => 'League One']);
+        $t2 = Tournament::query()->create(['name' => 'League Two']);
+        $home = Team::query()->create(['name' => 'Home', 'short_name' => 'HOM', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Away', 'short_name' => 'AWY', 'league' => 'T']);
+
+        Event::query()->create([
+            'id' => 88101,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $t1->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+        Event::query()->create([
+            'id' => 88102,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $t2->id,
+            'start_time' => now()->addDays(2),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $path = storage_path('app/export_2026-05-21.json');
+        if (is_file($path)) {
+            unlink($path);
+        }
+
+        $exitCode = Artisan::call('event:export-all-for-upload', [
+            'tournamentId' => (string) $t1->id,
+        ]);
+        $this->assertSame(0, $exitCode);
+        $this->assertFileExists($path);
+
+        $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertCount(1, $data['events']);
+        $this->assertSame(88101, $data['events'][0]['id']);
+        $this->assertSame($t1->id, $data['events'][0]['tournament_id']);
+
+        unlink($path);
+        Carbon::setTestNow();
+    }
+
+    public function test_fails_when_tournament_missing(): void
+    {
+        $exitCode = Artisan::call('event:export-all-for-upload', [
+            'tournamentId' => '99999',
+        ]);
+
+        $this->assertSame(1, $exitCode);
     }
 }

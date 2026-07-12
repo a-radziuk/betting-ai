@@ -44,6 +44,15 @@
     placeholder="{{ __('e.g. stoiximan, parimatch') }}"
 >
 
+<label class="admin-upload-label" for="export_marker">{{ __('Export marker') }}</label>
+<input
+    type="text"
+    id="export_marker"
+    name="export_marker"
+    class="admin-upload-input"
+    value="{{ old('export_marker', $tournament?->export_marker) }}"
+>
+
 <label class="admin-upload-label">
     <input
         type="checkbox"
@@ -64,6 +73,16 @@
     {{ __('Active on site') }}
 </label>
 <p class="admin-upload-hint">{{ __('Inactive tournaments and their events are hidden from the public site.') }}</p>
+
+<label class="admin-upload-label">
+    <input
+        type="checkbox"
+        name="is_fifa"
+        value="1"
+        @checked(old('is_fifa', $tournament?->is_fifa ?? false))
+    >
+    {{ __('FIFA tournament') }}
+</label>
 
 <label class="admin-upload-label" for="stoiximan_url">{{ __('Stoiximan URL') }}</label>
 <input

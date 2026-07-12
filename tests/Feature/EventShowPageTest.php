@@ -410,7 +410,7 @@ class EventShowPageTest extends TestCase
         $this->assertLessThan($posChaser, $posLeader);
     }
 
-    public function test_event_page_hides_tips_for_users_with_no_resolved_bets(): void
+    public function test_event_page_shows_tips_for_users_with_only_pending_bets(): void
     {
         ['event' => $event, 'odd' => $odd] = $this->seedEventWithOdd(92004);
 
@@ -444,7 +444,7 @@ class EventShowPageTest extends TestCase
         $this->get(route('events.show', $event))
             ->assertOk()
             ->assertSee('Has Resolved History', false)
-            ->assertDontSee('Pending Only', false);
+            ->assertSee('Pending Only', false);
     }
 
     public function test_event_page_shows_strongest_analysis_before_markets(): void

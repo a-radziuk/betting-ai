@@ -9,6 +9,7 @@ use App\Support\PlayoffGameHistoryExport;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 final class EventOddsExportPayload
 {
@@ -32,9 +33,9 @@ final class EventOddsExportPayload
      *
      * @return Builder<Event>
      */
-    public static function unresolvedEventsQuery(): Builder
+    public static function unresolvedEventsQuery(?int $tournamentId = null): Builder
     {
-        return Event::query()
+        $query = Event::query()
             ->with([
                 'markets' => fn ($q) => $q->orderBy('id'),
                 'markets.selections' => fn ($q) => $q->orderBy('id'),
@@ -44,6 +45,12 @@ final class EventOddsExportPayload
             ->where('start_time', '>', now())
             ->orderBy('start_time')
             ->orderBy('id');
+
+        if ($tournamentId !== null && Schema::hasColumn('events', 'tournament_id')) {
+            $query->where('tournament_id', $tournamentId);
+        }
+
+        return $query;
     }
 
     /**
@@ -199,11 +206,16 @@ final class EventOddsExportPayload
             }
             foreach ($market->selections as $selection) {
                 foreach ($selection->odds as $odd) {
+                    $selectionName = $selection->exportName();
+                    if ($market->type === Market::TYPE_HANDICAP) {
+                        $selectionName = substr($selectionName, 0, 4);
+                    }
+
                     $rows[] = [
                         'id' => $odd->id !== null ? $odd->id : null,
-                        'type' => $market->type,
+                        'type' => self::exportMarketType($market->type),
                         'period' => $market->period,
-                        'selection' => $selection->name,
+                        'selection' => $selectionName,
                         'odds' => $odd->odds !== null ? (float) $odd->odds : null,
                         'handicap_home_team' => $market->type === Market::TYPE_HANDICAP ? ($selection->handicap !== null ? (float) $selection->handicap : null) : null,
                     ];
@@ -215,14 +227,20 @@ final class EventOddsExportPayload
             if ($row['handicap_home_team'] === null) {
                 unset($row['handicap_home_team']);
             }
-            if ($row['type'] === Market::TYPE_HANDICAP) {
-                $row['selection'] = substr($row['selection'], 0, 4);
-            }
 
             return $row;
         }, $rows);
 
         return array_values(array_filter($rows, fn ($row) => $row['id'] !== null));
+    }
+
+    private static function exportMarketType(string $type): string
+    {
+        if (str_ends_with($type, '_ASIAN')) {
+            return substr($type, 0, -strlen('_ASIAN'));
+        }
+
+        return $type;
     }
 
     /**

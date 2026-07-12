@@ -169,6 +169,7 @@ trait ExportsScheduledEventsForDate
                 $playoffTournamentNames,
                 $hasRegularTournaments,
                 $omitHandicapNotice,
+                $filteredTournament,
             );
             $txtBody = $json."\n\n".$instruction;
             if (file_put_contents($txtPath, $txtBody) === false) {
@@ -211,6 +212,7 @@ trait ExportsScheduledEventsForDate
         array $playoffTournamentNames = [],
         bool $hasRegularTournaments = true,
         bool $omitHandicapNotice = false,
+        ?Tournament $tournament = null,
     ): string {
         $hasPlayoffTournaments = $playoffTournamentNames !== [];
 
@@ -220,10 +222,12 @@ trait ExportsScheduledEventsForDate
                 $dayWord,
                 $playoffTournamentNames,
                 $hasRegularTournaments,
+                $tournament,
             );
         }
 
         $type = 'DAILY';
+        $marker = $this->exportTypeMarkerSuffix($tournament);
 
         return <<<TXT
 Above is the odds for {$numberOfEvents} games that are happening {$dayWord}. Out of these games find:
@@ -243,7 +247,7 @@ The stake must be 10
 The most realistic bet exactly between these odds
 The stake must be 50
 
-{$this->handicapInstructionParagraph($omitHandicapNotice)}{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
+{$this->handicapInstructionParagraph($omitHandicapNotice)}{$this->asianHandicapAndTotalInstructionParagraph($tournament)}{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments, $this->shouldOmitFifaRankingsNotice($tournament))}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithOdds($hasRegularTournaments, $hasPlayoffTournaments)}Give me those bets as JSON in the following format:
 {
     odd_id: // id from the JSON
     odd_value: // value of the odd
@@ -251,10 +255,24 @@ The stake must be 50
     selection: // name of the selection
     stake: // percent from 1000
     description: // explain why you want to bet
-    type: // possible values - GPT_MANUAL_{$type}_SAFEST, GPT_MANUAL_{$type}_BEST, GPT_MANUAL_{$type}_UPSET, GPT_MANUAL_{$type}_2x1
+    type: // possible values - GPT_MANUAL_{$type}_SAFEST{$marker}, GPT_MANUAL_{$type}_BEST{$marker}, GPT_MANUAL_{$type}_UPSET{$marker}, GPT_MANUAL_{$type}_2x1{$marker}
     confidence: // how confident you are that this bet will win, int from 1 to 10
 }
 TXT;
+    }
+
+    private function exportTypeMarkerSuffix(?Tournament $tournament): string
+    {
+        if ($tournament === null) {
+            return '';
+        }
+
+        $exportMarker = trim((string) ($tournament->export_marker ?? ''));
+        if ($exportMarker === '') {
+            return '';
+        }
+
+        return '_'.$exportMarker;
     }
 
     /**
@@ -265,6 +283,7 @@ TXT;
         string $dayWord,
         array $playoffTournamentNames = [],
         bool $hasRegularTournaments = true,
+        ?Tournament $tournament = null,
     ): string {
         $hasPlayoffTournaments = $playoffTournamentNames !== [];
         $gamesLabel = $numberOfEvents === 1 ? 'game' : 'games';
@@ -272,8 +291,13 @@ TXT;
         return <<<TXT
 Above are {$numberOfEvents} {$gamesLabel} happening {$dayWord} (fixture list and tournament context only — no betting odds are included).
 
-{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments)}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithoutOdds($hasRegularTournaments, $hasPlayoffTournaments)}Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
+{$this->fifaRankingsInstructionParagraph($hasRegularTournaments, $hasPlayoffTournaments, $this->shouldOmitFifaRankingsNotice($tournament))}{$this->playoffTournamentsInstructionParagraph($playoffTournamentNames)}{$this->contextAnalysisInstructionParagraphWithoutOdds($hasRegularTournaments, $hasPlayoffTournaments)}Respond as JSON: an array of objects, one per event, each with eventId (from the JSON), eventName(from the JSON),  likely_outcome (HOME_WIN | DRAW | AWAY_WIN), approximate_goals,  description (your motivation-based explanation), home_motivation (motivation of the home team ranging 0 to 10), away_motivation (motivation of the away team ranging 0 to 10), home_class (class of the home team ranging 0 to 10), away_class (class of the away team ranging 0 to 10), influenced_by (another game or games that can potentially influence the outcome of this game, null if there's no such games),  influenced_by_event_ids (event_ids of the games from the JSON that potentially influence the outcome of this game, null if there's none).
 TXT;
+    }
+
+    private function shouldOmitFifaRankingsNotice(?Tournament $tournament): bool
+    {
+        return $tournament !== null && ! $tournament->is_fifa;
     }
 
     private function handicapInstructionParagraph(bool $omit = false): string
@@ -288,8 +312,24 @@ Handicap note: Handicap markets in this export use European-style settlement. Th
 TXT;
     }
 
-    private function fifaRankingsInstructionParagraph(bool $hasRegularTournaments, bool $hasPlayoffTournaments): string
+    private function asianHandicapAndTotalInstructionParagraph(?Tournament $tournament): string
     {
+        if ($tournament === null || $tournament->source !== 'parimatch') {
+            return '';
+        }
+
+        return <<<'TXT'
+Asian Handicap & Total note: Handicap and over/under (total) markets in this export use Asian-style settlement. For handicaps, if the result after applying the line is a draw, the bet is pushed and the stake is returned — it neither wins nor loses. For totals, if the total goals equal the line exactly, the bet is pushed and the stake is returned.
+
+TXT;
+    }
+
+    private function fifaRankingsInstructionParagraph(bool $hasRegularTournaments, bool $hasPlayoffTournaments, bool $omit = false): string
+    {
+        if ($omit) {
+            return '';
+        }
+
         $contextParts = [];
         if ($hasRegularTournaments) {
             $contextParts[] = 'standings';

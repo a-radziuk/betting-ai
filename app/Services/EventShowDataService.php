@@ -41,12 +41,7 @@ class EventShowDataService
         if (Schema::hasTable('user_bets')) {
             $eventBetsQuery = UserBet::query()
                 ->where('user_bets.event_id', $event->id)
-                ->whereHas('user', function ($q): void {
-                    $q->visibleOnSite()
-                        ->whereHas('bets', function ($bq): void {
-                            $bq->where('status', '<>', UserBet::STATUS_PENDING);
-                        });
-                })
+                ->whereHas('user', fn ($q) => $q->visibleOnSite())
                 ->with([
                     'user.wallet',
                     'user.bets' => UserBet::eagerLoadRecentResolved(),

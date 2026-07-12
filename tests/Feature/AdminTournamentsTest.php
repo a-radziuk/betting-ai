@@ -48,7 +48,9 @@ class AdminTournamentsTest extends TestCase
             ->assertOk()
             ->assertSee('name="is_playoff"', false)
             ->assertSee('name="is_active"', false)
+            ->assertSee('name="is_fifa"', false)
             ->assertSee('name="source"', false)
+            ->assertSee('name="export_marker"', false)
             ->assertSee('name="parimatch_url"', false)
             ->assertSee('name="bbc_standings_url"', false)
             ->assertSee('name="bbc_results_url"', false)
@@ -60,8 +62,10 @@ class AdminTournamentsTest extends TestCase
                 'rank' => 2,
                 'country' => 'Europe',
                 'source' => 'stoiximan',
+                'export_marker' => 'cl-2026',
                 'is_playoff' => '1',
                 'is_active' => '1',
+                'is_fifa' => '1',
                 'stoiximan_url' => 'https://stoiximan.example/cl',
                 'parimatch_url' => 'https://parimatch.example/allsvenskan',
             ])
@@ -74,8 +78,10 @@ class AdminTournamentsTest extends TestCase
         $this->assertSame(2, $tournament->rank);
         $this->assertSame('Europe', $tournament->country);
         $this->assertSame('stoiximan', $tournament->source);
+        $this->assertSame('cl-2026', $tournament->export_marker);
         $this->assertTrue($tournament->is_playoff);
         $this->assertTrue($tournament->is_active);
+        $this->assertTrue($tournament->is_fifa);
         $this->assertSame('https://stoiximan.example/cl', $tournament->stoiximan_url);
         $this->assertSame('https://parimatch.example/allsvenskan', $tournament->parimatch_url);
 
@@ -92,6 +98,7 @@ class AdminTournamentsTest extends TestCase
                 'rank' => 3,
                 'country' => 'Europe',
                 'source' => 'parimatch',
+                'export_marker' => '',
                 'is_playoff' => '0',
                 'is_active' => '0',
                 'stoiximan_url' => '',
@@ -109,7 +116,9 @@ class AdminTournamentsTest extends TestCase
         $this->assertSame(3, $tournament->rank);
         $this->assertFalse($tournament->is_playoff);
         $this->assertFalse($tournament->is_active);
+        $this->assertFalse($tournament->is_fifa);
         $this->assertSame('parimatch', $tournament->source);
+        $this->assertNull($tournament->export_marker);
         $this->assertNull($tournament->stoiximan_url);
         $this->assertSame('https://parimatch.example/updated', $tournament->parimatch_url);
         $this->assertSame('https://guardian.example/standings', $tournament->guardian_standings_url);

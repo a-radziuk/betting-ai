@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tournament;
 use App\Services\EventOddsExportPayload;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -10,7 +11,8 @@ use JsonException;
 
 class EventExportAllForUploadCommand extends Command
 {
-    protected $signature = 'event:export-all-for-upload';
+    protected $signature = 'event:export-all-for-upload
+        {tournamentId? : Optional tournament primary key; omit for all tournaments}';
 
     protected $description = 'Export unfinished upcoming events with markets, selections, and odds to storage/app/export_<Y-m-d>.json';
 
@@ -22,10 +24,22 @@ class EventExportAllForUploadCommand extends Command
             return self::FAILURE;
         }
 
+        $tournamentIdArg = $this->argument('tournamentId');
+        $tournamentId = null;
+
+        if ($tournamentIdArg !== null && $tournamentIdArg !== '') {
+            $tournamentId = (int) $tournamentIdArg;
+            if (! Schema::hasTable('tournaments') || ! Tournament::query()->whereKey($tournamentId)->exists()) {
+                $this->components->error("Tournament [{$tournamentId}] not found.");
+
+                return self::FAILURE;
+            }
+        }
+
         $date = Carbon::now(config('app.timezone'))->format('Y-m-d');
         $path = storage_path('app/export_'.$date.'.json');
 
-        $events = EventOddsExportPayload::unresolvedEventsQuery()->get();
+        $events = EventOddsExportPayload::unresolvedEventsQuery($tournamentId)->get();
 
         $payload = [
             'exportDate' => $date,
@@ -51,7 +65,8 @@ class EventExportAllForUploadCommand extends Command
         }
 
         $eventCount = count($payload['events']);
-        $this->components->info("Wrote {$eventCount} upcoming unfinished event(s) to {$path}");
+        $scope = $tournamentId !== null ? " for tournament {$tournamentId}" : '';
+        $this->components->info("Wrote {$eventCount} upcoming unfinished event(s){$scope} to {$path}");
 
         return self::SUCCESS;
     }

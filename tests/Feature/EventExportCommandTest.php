@@ -532,6 +532,88 @@ class EventExportCommandTest extends TestCase
         $this->assertArrayNotHasKey('awayTeam', $decoded);
     }
 
+    public function test_exports_selection_name_with_value_when_present(): void
+    {
+        $home = Team::query()->create(['name' => 'H', 'short_name' => 'H', 'league' => 'L']);
+        $away = Team::query()->create(['name' => 'A', 'short_name' => 'A', 'league' => 'L']);
+
+        Event::query()->create([
+            'id' => 99500,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $totalMarket = Market::query()->create([
+            'id' => 99501,
+            'event_id' => 99500,
+            'type' => Market::TYPE_TOTAL_ASIAN,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        $overSelection = Selection::query()->create([
+            'id' => 99502,
+            'market_id' => $totalMarket->id,
+            'name' => Selection::NAME_OVER,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => 2.5,
+            'created_at' => now(),
+        ]);
+        Odd::query()->create([
+            'id' => 99503,
+            'selection_id' => $overSelection->id,
+            'odds' => 1.85,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $handicapMarket = Market::query()->create([
+            'id' => 99504,
+            'event_id' => 99500,
+            'type' => Market::TYPE_HANDICAP_ASIAN,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+        $homeSelection = Selection::query()->create([
+            'id' => 99505,
+            'market_id' => $handicapMarket->id,
+            'name' => Selection::NAME_HOME,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => -1.5,
+            'created_at' => now(),
+        ]);
+        Odd::query()->create([
+            'id' => 99506,
+            'selection_id' => $homeSelection->id,
+            'odds' => 1.95,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $exit = Artisan::call('event:export', ['eventId' => 99500]);
+        $this->assertSame(0, $exit);
+
+        $decoded = json_decode(Artisan::output(), true, 512, JSON_THROW_ON_ERROR);
+        $selections = array_column($decoded['odds'], 'selection');
+        $types = array_column($decoded['odds'], 'type');
+
+        $this->assertContains('OVER 2.5', $selections);
+        $this->assertContains('HOME -1.5', $selections);
+        $this->assertContains('TOTAL', $types);
+        $this->assertContains('HANDICAP', $types);
+        $this->assertNotContains('TOTAL_ASIAN', $types);
+        $this->assertNotContains('HANDICAP_ASIAN', $types);
+    }
+
     public function test_fails_when_event_missing(): void
     {
         $exit = Artisan::call('event:export', ['eventId' => 99999999]);

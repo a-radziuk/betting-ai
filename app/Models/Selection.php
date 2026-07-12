@@ -63,6 +63,22 @@ class Selection extends Model
         return $name.' '.$value;
     }
 
+    public function exportName(): string
+    {
+        $name = (string) ($this->name ?? '');
+
+        if ($this->value === null) {
+            return $name;
+        }
+
+        $value = $this->formattedValue();
+        if ($value === null) {
+            return $name;
+        }
+
+        return trim($name).' '.$value;
+    }
+
     public function shouldDisplayValue(): bool
     {
         $type = $this->market?->type;
