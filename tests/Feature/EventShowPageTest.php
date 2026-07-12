@@ -447,6 +447,66 @@ class EventShowPageTest extends TestCase
             ->assertSee('Pending Only', false);
     }
 
+    public function test_event_page_shows_selection_value_next_to_name_in_tips(): void
+    {
+        $home = Team::query()->create(['name' => 'Event Home', 'short_name' => 'EH', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Event Away', 'short_name' => 'EA', 'league' => 'T']);
+
+        $event = Event::query()->create([
+            'id' => 92005,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 920051,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_TOTAL_ASIAN,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        $selection = Selection::query()->create([
+            'id' => 920052,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_OVER,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => 2.5,
+            'created_at' => now(),
+        ]);
+
+        $odd = Odd::query()->create([
+            'id' => 920053,
+            'selection_id' => $selection->id,
+            'odds' => 1.90,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        $player = User::factory()->create(['name' => 'Totals Tipster']);
+        UserBet::query()->create([
+            'user_id' => $player->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 20,
+            'odds_at_bet' => 1.90,
+            'potential_return' => 38,
+            'status' => UserBet::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($this->userWhoCanPlaceBets())
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Over 2.5', false)
+            ->assertDontSee(Selection::NAME_OVER, false);
+    }
+
     public function test_event_page_shows_strongest_analysis_before_markets(): void
     {
         ['event' => $event] = $this->seedEventWithOdd(92020);

@@ -51,7 +51,7 @@ class Selection extends Model
     {
         $name = $this->displayName($event);
 
-        if (! $this->shouldDisplayValue()) {
+        if ($this->value === null) {
             return $name;
         }
 
