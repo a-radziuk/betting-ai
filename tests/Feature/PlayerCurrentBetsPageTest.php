@@ -223,4 +223,71 @@ class PlayerCurrentBetsPageTest extends TestCase
 
         $this->assertSame(0, substr_count($html, 'class="player-current-bet-explanation"'));
     }
+
+    public function test_shows_selection_value_for_asian_markets(): void
+    {
+        $user = User::factory()->create();
+
+        $home = Team::query()->create(['name' => 'Arsenal', 'short_name' => 'ARS', 'league' => 'T']);
+        $away = Team::query()->create(['name' => 'Chelsea', 'short_name' => 'CHE', 'league' => 'T']);
+
+        $event = Event::query()->create([
+            'id' => 70010,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'start_time' => now()->addDay(),
+            'status' => Event::STATUS_SCHEDULED,
+        ]);
+
+        $market = Market::query()->create([
+            'id' => 71010,
+            'event_id' => $event->id,
+            'type' => Market::TYPE_TOTAL_ASIAN,
+            'period' => Market::PERIOD_FULL_TIME,
+            'line' => null,
+            'status' => Market::STATUS_OPEN,
+            'is_supported_market' => true,
+        ]);
+
+        $selection = Selection::query()->create([
+            'id' => 72010,
+            'market_id' => $market->id,
+            'name' => Selection::NAME_OVER,
+            'participant_id' => null,
+            'handicap' => null,
+            'value' => 2.5,
+            'created_at' => now(),
+        ]);
+
+        $odd = Odd::query()->create([
+            'id' => 73010,
+            'selection_id' => $selection->id,
+            'odds' => 1.9,
+            'probability' => null,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        UserBet::query()->create([
+            'user_id' => $user->id,
+            'event_id' => $event->id,
+            'odd_id' => $odd->id,
+            'stake' => 10,
+            'odds_at_bet' => 1.9,
+            'potential_return' => 19,
+            'real_return' => 0,
+            'wallet_total_result' => 0,
+            'status' => UserBet::STATUS_PENDING,
+        ]);
+
+        $viewer = User::factory()->create([
+            'priveleges' => User::PRIVELEGE_SEE_TIPS,
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('players.current', ['user' => $user->id]))
+            ->assertOk()
+            ->assertSee('Over 2.5', false)
+            ->assertDontSee(Selection::NAME_OVER, false);
+    }
 }
