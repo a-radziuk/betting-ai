@@ -4,8 +4,10 @@ namespace App\Console\Commands\Concerns;
 
 use App\Models\Event;
 use App\Models\EventPrediction;
+use App\Models\Tournament;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 
 trait RunsPredictionsForScheduledDate
 {
@@ -23,20 +25,39 @@ trait RunsPredictionsForScheduledDate
             return self::FAILURE;
         }
 
+        $tournamentIdArg = $this->argument('tournamentId');
+        $tournamentId = null;
+
+        if ($tournamentIdArg !== null && $tournamentIdArg !== '') {
+            $tournamentId = (int) $tournamentIdArg;
+            if (! Schema::hasTable('tournaments') || ! Tournament::query()->whereKey($tournamentId)->exists()) {
+                $this->components->error("Tournament [{$tournamentId}] not found.");
+
+                return self::FAILURE;
+            }
+        }
+
         $tz = config('app.timezone');
         $date = $this->predictionDate(Carbon::now($tz));
         $dayWord = $this->scheduleDayWord();
 
-        $events = Event::query()
+        $query = Event::query()
             ->whereNull('score')
             ->where('start_time', '>', now())
-            ->whereDate('start_time', $date)
+            ->whereDate('start_time', $date);
+
+        if ($tournamentId !== null && Schema::hasColumn('events', 'tournament_id')) {
+            $query->where('tournament_id', $tournamentId);
+        }
+
+        $events = $query
             ->orderBy('start_time')
             ->orderBy('id')
             ->get(['id']);
 
         if ($events->isEmpty()) {
-            $this->components->info("No unresolved upcoming events for {$dayWord}.");
+            $scope = $tournamentId !== null ? " for tournament {$tournamentId}" : '';
+            $this->components->info("No unresolved upcoming events for {$dayWord}{$scope}.");
 
             return self::SUCCESS;
         }
@@ -68,7 +89,8 @@ trait RunsPredictionsForScheduledDate
             return self::FAILURE;
         }
 
-        $this->components->info("Predictions completed for {$total} event(s).");
+        $scope = $tournamentId !== null ? " for tournament {$tournamentId}" : '';
+        $this->components->info("Predictions completed for {$total} event(s){$scope}.");
 
         return self::SUCCESS;
     }

@@ -90,7 +90,7 @@
                         "goals_against": 3,
                         "goal_difference": 4,
                         "points": 7,
-                        "form": "Drew 1-1 with QatarWon 4-1 against Bosnia and HerzegovinaWon 2-1 against CanadaWon 2-0 against AlgeriaDrew 0-0 with Colombia",
+                        "form": "Won 4-1 against Bosnia and HerzegovinaWon 2-1 against CanadaWon 2-0 against AlgeriaDrew 0-0 with ColombiaLost 1-3 to Argentina",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -618,7 +618,7 @@
                         "goals_against": 7,
                         "goal_difference": 1,
                         "points": 6,
-                        "form": "Won 4-1 against IraqWon 3-2 against SenegalLost 1-4 to FranceWon 2-1 against Côte d’IvoireWon 2-1 against Brazil",
+                        "form": "Won 3-2 against SenegalLost 1-4 to FranceWon 2-1 against Côte d’IvoireWon 2-1 against BrazilLost 1-2 to England",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -674,7 +674,7 @@
                         "goals_against": 1,
                         "goal_difference": 7,
                         "points": 9,
-                        "form": "Won 3-0 against AlgeriaWon 2-0 against AustriaWon 3-1 against JordanWon 3-2 against Cape VerdeWon 3-2 against Egypt",
+                        "form": "Won 2-0 against AustriaWon 3-1 against JordanWon 3-2 against Cape VerdeWon 3-2 against EgyptWon 3-1 against Switzerland",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -820,7 +820,7 @@
                         "goals_against": 2,
                         "goal_difference": 4,
                         "points": 7,
-                        "form": "Won 4-2 against CroatiaDrew 0-0 with GhanaWon 2-0 against PanamaWon 2-1 against DR CongoWon 3-2 against Mexico",
+                        "form": "Drew 0-0 with GhanaWon 2-0 against PanamaWon 2-1 against DR CongoWon 3-2 against MexicoWon 2-1 against Norway",
                         "movement": "none",
                         "team_id": null,
                         "team_display_name": null
@@ -900,5 +900,5 @@
             "positivity": 5
         }
     },
-    "standings_updated_at": "2026-07-11T11:45:14+00:00"
+    "standings_updated_at": "2026-07-13T13:47:40+00:00"
 }

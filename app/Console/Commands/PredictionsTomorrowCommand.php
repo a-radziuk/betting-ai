@@ -11,7 +11,8 @@ class PredictionsTomorrowCommand extends Command
     use RunsPredictionsForScheduledDate;
 
     protected $signature = 'predictions:tomorrow
-        {predictionType=1 : Prediction type: 1=best, 2=safest, 3=upset}';
+        {predictionType=1 : Prediction type: 1=best, 2=safest, 3=upset}
+        {tournamentId? : Optional tournament primary key; omit for all tournaments}';
 
     protected $description = 'Run predictions:for-event for each unresolved event scheduled tomorrow that has not started yet';
 

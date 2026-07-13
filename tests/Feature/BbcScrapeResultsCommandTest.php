@@ -77,6 +77,79 @@ HTML;
         $this->assertSame([], $event->additional_data ?? []);
     }
 
+    public function test_writes_results_json_file_when_file_option_present(): void
+    {
+        $tournament = Tournament::query()->create([
+            'id' => 3,
+            'name' => 'Premier League',
+            'country' => 'England',
+            'bbc_results_url' => 'https://www.bbc.com/sport/football/premier-league/scores-fixtures',
+        ]);
+
+        $home = Team::query()->create([
+            'tournament_id' => $tournament->id,
+            'name' => 'Alpha',
+            'external_name' => 'Alpha FC',
+            'short_name' => 'ALP',
+            'league' => 'PL',
+            'country' => 'England',
+        ]);
+
+        $away = Team::query()->create([
+            'tournament_id' => $tournament->id,
+            'name' => 'Beta',
+            'external_name' => 'Beta FC',
+            'short_name' => 'BET',
+            'league' => 'PL',
+            'country' => 'England',
+        ]);
+
+        Event::query()->create([
+            'id' => 99002,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'tournament_id' => $tournament->id,
+            'start_time' => now()->subDay(),
+            'status' => Event::STATUS_SCHEDULED,
+            'score' => null,
+        ]);
+
+        $yearMonth = now()->format('Y-m');
+        $html = <<<'HTML'
+<div data-event-id="s-test-alpha-beta" class="ssrcss-1bjtunb-GridContainer e1efi6g55">
+<span aria-hidden="true" class="ssrcss-1p14tic-DesktopValue emlpoi30">Alpha FC</span>
+<div class="ssrcss-qsbptj-HomeScore e56kr2l2">3</div>
+<div class="ssrcss-fri5a2-AwayScore e56kr2l1">2</div>
+<span aria-hidden="true" class="ssrcss-1p14tic-DesktopValue emlpoi30">Beta FC</span>
+<div class="ssrcss-1739un0-StyledPeriod e307mhr0"><div>FT</div></div>
+</div>
+HTML;
+
+        Http::fake([
+            'https://www.bbc.com/sport/football/premier-league/scores-fixtures/'.$yearMonth.'*' => Http::response($html, 200),
+        ]);
+
+        $path = storage_path("app/bbc_results_{$tournament->id}_{$yearMonth}.json");
+        if (is_file($path)) {
+            unlink($path);
+        }
+
+        try {
+            $exit = Artisan::call('bbc:scrape-results', [
+                'tournamentId' => $tournament->id,
+                '--file' => true,
+            ]);
+
+            $this->assertSame(0, $exit);
+            $this->assertFileExists($path);
+
+            $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame([['eventId' => 99002, 'result' => '3:2']], $data);
+        } finally {
+            @unlink($path);
+        }
+    }
+
     public function test_strips_trailing_slash_from_bbc_results_url(): void
     {
         $tournament = Tournament::query()->create([

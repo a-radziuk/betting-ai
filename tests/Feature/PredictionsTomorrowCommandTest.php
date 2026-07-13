@@ -27,8 +27,11 @@ class PredictionsTomorrowCommandTest extends TestCase
         int $oddId,
         Carbon $startTime,
         ?string $score = null,
+        ?int $tournamentId = null,
     ): array {
-        $tournament = Tournament::query()->firstOrCreate(['name' => 'Test League']);
+        $tournament = $tournamentId !== null
+            ? Tournament::query()->findOrFail($tournamentId)
+            : Tournament::query()->firstOrCreate(['name' => 'Test League']);
         $home = Team::query()->create([
             'name' => "Home {$eventId}",
             'short_name' => 'H'.$eventId,
@@ -183,6 +186,57 @@ class PredictionsTomorrowCommandTest extends TestCase
 
         $this->assertSame(1, $exit);
         $this->assertStringContainsString('predictionType must be 1, 2, or 3', Artisan::output());
+        Http::assertNothingSent();
+    }
+
+    public function test_runs_predictions_only_for_given_tournament(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00', $tz));
+
+        $t1 = Tournament::query()->create(['name' => 'League One']);
+        $t2 = Tournament::query()->create(['name' => 'League Two']);
+
+        $this->seedExportableEvent(89121, 89131, Carbon::parse('2026-06-02 18:00:00', $tz), null, $t1->id);
+        $this->seedExportableEvent(89122, 89132, Carbon::parse('2026-06-02 20:00:00', $tz), null, $t2->id);
+
+        Http::fake([
+            'http://127.0.0.1:7999/api/odds' => Http::response([
+                'oddsId' => 89131,
+                'bankPercentage' => 3,
+                'explanation' => 'Tournament one pick.',
+            ], 200),
+        ]);
+
+        $exit = Artisan::call('predictions:tomorrow', [
+            'tournamentId' => (string) $t1->id,
+        ]);
+
+        $this->assertSame(0, $exit);
+        $this->assertDatabaseHas('event_predictions', [
+            'event_id' => 89121,
+            'odds_id' => 89131,
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseMissing('event_predictions', [
+            'event_id' => 89122,
+        ]);
+        Http::assertSentCount(1);
+    }
+
+    public function test_fails_when_tournament_missing(): void
+    {
+        $tz = config('app.timezone');
+        Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00', $tz));
+
+        Http::fake();
+
+        $exit = Artisan::call('predictions:tomorrow', [
+            'tournamentId' => '99999',
+        ]);
+
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('Tournament [99999] not found', Artisan::output());
         Http::assertNothingSent();
     }
 }

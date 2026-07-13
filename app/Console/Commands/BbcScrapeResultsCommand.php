@@ -14,7 +14,8 @@ use Throwable;
 class BbcScrapeResultsCommand extends Command
 {
     protected $signature = 'bbc:scrape-results
-        {tournamentId : Tournament primary key (uses bbc_results_url from this row)}';
+        {tournamentId : Tournament primary key (uses bbc_results_url from this row)}
+        {--file : Also write results to storage/app as JSON [{eventId,result},...]}';
 
     protected $description = 'Scrape BBC results for the current month and settle matching unresolved events (Team.external_name + tournament country)';
 
@@ -73,6 +74,8 @@ class BbcScrapeResultsCommand extends Command
 
         $country = (string) $tournament->country;
         $settled = 0;
+        /** @var array<int, array{eventId: int, result: string}> $fileRows */
+        $fileRows = [];
 
         foreach ($results as $row) {
             $homeTeam = Team::query()
@@ -128,6 +131,16 @@ class BbcScrapeResultsCommand extends Command
                 "Event {$event->id} {$row['homeName']} vs {$row['awayName']} {$scoreString}",
             );
             $settled++;
+            $fileRows[] = ['eventId' => (int) $event->id, 'result' => $scoreString];
+        }
+
+        if ((bool) $this->option('file')) {
+            $path = storage_path("app/bbc_results_{$tournamentId}_{$yearMonth}.json");
+            file_put_contents(
+                $path,
+                json_encode($fileRows, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)
+            );
+            $this->components->info("Wrote results file: {$path}");
         }
 
         $this->newLine();
